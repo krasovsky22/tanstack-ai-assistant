@@ -1,1 +1,1 @@
-export { getWeatherTool } from './weather';
+export { getMcpToolDefinitions } from './mcp';

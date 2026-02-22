@@ -1,7 +1,6 @@
 import { chat, maxIterations, toHttpResponse } from '@tanstack/ai';
 import { openaiText } from '@tanstack/ai-openai';
 import { createFileRoute } from '@tanstack/react-router';
-import { getWeatherTool } from '@/tools';
 
 export const Route = createFileRoute('/api/chat')({
   server: {
@@ -20,6 +19,8 @@ export const Route = createFileRoute('/api/chat')({
         }
 
         const { messages, conversationId } = await request.json();
+        const { getMcpToolDefinitions } = await import('@/tools');
+        const tools = await getMcpToolDefinitions();
 
         try {
           const stream = chat({
@@ -28,7 +29,7 @@ export const Route = createFileRoute('/api/chat')({
             conversationId,
             agentLoopStrategy: maxIterations(10),
             systemPrompts: ['You are a helpful assistant.'],
-            tools: [getWeatherTool],
+            tools,
           });
 
           return toHttpResponse(stream);

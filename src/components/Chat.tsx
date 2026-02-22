@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { fetchHttpStream, useChat } from '@tanstack/ai-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
 
 function prettifyJsonString(input: string) {
   try {
@@ -39,15 +39,56 @@ function formatToolResultState(state: string) {
   }
 }
 
-export function Chat() {
+interface ChatProps {
+  conversationId?: string;
+  initialMessages?: Array<UIMessage>;
+}
+
+async function saveConversation(
+  conversationId: string,
+  messages: Array<UIMessage>,
+) {
+  const firstUserMessage = messages.find((m) => m.role === 'user');
+  const title =
+    firstUserMessage?.parts.find((p) => p.type === 'text')?.content ??
+    'New conversation';
+
+  await fetch('/api/conversations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: conversationId, title, messages }),
+  });
+}
+
+export function Chat({ conversationId: propConversationId, initialMessages }: ChatProps) {
   const [input, setInput] = useState('');
+
+  const conversationId = useMemo(
+    () => propConversationId ?? crypto.randomUUID(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const { messages, sendMessage, isLoading, error, status } = useChat({
     connection: fetchHttpStream('/api/chat'),
+    initialMessages,
+    body: { conversationId },
     onChunk: (chunk) => {
       console.log('[chat:onChunk]', chunk);
     },
   });
+
+  const prevStatus = useRef(status);
+  useEffect(() => {
+    if (
+      prevStatus.current === 'streaming' &&
+      status === 'ready' &&
+      messages.length > 0
+    ) {
+      saveConversation(conversationId, messages);
+    }
+    prevStatus.current = status;
+  }, [status, conversationId, messages]);
 
   const latestAssistantMessage = useMemo(
     () =>

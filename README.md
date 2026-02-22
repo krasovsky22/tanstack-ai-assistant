@@ -1,8 +1,37 @@
-Welcome to your new TanStack Start app! 
+Welcome to your new TanStack Start app!
 
 # Getting Started
 
-To run this application:
+## Prerequisites
+
+This app requires a PostgreSQL database. Start one with Docker:
+
+```bash
+docker compose up -d
+```
+
+## Database Setup
+
+Push the schema to your database (runs on first start, or run manually):
+
+```bash
+pnpm drizzle-kit push
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+- `OPENAI_API_KEY` — OpenAI API key
+- `OPEN_WEATHER_API` — OpenWeather API key
+- `DATABASE_URL` — PostgreSQL connection string (default: `postgresql://postgres:password@localhost:5432/tanstack_ai`)
+
+## Run the app
 
 ```bash
 pnpm install
