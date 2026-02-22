@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 
 import { useState } from 'react'
-import { Home, Menu, MessageSquare, X } from 'lucide-react'
+import { Briefcase, Home, Menu, MessageSquare, X } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -70,6 +70,19 @@ export default function Header() {
           >
             <MessageSquare size={20} />
             <span className="font-medium">Conversations</span>
+          </Link>
+
+          <Link
+            to="/jobs"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+            activeProps={{
+              className:
+                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+            }}
+          >
+            <Briefcase size={20} />
+            <span className="font-medium">Job Search</span>
           </Link>
 
           {/* Demo Links End */}

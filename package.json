@@ -9,7 +9,9 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "process-jobs": "node scripts/process-jobs.mjs",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
@@ -21,6 +23,7 @@
     "@tanstack/query-db-collection": "^1.0.25",
     "@tanstack/react-db": "^0.1.72",
     "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-form": "^1.28.3",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",

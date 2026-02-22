@@ -60,7 +60,10 @@ async function saveConversation(
   });
 }
 
-export function Chat({ conversationId: propConversationId, initialMessages }: ChatProps) {
+export function Chat({
+  conversationId: propConversationId,
+  initialMessages,
+}: ChatProps) {
   const [input, setInput] = useState('');
 
   const conversationId = useMemo(
@@ -73,9 +76,6 @@ export function Chat({ conversationId: propConversationId, initialMessages }: Ch
     connection: fetchHttpStream('/api/chat'),
     initialMessages,
     body: { conversationId },
-    onChunk: (chunk) => {
-      console.log('[chat:onChunk]', chunk);
-    },
   });
 
   const prevStatus = useRef(status);

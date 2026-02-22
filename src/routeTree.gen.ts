@@ -10,15 +10,26 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ConversationsIndexRouteImport } from './routes/conversations.index'
-import { Route as ConversationsIdRouteImport } from './routes/conversations.$id'
-import { Route as ApiConversationsRouteImport } from './routes/api.conversations'
-import { Route as ApiChatRouteImport } from './routes/api.chat'
-import { Route as ApiConversationsIdRouteImport } from './routes/api.conversations.$id'
+import { Route as JobsIndexRouteImport } from './routes/jobs/index'
+import { Route as ConversationsIndexRouteImport } from './routes/conversations/index'
+import { Route as JobsNewRouteImport } from './routes/jobs/new'
+import { Route as JobsIdRouteImport } from './routes/jobs/$id'
+import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
+import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
+import { Route as ApiJobsProcessRouteImport } from './routes/api/jobs/process'
+import { Route as ApiJobsIdRouteImport } from './routes/api/jobs/$id'
+import { Route as ApiConversationsIdRouteImport } from './routes/api/conversations/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobsIndexRoute = JobsIndexRouteImport.update({
+  id: '/jobs/',
+  path: '/jobs/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConversationsIndexRoute = ConversationsIndexRouteImport.update({
@@ -26,14 +37,19 @@ const ConversationsIndexRoute = ConversationsIndexRouteImport.update({
   path: '/conversations/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JobsNewRoute = JobsNewRouteImport.update({
+  id: '/jobs/new',
+  path: '/jobs/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobsIdRoute = JobsIdRouteImport.update({
+  id: '/jobs/$id',
+  path: '/jobs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConversationsIdRoute = ConversationsIdRouteImport.update({
   id: '/conversations/$id',
   path: '/conversations/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiConversationsRoute = ApiConversationsRouteImport.update({
-  id: '/api/conversations',
-  path: '/api/conversations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -41,70 +57,133 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiJobsIndexRoute = ApiJobsIndexRouteImport.update({
+  id: '/api/jobs/',
+  path: '/api/jobs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiConversationsIndexRoute = ApiConversationsIndexRouteImport.update({
+  id: '/api/conversations/',
+  path: '/api/conversations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiJobsProcessRoute = ApiJobsProcessRouteImport.update({
+  id: '/api/jobs/process',
+  path: '/api/jobs/process',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiJobsIdRoute = ApiJobsIdRouteImport.update({
+  id: '/api/jobs/$id',
+  path: '/api/jobs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiConversationsIdRoute = ApiConversationsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ApiConversationsRoute,
+  id: '/api/conversations/$id',
+  path: '/api/conversations/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
-  '/api/conversations': typeof ApiConversationsRouteWithChildren
   '/conversations/$id': typeof ConversationsIdRoute
+  '/jobs/$id': typeof JobsIdRoute
+  '/jobs/new': typeof JobsNewRoute
   '/conversations/': typeof ConversationsIndexRoute
+  '/jobs/': typeof JobsIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
+  '/api/jobs/$id': typeof ApiJobsIdRoute
+  '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/conversations/': typeof ApiConversationsIndexRoute
+  '/api/jobs/': typeof ApiJobsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
-  '/api/conversations': typeof ApiConversationsRouteWithChildren
   '/conversations/$id': typeof ConversationsIdRoute
+  '/jobs/$id': typeof JobsIdRoute
+  '/jobs/new': typeof JobsNewRoute
   '/conversations': typeof ConversationsIndexRoute
+  '/jobs': typeof JobsIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
+  '/api/jobs/$id': typeof ApiJobsIdRoute
+  '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/conversations': typeof ApiConversationsIndexRoute
+  '/api/jobs': typeof ApiJobsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
-  '/api/conversations': typeof ApiConversationsRouteWithChildren
   '/conversations/$id': typeof ConversationsIdRoute
+  '/jobs/$id': typeof JobsIdRoute
+  '/jobs/new': typeof JobsNewRoute
   '/conversations/': typeof ConversationsIndexRoute
+  '/jobs/': typeof JobsIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
+  '/api/jobs/$id': typeof ApiJobsIdRoute
+  '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/conversations/': typeof ApiConversationsIndexRoute
+  '/api/jobs/': typeof ApiJobsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/api/chat'
-    | '/api/conversations'
     | '/conversations/$id'
+    | '/jobs/$id'
+    | '/jobs/new'
     | '/conversations/'
+    | '/jobs/'
     | '/api/conversations/$id'
+    | '/api/jobs/$id'
+    | '/api/jobs/process'
+    | '/api/conversations/'
+    | '/api/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/api/chat'
-    | '/api/conversations'
     | '/conversations/$id'
+    | '/jobs/$id'
+    | '/jobs/new'
     | '/conversations'
+    | '/jobs'
     | '/api/conversations/$id'
+    | '/api/jobs/$id'
+    | '/api/jobs/process'
+    | '/api/conversations'
+    | '/api/jobs'
   id:
     | '__root__'
     | '/'
     | '/api/chat'
-    | '/api/conversations'
     | '/conversations/$id'
+    | '/jobs/$id'
+    | '/jobs/new'
     | '/conversations/'
+    | '/jobs/'
     | '/api/conversations/$id'
+    | '/api/jobs/$id'
+    | '/api/jobs/process'
+    | '/api/conversations/'
+    | '/api/jobs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiChatRoute: typeof ApiChatRoute
-  ApiConversationsRoute: typeof ApiConversationsRouteWithChildren
   ConversationsIdRoute: typeof ConversationsIdRoute
+  JobsIdRoute: typeof JobsIdRoute
+  JobsNewRoute: typeof JobsNewRoute
   ConversationsIndexRoute: typeof ConversationsIndexRoute
+  JobsIndexRoute: typeof JobsIndexRoute
+  ApiConversationsIdRoute: typeof ApiConversationsIdRoute
+  ApiJobsIdRoute: typeof ApiJobsIdRoute
+  ApiJobsProcessRoute: typeof ApiJobsProcessRoute
+  ApiConversationsIndexRoute: typeof ApiConversationsIndexRoute
+  ApiJobsIndexRoute: typeof ApiJobsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,11 +195,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jobs/': {
+      id: '/jobs/'
+      path: '/jobs'
+      fullPath: '/jobs/'
+      preLoaderRoute: typeof JobsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/conversations/': {
       id: '/conversations/'
       path: '/conversations'
       fullPath: '/conversations/'
       preLoaderRoute: typeof ConversationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs/new': {
+      id: '/jobs/new'
+      path: '/jobs/new'
+      fullPath: '/jobs/new'
+      preLoaderRoute: typeof JobsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs/$id': {
+      id: '/jobs/$id'
+      path: '/jobs/$id'
+      fullPath: '/jobs/$id'
+      preLoaderRoute: typeof JobsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conversations/$id': {
@@ -130,13 +230,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConversationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/conversations': {
-      id: '/api/conversations'
-      path: '/api/conversations'
-      fullPath: '/api/conversations'
-      preLoaderRoute: typeof ApiConversationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -144,33 +237,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/jobs/': {
+      id: '/api/jobs/'
+      path: '/api/jobs'
+      fullPath: '/api/jobs/'
+      preLoaderRoute: typeof ApiJobsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/conversations/': {
+      id: '/api/conversations/'
+      path: '/api/conversations'
+      fullPath: '/api/conversations/'
+      preLoaderRoute: typeof ApiConversationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/jobs/process': {
+      id: '/api/jobs/process'
+      path: '/api/jobs/process'
+      fullPath: '/api/jobs/process'
+      preLoaderRoute: typeof ApiJobsProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/jobs/$id': {
+      id: '/api/jobs/$id'
+      path: '/api/jobs/$id'
+      fullPath: '/api/jobs/$id'
+      preLoaderRoute: typeof ApiJobsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/conversations/$id': {
       id: '/api/conversations/$id'
-      path: '/$id'
+      path: '/api/conversations/$id'
       fullPath: '/api/conversations/$id'
       preLoaderRoute: typeof ApiConversationsIdRouteImport
-      parentRoute: typeof ApiConversationsRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface ApiConversationsRouteChildren {
-  ApiConversationsIdRoute: typeof ApiConversationsIdRoute
-}
-
-const ApiConversationsRouteChildren: ApiConversationsRouteChildren = {
-  ApiConversationsIdRoute: ApiConversationsIdRoute,
-}
-
-const ApiConversationsRouteWithChildren =
-  ApiConversationsRoute._addFileChildren(ApiConversationsRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiChatRoute: ApiChatRoute,
-  ApiConversationsRoute: ApiConversationsRouteWithChildren,
   ConversationsIdRoute: ConversationsIdRoute,
+  JobsIdRoute: JobsIdRoute,
+  JobsNewRoute: JobsNewRoute,
   ConversationsIndexRoute: ConversationsIndexRoute,
+  JobsIndexRoute: JobsIndexRoute,
+  ApiConversationsIdRoute: ApiConversationsIdRoute,
+  ApiJobsIdRoute: ApiJobsIdRoute,
+  ApiJobsProcessRoute: ApiJobsProcessRoute,
+  ApiConversationsIndexRoute: ApiConversationsIndexRoute,
+  ApiJobsIndexRoute: ApiJobsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
