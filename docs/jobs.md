@@ -13,6 +13,10 @@ Run AI processor
       ↓
 Fields extracted, status → processed
       ↓
+Generate tailored resume + cover letter
+      ↓
+status → resume_generated  (match score, resume & cover letter saved)
+      ↓
 Apply, interview, outcome...
 applied → answered → scheduled_for_interview → offer_received
                                              → rejected
@@ -27,6 +31,7 @@ applied → answered → scheduled_for_interview → offer_received
 |---|---|
 | `new` | Job added, not yet processed by AI |
 | `processed` | AI has extracted structured fields |
+| `resume_generated` | Tailored resume and cover letter generated |
 | `applied` | Application submitted |
 | `answered` | Recruiter/company responded |
 | `scheduled_for_interview` | Interview confirmed |
@@ -118,6 +123,53 @@ for i in {1..5}; do pnpm process-jobs; done
 
 ---
 
+## Generating a tailored resume and cover letter
+
+Once a job has been processed (status `processed`), you can generate a resume tailored to that specific job posting. The AI compares `files/resume/initial-resume.md` against the full job data, rewrites the resume to better emphasise matching experience, and produces a cover letter. Only existing experience is reframed — nothing is fabricated.
+
+The AI returns:
+
+| Output | Description |
+|---|---|
+| `matchScore` | 0–100 score indicating how well the current resume qualifies |
+| `matchReason` | 2–3 sentence explanation of the score |
+| `updatedResume` | Full resume in markdown, tailored to the job |
+| `coverLetter` | Professional cover letter in markdown |
+
+The two markdown files are saved to `public/generated/{job-id}/` and are accessible as static URLs. After generation, status is changed to `resume_generated` and the match score and file paths are stored in the database.
+
+### Option 1 — UI (Generate Resume button)
+
+**Global button:** On the `/jobs` dashboard, click **⚡ Generate Resume** in the header. Each click processes the oldest job with status `processed`.
+
+**Per-card button:** Each job card with status `processed` also has a **Generate Resume** button that targets that specific job.
+
+After generation, the card shows:
+- A colour-coded **Match: XX%** badge (green ≥75%, amber ≥50%, red <50%)
+- **Resume ↗** and **Cover Letter ↗** links that open the generated files
+
+### Option 2 — CLI command
+
+```bash
+node scripts/generate-resume.mjs
+```
+
+Or target a specific job by ID:
+
+```bash
+node scripts/generate-resume.mjs <job-id>
+```
+
+**Requirements:** The dev server must be running (`pnpm dev`). The server handles `OPENAI_API_KEY`.
+
+By default the script targets `http://localhost:3000`. Override with `APP_URL`:
+
+```bash
+APP_URL=https://my-staging-app.com node scripts/generate-resume.mjs
+```
+
+---
+
 ## Editing a job
 
 Click the **pencil icon** on any job card in the dashboard, or navigate directly to `/jobs/:id`.
@@ -143,15 +195,29 @@ Changes are saved with **Save Changes** and redirect back to the dashboard.
 | `GET` | `/api/jobs/:id` | Fetch a single job by ID |
 | `PATCH` | `/api/jobs/:id` | Update fields on a job |
 | `DELETE` | `/api/jobs/:id` | Delete a job |
-| `POST` | `/api/jobs/process` | Process one `new` job with AI |
+| `GET/POST` | `/api/jobs/process` | Process one `new` job with AI |
+| `GET/POST` | `/api/jobs/generate-resume` | Generate tailored resume for one `processed` job |
+
+Both `/api/jobs/process` and `/api/jobs/generate-resume` accept an optional `id` query parameter (or `id` in the POST body) to target a specific job instead of the next one in queue.
 
 ### `POST /api/jobs/process` response
 
-**200** — returns the updated job object.
+**200** — returns the updated job object (status `processed`).
 
 **404** — no jobs with status `new` found:
 ```json
 { "message": "No new jobs to process" }
+```
+
+**500** — `OPENAI_API_KEY` not set, or the LLM call failed.
+
+### `POST /api/jobs/generate-resume` response
+
+**200** — returns the updated job object (status `resume_generated`) including `matchScore`, `resumePath`, and `coverLetterPath`.
+
+**404** — no jobs with status `processed` found:
+```json
+{ "message": "No processed jobs to generate resume for" }
 ```
 
 **500** — `OPENAI_API_KEY` not set, or the LLM call failed.
@@ -175,6 +241,9 @@ Table: `jobs`
 | `salary` | text | Nullable — AI-extracted |
 | `skills` | jsonb | Nullable — `string[]`, AI-extracted |
 | `job_location` | text | Nullable — AI-extracted |
+| `match_score` | integer | Nullable — 0–100, set during resume generation |
+| `resume_path` | text | Nullable — URL path to generated resume `.md` |
+| `cover_letter_path` | text | Nullable — URL path to generated cover letter `.md` |
 | `created_at` | timestamp | Auto |
 | `updated_at` | timestamp | Auto |
 

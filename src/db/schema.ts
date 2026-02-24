@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, jsonb, integer } from 'drizzle-orm/pg-core';
 export { JOB_STATUSES, type JobStatus } from '@/lib/job-constants';
 
 export const conversations = pgTable('conversations', {
@@ -20,6 +20,9 @@ export const jobs = pgTable('jobs', {
   salary: text('salary'),
   skills: jsonb('skills').$type<string[]>(),
   jobLocation: text('job_location'),
+  matchScore: integer('match_score'),
+  resumePath: text('resume_path'),
+  coverLetterPath: text('cover_letter_path'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

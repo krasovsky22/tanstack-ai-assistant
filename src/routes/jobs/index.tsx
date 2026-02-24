@@ -17,6 +17,9 @@ type Job = {
   link: string | null;
   status: string;
   notes: string | null;
+  matchScore: number | null;
+  resumePath: string | null;
+  coverLetterPath: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -24,6 +27,7 @@ type Job = {
 const STATUS_LABELS: Record<string, string> = {
   new: 'New',
   processed: 'Processed',
+  resume_generated: 'Resume Generated',
   applied: 'Applied',
   answered: 'Answered',
   scheduled_for_interview: 'Interview Scheduled',
@@ -35,6 +39,7 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   new: 'bg-gray-100 text-gray-700',
   processed: 'bg-teal-100 text-teal-700',
+  resume_generated: 'bg-indigo-100 text-indigo-700',
   applied: 'bg-blue-100 text-blue-700',
   answered: 'bg-purple-100 text-purple-700',
   scheduled_for_interview: 'bg-amber-100 text-amber-700',
@@ -53,17 +58,39 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin"
+      width={13}
+      height={13}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+    >
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+    </svg>
+  );
+}
+
 function JobCard({
   job,
   onDelete,
   onStatusChange,
+  onProcess,
+  onGenerateResume,
 }: {
   job: Job;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: string) => void;
+  onProcess: (id: string) => Promise<void>;
+  onGenerateResume: (id: string) => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   return (
     <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
@@ -156,6 +183,70 @@ function JobCard({
             Note: {job.notes}
           </p>
         )}
+
+        {job.status === 'new' && (
+          <button
+            onClick={async () => {
+              setIsProcessing(true);
+              try { await onProcess(job.id); } finally { setIsProcessing(false); }
+            }}
+            disabled={isProcessing}
+            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 border border-teal-600 text-teal-700 rounded-lg text-xs hover:bg-teal-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isProcessing ? <Spinner /> : <Zap size={13} />}
+            {isProcessing ? 'Processing...' : 'Process'}
+          </button>
+        )}
+
+        {job.status === 'processed' && (
+          <button
+            onClick={async () => {
+              setIsGenerating(true);
+              try { await onGenerateResume(job.id); } finally { setIsGenerating(false); }
+            }}
+            disabled={isGenerating}
+            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 border border-indigo-600 text-indigo-700 rounded-lg text-xs hover:bg-indigo-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isGenerating ? <Spinner /> : <Zap size={13} />}
+            {isGenerating ? 'Generating...' : 'Generate Resume'}
+          </button>
+        )}
+
+        {job.matchScore != null && (
+          <div className="mt-3 flex items-center gap-3 flex-wrap">
+            <span
+              className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                job.matchScore >= 75
+                  ? 'bg-green-100 text-green-700'
+                  : job.matchScore >= 50
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-red-100 text-red-700'
+              }`}
+            >
+              Match: {job.matchScore}%
+            </span>
+            {job.resumePath && (
+              <a
+                href={job.resumePath}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-indigo-600 hover:underline"
+              >
+                Resume ↗
+              </a>
+            )}
+            {job.coverLetterPath && (
+              <a
+                href={job.coverLetterPath}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-indigo-600 hover:underline"
+              >
+                Cover Letter ↗
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="border-t">
@@ -226,12 +317,29 @@ function JobsDashboard() {
   });
 
   const processMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/jobs/process', { method: 'POST' });
+    mutationFn: async (id?: string) => {
+      const url = id ? `/api/jobs/process?id=${id}` : '/api/jobs/process';
+      const res = await fetch(url, { method: 'POST' });
       if (res.status === 404) throw new Error('No new jobs to process');
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error ?? 'Processing failed');
+      }
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['jobs'] }),
+  });
+
+  const generateResumeMutation = useMutation({
+    mutationFn: async (id?: string) => {
+      const url = id
+        ? `/api/jobs/generate-resume?id=${id}`
+        : '/api/jobs/generate-resume';
+      const res = await fetch(url, { method: 'POST' });
+      if (res.status === 404) throw new Error('No processed jobs to generate resume for');
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? 'Resume generation failed');
       }
       return res.json();
     },
@@ -244,13 +352,22 @@ function JobsDashboard() {
         <h1 className="text-2xl font-bold">Job Search</h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => processMutation.mutate()}
+            onClick={() => processMutation.mutate(undefined)}
             disabled={processMutation.isPending}
             title={processMutation.isError ? processMutation.error?.message : 'Process one new job with AI'}
-            className="flex items-center gap-2 px-4 py-2 border border-teal-600 text-teal-700 rounded-lg text-sm hover:bg-teal-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 border border-teal-600 text-teal-700 rounded-lg text-sm hover:bg-teal-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             <Zap size={16} />
             {processMutation.isPending ? 'Processing...' : 'Process'}
+          </button>
+          <button
+            onClick={() => generateResumeMutation.mutate(undefined)}
+            disabled={generateResumeMutation.isPending}
+            title={generateResumeMutation.isError ? generateResumeMutation.error?.message : 'Generate tailored resume for next processed job'}
+            className="flex items-center gap-2 px-4 py-2 border border-indigo-600 text-indigo-700 rounded-lg text-sm hover:bg-indigo-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            <Zap size={16} />
+            {generateResumeMutation.isPending ? 'Generating...' : 'Generate Resume'}
           </button>
           <Link
             to="/jobs/new"
@@ -266,6 +383,12 @@ function JobsDashboard() {
       )}
       {processMutation.isSuccess && (
         <p className="text-sm text-teal-600 mb-4">Job processed successfully.</p>
+      )}
+      {generateResumeMutation.isError && (
+        <p className="text-sm text-red-600 mb-4">{generateResumeMutation.error?.message}</p>
+      )}
+      {generateResumeMutation.isSuccess && (
+        <p className="text-sm text-indigo-600 mb-4">Resume generated successfully.</p>
       )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -315,6 +438,8 @@ function JobsDashboard() {
               onStatusChange={(id, status) =>
                 statusMutation.mutate({ id, status })
               }
+              onProcess={(id) => processMutation.mutateAsync(id)}
+              onGenerateResume={(id) => generateResumeMutation.mutateAsync(id)}
             />
           ))}
         </div>

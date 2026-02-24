@@ -19,6 +19,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
 import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
 import { Route as ApiJobsProcessRouteImport } from './routes/api/jobs/process'
+import { Route as ApiJobsGenerateResumeRouteImport } from './routes/api/jobs/generate-resume'
 import { Route as ApiJobsIdRouteImport } from './routes/api/jobs/$id'
 import { Route as ApiConversationsIdRouteImport } from './routes/api/conversations/$id'
 
@@ -72,6 +73,11 @@ const ApiJobsProcessRoute = ApiJobsProcessRouteImport.update({
   path: '/api/jobs/process',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiJobsGenerateResumeRoute = ApiJobsGenerateResumeRouteImport.update({
+  id: '/api/jobs/generate-resume',
+  path: '/api/jobs/generate-resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiJobsIdRoute = ApiJobsIdRouteImport.update({
   id: '/api/jobs/$id',
   path: '/api/jobs/$id',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/jobs/': typeof JobsIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/jobs/$id': typeof ApiJobsIdRoute
+  '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof JobsIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/jobs/$id': typeof ApiJobsIdRoute
+  '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
   '/api/conversations': typeof ApiConversationsIndexRoute
   '/api/jobs': typeof ApiJobsIndexRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/jobs/': typeof JobsIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/jobs/$id': typeof ApiJobsIdRoute
+  '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/jobs/'
     | '/api/conversations/$id'
     | '/api/jobs/$id'
+    | '/api/jobs/generate-resume'
     | '/api/jobs/process'
     | '/api/conversations/'
     | '/api/jobs/'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/api/conversations/$id'
     | '/api/jobs/$id'
+    | '/api/jobs/generate-resume'
     | '/api/jobs/process'
     | '/api/conversations'
     | '/api/jobs'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/jobs/'
     | '/api/conversations/$id'
     | '/api/jobs/$id'
+    | '/api/jobs/generate-resume'
     | '/api/jobs/process'
     | '/api/conversations/'
     | '/api/jobs/'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   JobsIndexRoute: typeof JobsIndexRoute
   ApiConversationsIdRoute: typeof ApiConversationsIdRoute
   ApiJobsIdRoute: typeof ApiJobsIdRoute
+  ApiJobsGenerateResumeRoute: typeof ApiJobsGenerateResumeRoute
   ApiJobsProcessRoute: typeof ApiJobsProcessRoute
   ApiConversationsIndexRoute: typeof ApiConversationsIndexRoute
   ApiJobsIndexRoute: typeof ApiJobsIndexRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiJobsProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/jobs/generate-resume': {
+      id: '/api/jobs/generate-resume'
+      path: '/api/jobs/generate-resume'
+      fullPath: '/api/jobs/generate-resume'
+      preLoaderRoute: typeof ApiJobsGenerateResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/jobs/$id': {
       id: '/api/jobs/$id'
       path: '/api/jobs/$id'
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsIndexRoute: JobsIndexRoute,
   ApiConversationsIdRoute: ApiConversationsIdRoute,
   ApiJobsIdRoute: ApiJobsIdRoute,
+  ApiJobsGenerateResumeRoute: ApiJobsGenerateResumeRoute,
   ApiJobsProcessRoute: ApiJobsProcessRoute,
   ApiConversationsIndexRoute: ApiConversationsIndexRoute,
   ApiJobsIndexRoute: ApiJobsIndexRoute,

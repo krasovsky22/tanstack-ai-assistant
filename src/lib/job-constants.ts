@@ -1,6 +1,7 @@
 export const JOB_STATUSES = [
   'new',
   'processed',
+  'resume_generated',
   'applied',
   'answered',
   'scheduled_for_interview',
