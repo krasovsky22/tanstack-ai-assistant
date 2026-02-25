@@ -4,6 +4,42 @@ import { openaiText } from '@tanstack/ai-openai';
 import { z } from 'zod';
 import { readFile, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { marked } from 'marked';
+import puppeteer from 'puppeteer-core';
+
+const CHROME_PATH =
+  process.env.CHROME_EXECUTABLE_PATH ??
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+
+async function markdownToPdf(markdown: string): Promise<Buffer> {
+  const html = await marked(markdown);
+  const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    body { font-family: Georgia, serif; font-size: 11pt; line-height: 1.5; max-width: 800px; margin: 40px auto; color: #111; }
+    h1 { font-size: 18pt; border-bottom: 2px solid #333; padding-bottom: 4px; }
+    h2 { font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 2px; margin-top: 20px; }
+    h3 { font-size: 12pt; margin-bottom: 4px; }
+    ul { margin: 4px 0; padding-left: 20px; }
+    li { margin: 2px 0; }
+    p { margin: 6px 0; }
+    strong { font-weight: bold; }
+    em { font-style: italic; }
+    a { color: #1a0dab; }
+  </style></head><body>${html}</body></html>`;
+
+  const browser = await puppeteer.launch({
+    executablePath: CHROME_PATH,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true,
+  });
+  try {
+    const page = await browser.newPage();
+    await page.setContent(fullHtml, { waitUntil: 'load' });
+    const pdf = await page.pdf({ format: 'Letter', margin: { top: '0.75in', bottom: '0.75in', left: '0.75in', right: '0.75in' }, printBackground: false });
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
+}
 
 const ResumeSchema = z.object({
   matchScore: z
@@ -94,9 +130,14 @@ async function generateResume(id?: string | null) {
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, 'resume.md'), result.updatedResume, 'utf-8');
   await writeFile(join(outputDir, 'cover-letter.md'), result.coverLetter, 'utf-8');
+
+  console.log('[generate-resume] Generating PDF...');
+  const pdfBuffer = await markdownToPdf(result.updatedResume);
+  await writeFile(join(outputDir, 'resume.pdf'), pdfBuffer);
   console.log('[generate-resume] Files written successfully');
 
   const resumeUrlPath = `/generated/${job.id}/resume.md`;
+  const resumePdfUrlPath = `/generated/${job.id}/resume.pdf`;
   const coverLetterUrlPath = `/generated/${job.id}/cover-letter.md`;
 
   const [updated] = await db
@@ -105,6 +146,7 @@ async function generateResume(id?: string | null) {
       status: 'resume_generated',
       matchScore: result.matchScore,
       resumePath: resumeUrlPath,
+      resumePdfPath: resumePdfUrlPath,
       coverLetterPath: coverLetterUrlPath,
       updatedAt: new Date(),
     })

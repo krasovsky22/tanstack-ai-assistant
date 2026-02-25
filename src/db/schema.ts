@@ -22,6 +22,7 @@ export const jobs = pgTable('jobs', {
   jobLocation: text('job_location'),
   matchScore: integer('match_score'),
   resumePath: text('resume_path'),
+  resumePdfPath: text('resume_pdf_path'),
   coverLetterPath: text('cover_letter_path'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, X, FileText } from 'lucide-react';
 import { JOB_STATUSES } from '@/lib/job-constants';
 
 export const Route = createFileRoute('/jobs/')({
@@ -19,6 +19,7 @@ type Job = {
   notes: string | null;
   matchScore: number | null;
   resumePath: string | null;
+  resumePdfPath: string | null;
   coverLetterPath: string | null;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +75,48 @@ function Spinner() {
   );
 }
 
+function PdfModal({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-lg shadow-2xl flex flex-col"
+        style={{ width: '85vw', height: '90vh' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
+          <span className="font-semibold text-gray-800 truncate">{title} — Resume</span>
+          <div className="flex items-center gap-3">
+            <a
+              href={url}
+              download
+              className="text-xs text-indigo-600 hover:underline"
+            >
+              Download PDF
+            </a>
+            <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900 rounded">
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+        <iframe
+          src={url}
+          className="flex-1 w-full rounded-b-lg"
+          title="Resume PDF"
+        />
+      </div>
+    </div>
+  );
+}
+
 function JobCard({
   job,
   onDelete,
@@ -91,6 +134,7 @@ function JobCard({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
 
   return (
     <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
@@ -225,15 +269,14 @@ function JobCard({
             >
               Match: {job.matchScore}%
             </span>
-            {job.resumePath && (
-              <a
-                href={job.resumePath}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-indigo-600 hover:underline"
+            {job.resumePdfPath && (
+              <button
+                onClick={() => setShowPdf(true)}
+                className="flex items-center gap-1 text-xs text-indigo-600 hover:underline"
               >
-                Resume ↗
-              </a>
+                <FileText size={12} />
+                View Resume
+              </button>
             )}
             {job.coverLetterPath && (
               <a
@@ -246,6 +289,13 @@ function JobCard({
               </a>
             )}
           </div>
+        )}
+        {showPdf && job.resumePdfPath && (
+          <PdfModal
+            url={job.resumePdfPath}
+            title={`${job.title} at ${job.company}`}
+            onClose={() => setShowPdf(false)}
+          />
         )}
       </div>
 
