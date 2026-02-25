@@ -13,11 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as JobsIndexRouteImport } from './routes/jobs/index'
 import { Route as ConversationsIndexRouteImport } from './routes/conversations/index'
 import { Route as JobsNewRouteImport } from './routes/jobs/new'
+import { Route as JobsExtractFromUrlRouteImport } from './routes/jobs/extract-from-url'
 import { Route as JobsIdRouteImport } from './routes/jobs/$id'
 import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
 import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
+import { Route as ApiReportsScrapeJobsRouteImport } from './routes/api/reports/scrape-jobs'
 import { Route as ApiJobsProcessRouteImport } from './routes/api/jobs/process'
 import { Route as ApiJobsGenerateResumeRouteImport } from './routes/api/jobs/generate-resume'
 import { Route as ApiJobsIdRouteImport } from './routes/api/jobs/$id'
@@ -43,6 +45,11 @@ const JobsNewRoute = JobsNewRouteImport.update({
   path: '/jobs/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JobsExtractFromUrlRoute = JobsExtractFromUrlRouteImport.update({
+  id: '/jobs/extract-from-url',
+  path: '/jobs/extract-from-url',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JobsIdRoute = JobsIdRouteImport.update({
   id: '/jobs/$id',
   path: '/jobs/$id',
@@ -66,6 +73,11 @@ const ApiJobsIndexRoute = ApiJobsIndexRouteImport.update({
 const ApiConversationsIndexRoute = ApiConversationsIndexRouteImport.update({
   id: '/api/conversations/',
   path: '/api/conversations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReportsScrapeJobsRoute = ApiReportsScrapeJobsRouteImport.update({
+  id: '/api/reports/scrape-jobs',
+  path: '/api/reports/scrape-jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiJobsProcessRoute = ApiJobsProcessRouteImport.update({
@@ -94,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/jobs/$id': typeof JobsIdRoute
+  '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
   '/jobs/new': typeof JobsNewRoute
   '/conversations/': typeof ConversationsIndexRoute
   '/jobs/': typeof JobsIndexRoute
@@ -101,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
 }
@@ -109,6 +123,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/jobs/$id': typeof JobsIdRoute
+  '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
   '/jobs/new': typeof JobsNewRoute
   '/conversations': typeof ConversationsIndexRoute
   '/jobs': typeof JobsIndexRoute
@@ -116,6 +131,7 @@ export interface FileRoutesByTo {
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/api/conversations': typeof ApiConversationsIndexRoute
   '/api/jobs': typeof ApiJobsIndexRoute
 }
@@ -125,6 +141,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/jobs/$id': typeof JobsIdRoute
+  '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
   '/jobs/new': typeof JobsNewRoute
   '/conversations/': typeof ConversationsIndexRoute
   '/jobs/': typeof JobsIndexRoute
@@ -132,6 +149,7 @@ export interface FileRoutesById {
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
 }
@@ -142,6 +160,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/jobs/extract-from-url'
     | '/jobs/new'
     | '/conversations/'
     | '/jobs/'
@@ -149,6 +168,7 @@ export interface FileRouteTypes {
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/reports/scrape-jobs'
     | '/api/conversations/'
     | '/api/jobs/'
   fileRoutesByTo: FileRoutesByTo
@@ -157,6 +177,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/jobs/extract-from-url'
     | '/jobs/new'
     | '/conversations'
     | '/jobs'
@@ -164,6 +185,7 @@ export interface FileRouteTypes {
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/reports/scrape-jobs'
     | '/api/conversations'
     | '/api/jobs'
   id:
@@ -172,6 +194,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/jobs/extract-from-url'
     | '/jobs/new'
     | '/conversations/'
     | '/jobs/'
@@ -179,6 +202,7 @@ export interface FileRouteTypes {
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/reports/scrape-jobs'
     | '/api/conversations/'
     | '/api/jobs/'
   fileRoutesById: FileRoutesById
@@ -188,6 +212,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ConversationsIdRoute: typeof ConversationsIdRoute
   JobsIdRoute: typeof JobsIdRoute
+  JobsExtractFromUrlRoute: typeof JobsExtractFromUrlRoute
   JobsNewRoute: typeof JobsNewRoute
   ConversationsIndexRoute: typeof ConversationsIndexRoute
   JobsIndexRoute: typeof JobsIndexRoute
@@ -195,6 +220,7 @@ export interface RootRouteChildren {
   ApiJobsIdRoute: typeof ApiJobsIdRoute
   ApiJobsGenerateResumeRoute: typeof ApiJobsGenerateResumeRoute
   ApiJobsProcessRoute: typeof ApiJobsProcessRoute
+  ApiReportsScrapeJobsRoute: typeof ApiReportsScrapeJobsRoute
   ApiConversationsIndexRoute: typeof ApiConversationsIndexRoute
   ApiJobsIndexRoute: typeof ApiJobsIndexRoute
 }
@@ -227,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/jobs/new'
       fullPath: '/jobs/new'
       preLoaderRoute: typeof JobsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs/extract-from-url': {
+      id: '/jobs/extract-from-url'
+      path: '/jobs/extract-from-url'
+      fullPath: '/jobs/extract-from-url'
+      preLoaderRoute: typeof JobsExtractFromUrlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs/$id': {
@@ -262,6 +295,13 @@ declare module '@tanstack/react-router' {
       path: '/api/conversations'
       fullPath: '/api/conversations/'
       preLoaderRoute: typeof ApiConversationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/reports/scrape-jobs': {
+      id: '/api/reports/scrape-jobs'
+      path: '/api/reports/scrape-jobs'
+      fullPath: '/api/reports/scrape-jobs'
+      preLoaderRoute: typeof ApiReportsScrapeJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/jobs/process': {
@@ -300,6 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ConversationsIdRoute: ConversationsIdRoute,
   JobsIdRoute: JobsIdRoute,
+  JobsExtractFromUrlRoute: JobsExtractFromUrlRoute,
   JobsNewRoute: JobsNewRoute,
   ConversationsIndexRoute: ConversationsIndexRoute,
   JobsIndexRoute: JobsIndexRoute,
@@ -307,6 +348,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsIdRoute: ApiJobsIdRoute,
   ApiJobsGenerateResumeRoute: ApiJobsGenerateResumeRoute,
   ApiJobsProcessRoute: ApiJobsProcessRoute,
+  ApiReportsScrapeJobsRoute: ApiReportsScrapeJobsRoute,
   ApiConversationsIndexRoute: ApiConversationsIndexRoute,
   ApiJobsIndexRoute: ApiJobsIndexRoute,
 }
