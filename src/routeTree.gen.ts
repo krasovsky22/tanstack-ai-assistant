@@ -16,6 +16,7 @@ import { Route as JobsNewRouteImport } from './routes/jobs/new'
 import { Route as JobsExtractFromUrlRouteImport } from './routes/jobs/extract-from-url'
 import { Route as JobsIdRouteImport } from './routes/jobs/$id'
 import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
+import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
 import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
@@ -58,6 +59,11 @@ const JobsIdRoute = JobsIdRouteImport.update({
 const ConversationsIdRoute = ConversationsIdRouteImport.update({
   id: '/conversations/$id',
   path: '/conversations/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatSyncRoute = ApiChatSyncRouteImport.update({
+  id: '/api/chat-sync',
+  path: '/api/chat-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -104,6 +110,7 @@ const ApiConversationsIdRoute = ApiConversationsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/chat-sync': typeof ApiChatSyncRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/jobs/$id': typeof JobsIdRoute
   '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/chat-sync': typeof ApiChatSyncRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/jobs/$id': typeof JobsIdRoute
   '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/chat-sync': typeof ApiChatSyncRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/jobs/$id': typeof JobsIdRoute
   '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/api/chat'
+    | '/api/chat-sync'
     | '/conversations/$id'
     | '/jobs/$id'
     | '/jobs/extract-from-url'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/api/chat'
+    | '/api/chat-sync'
     | '/conversations/$id'
     | '/jobs/$id'
     | '/jobs/extract-from-url'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/api/chat'
+    | '/api/chat-sync'
     | '/conversations/$id'
     | '/jobs/$id'
     | '/jobs/extract-from-url'
@@ -210,6 +222,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiChatSyncRoute: typeof ApiChatSyncRoute
   ConversationsIdRoute: typeof ConversationsIdRoute
   JobsIdRoute: typeof JobsIdRoute
   JobsExtractFromUrlRoute: typeof JobsExtractFromUrlRoute
@@ -276,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConversationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat-sync': {
+      id: '/api/chat-sync'
+      path: '/api/chat-sync'
+      fullPath: '/api/chat-sync'
+      preLoaderRoute: typeof ApiChatSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -338,6 +358,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiChatSyncRoute: ApiChatSyncRoute,
   ConversationsIdRoute: ConversationsIdRoute,
   JobsIdRoute: JobsIdRoute,
   JobsExtractFromUrlRoute: JobsExtractFromUrlRoute,

@@ -11,9 +11,12 @@
     "preview": "vite preview",
     "test": "vitest run",
     "process-jobs": "node scripts/process-jobs.mjs",
+    "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "worker": "tsx --tsconfig tsconfig.worker.json worker/index.ts",
     "worker:dev": "tsx watch --tsconfig tsconfig.worker.json worker/index.ts",
+    "gateway": "tsx --env-file=.env --tsconfig tsconfig.gateway.json gateway/index.ts",
+    "gateway:dev": "tsx watch --env-file=.env --tsconfig tsconfig.gateway.json gateway/index.ts",
     "dev:all": "pnpm dev & pnpm worker:dev"
   },
   "dependencies": {

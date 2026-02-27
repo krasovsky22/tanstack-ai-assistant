@@ -1,6 +1,6 @@
-import { chat, maxIterations, toHttpResponse } from '@tanstack/ai';
-import { openaiText } from '@tanstack/ai-openai';
+import { chat, toHttpResponse } from '@tanstack/ai';
 import { createFileRoute } from '@tanstack/react-router';
+import { buildChatOptions } from '@/services/chat';
 
 export const Route = createFileRoute('/api/chat')({
   server: {
@@ -19,19 +19,10 @@ export const Route = createFileRoute('/api/chat')({
         }
 
         const { messages, conversationId } = await request.json();
-        const { getMcpToolDefinitions } = await import('@/tools');
-        const tools = await getMcpToolDefinitions();
 
         try {
-          const stream = chat({
-            adapter: openaiText('gpt-5.2'),
-            messages,
-            conversationId,
-            agentLoopStrategy: maxIterations(10),
-            systemPrompts: ['You are a helpful assistant.'],
-            tools,
-          });
-
+          const options = await buildChatOptions(messages, conversationId);
+          const stream = chat(options);
           return toHttpResponse(stream);
         } catch (error) {
           return new Response(

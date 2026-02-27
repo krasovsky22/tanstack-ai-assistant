@@ -30,6 +30,7 @@ Required variables:
 - `OPENAI_API_KEY` — OpenAI API key
 - `OPEN_WEATHER_API` — OpenWeather API key
 - `DATABASE_URL` — PostgreSQL connection string (default: `postgresql://postgres:password@localhost:5432/tanstack_ai`)
+- `APP_URL` — Base URL of the web app (default: `http://localhost:3000`), used by the gateway
 
 ## Run the app
 
@@ -37,6 +38,44 @@ Required variables:
 pnpm install
 pnpm dev
 ```
+
+## Communication Gateway
+
+The gateway connects external chat platforms (Telegram, etc.) to the AI assistant. It polls platforms for messages and forwards them to the web app via `/api/chat-sync`.
+
+### Setup (Telegram)
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and add to your `.env`:
+   ```
+   TELEGRAM_BOT_TOKEN=your-token
+   TELEGRAM_BOT_USERNAME=yourbotname
+   ```
+2. Add the bot to your Telegram channel as an administrator.
+
+### Start the gateway
+
+```bash
+# development (restarts on file changes)
+pnpm gateway:dev
+
+# production
+pnpm gateway
+```
+
+Run alongside the web app:
+
+```bash
+pnpm dev          # terminal 1
+pnpm gateway:dev  # terminal 2
+```
+
+### Docker
+
+```bash
+docker compose up gateway --build
+```
+
+See [`docs/gateway.md`](docs/gateway.md) for full documentation including how to add new providers.
 
 # Building For Production
 

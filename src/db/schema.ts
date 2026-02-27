@@ -4,6 +4,7 @@ export { JOB_STATUSES, type JobStatus } from '@/lib/job-constants';
 export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey(),
   title: text('title').notNull(),
+  source: text('source'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -5,6 +5,7 @@ import { queryClient } from '@/lib/queryClient';
 export interface Conversation {
   id: string;
   title: string;
+  source: string | null;
   createdAt: string;
   updatedAt: string;
 }
