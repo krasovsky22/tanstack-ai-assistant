@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "process-jobs": "node scripts/process-jobs.mjs",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "worker": "tsx --tsconfig tsconfig.worker.json worker/index.ts",
+    "worker:dev": "tsx watch --tsconfig tsconfig.worker.json worker/index.ts",
+    "dev:all": "pnpm dev & pnpm worker:dev"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
@@ -54,6 +57,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "drizzle-kit": "^0.31.9",
     "jsdom": "^27.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4",

@@ -8,6 +8,7 @@ export const JOB_STATUSES = [
   'offer_received',
   'rejected',
   'withdrawn',
+  'failed',
 ] as const;
 
 export type JobStatus = (typeof JOB_STATUSES)[number];

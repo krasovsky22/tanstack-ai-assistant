@@ -24,6 +24,9 @@ export const jobs = pgTable('jobs', {
   resumePath: text('resume_path'),
   resumePdfPath: text('resume_pdf_path'),
   coverLetterPath: text('cover_letter_path'),
+  retryCount: integer('retry_count').notNull().default(0),
+  errorMessage: text('error_message'),
+  failedAt: timestamp('failed_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
