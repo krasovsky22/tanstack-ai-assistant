@@ -1,13 +1,16 @@
 import type { IncomingMessage, Provider } from '../types.js';
 
+interface TelegramMessage {
+  message_id: number;
+  chat: { id: number; type: string };
+  text?: string;
+  date: number;
+}
+
 interface TelegramUpdate {
   update_id: number;
-  channel_post?: {
-    message_id: number;
-    chat: { id: number; type: string };
-    text?: string;
-    date: number;
-  };
+  channel_post?: TelegramMessage;
+  message?: TelegramMessage;
 }
 
 export class TelegramProvider implements Provider {
@@ -23,6 +26,14 @@ export class TelegramProvider implements Provider {
 
     if (!this.token) throw new Error('TELEGRAM_BOT_TOKEN is not set');
     if (!this.botUsername) throw new Error('TELEGRAM_BOT_USERNAME is not set');
+  }
+
+  private async sendTyping(chatId: number | string): Promise<void> {
+    await fetch(`https://api.telegram.org/bot${this.token}/sendChatAction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, action: 'typing' }),
+    });
   }
 
   async send(chatId: number | string, text: string): Promise<void> {
@@ -77,7 +88,7 @@ export class TelegramProvider implements Provider {
         for (const update of body.result ?? []) {
           offset = update.update_id + 1;
 
-          const post = update.channel_post;
+          const post = update.channel_post ?? update.message;
           if (!post?.text) continue;
           if (!post.text.includes(`@${this.botUsername}`)) continue;
 
@@ -87,9 +98,19 @@ export class TelegramProvider implements Provider {
             provider: this.name,
           };
 
-          onMessage(msg).catch((err) => {
-            console.error('[Telegram] Error handling message:', err);
-          });
+          this.sendTyping(msg.chatId).catch(() => {});
+          const typingInterval = setInterval(() => {
+            this.sendTyping(msg.chatId).catch(() => {});
+          }, 4_000);
+
+          onMessage(msg)
+            .catch((err) => {
+              console.error('[Telegram] Error handling message:', err);
+              this.send(msg.chatId, 'Sorry, something went wrong. Please try again.').catch(() => {});
+            })
+            .finally(() => {
+              clearInterval(typingInterval);
+            });
         }
       } catch (err) {
         if (this.running) {
