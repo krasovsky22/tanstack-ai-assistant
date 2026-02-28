@@ -13,6 +13,7 @@ export async function handleMessage(
       messages: [{ role: 'user', content: msg.text }],
       title: `${provider.name}: ${msg.text.slice(0, 60)}`,
       source: provider.name,
+      chatId: String(msg.chatId),
     }),
   });
 

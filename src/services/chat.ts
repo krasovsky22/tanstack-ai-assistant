@@ -29,6 +29,7 @@ export async function saveConversationToDb(
   title: string,
   messages: MessageToSave[],
   source: string | null = null,
+  chatId: string | null = null,
 ): Promise<void> {
   const { db } = await import('@/db');
   const { conversations, messages: messagesTable } = await import('@/db/schema');
@@ -38,8 +39,69 @@ export async function saveConversationToDb(
     id: conversationId,
     title,
     source,
+    chatId,
     updatedAt: new Date(),
   });
+
+  if (messages.length > 0) {
+    await db.insert(messagesTable).values(
+      messages.map((m) => ({
+        id: m.id,
+        conversationId,
+        role: m.role,
+        parts: m.parts,
+      })),
+    );
+  }
+
+  await db
+    .update(conversations)
+    .set({ updatedAt: new Date() })
+    .where(eq(conversations.id, conversationId));
+}
+
+export async function getOpenConversationByChatId(chatId: string) {
+  const { db } = await import('@/db');
+  const { conversations, messages: messagesTable } = await import('@/db/schema');
+  const { eq, and, desc, asc } = await import('drizzle-orm');
+
+  const conversation = await db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.chatId, chatId), eq(conversations.isClosed, false)))
+    .orderBy(desc(conversations.updatedAt))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+
+  if (!conversation) return null;
+
+  const msgs = await db
+    .select()
+    .from(messagesTable)
+    .where(eq(messagesTable.conversationId, conversation.id))
+    .orderBy(asc(messagesTable.createdAt));
+
+  return { ...conversation, messages: msgs };
+}
+
+export async function closeConversation(conversationId: string): Promise<void> {
+  const { db } = await import('@/db');
+  const { conversations } = await import('@/db/schema');
+  const { eq } = await import('drizzle-orm');
+
+  await db
+    .update(conversations)
+    .set({ isClosed: true, updatedAt: new Date() })
+    .where(eq(conversations.id, conversationId));
+}
+
+export async function appendMessagesToConversation(
+  conversationId: string,
+  messages: MessageToSave[],
+): Promise<void> {
+  const { db } = await import('@/db');
+  const { conversations, messages: messagesTable } = await import('@/db/schema');
+  const { eq } = await import('drizzle-orm');
 
   if (messages.length > 0) {
     await db.insert(messagesTable).values(

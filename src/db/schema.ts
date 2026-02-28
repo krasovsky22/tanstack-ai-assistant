@@ -1,10 +1,12 @@
-import { pgTable, text, timestamp, uuid, jsonb, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
 export { JOB_STATUSES, type JobStatus } from '@/lib/job-constants';
 
 export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey(),
   title: text('title').notNull(),
   source: text('source'),
+  chatId: text('chat_id'),
+  isClosed: boolean('is_closed').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
