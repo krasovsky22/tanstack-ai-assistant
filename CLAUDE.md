@@ -4,30 +4,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Full-stack AI chat application built with TanStack Start, TanStack Router (file-based routing), and TanStack AI. Uses OpenAI (GPT-5.2) with streaming responses and a tool-calling system.
+Full-stack AI assistant platform built with TanStack Start, TanStack Router (file-based routing), and TanStack AI. Uses OpenAI (GPT-5.2) with streaming responses, a tool-calling system, PostgreSQL persistence, a Telegram gateway, and a cronjob automation system.
 
 ## Commands
 
-- **Dev server**: `pnpm dev` (runs on port 3000)
+- **Dev server**: `pnpm dev` (port 3000)
+- **Dev server + jobs worker**: `pnpm dev:all`
 - **Build**: `pnpm build`
 - **Test**: `pnpm test` (vitest)
 - **Run single test**: `pnpm vitest run <path>`
+
+**Database:**
+- `pnpm db:migrate` — run Drizzle migrations
+- `pnpm db:push` — push schema changes directly
+
+**Workers (each runs as a separate process):**
+- `pnpm jobs` / `pnpm jobs:dev` — job processing worker
+- `pnpm gateway` / `pnpm gateway:dev` — Telegram gateway worker
+- `pnpm cron` / `pnpm cron:dev` — cronjob scheduler worker
 
 Package manager is **pnpm**.
 
 ## Architecture
 
-**Routing**: File-based via TanStack Router. Route files live in `src/routes/`. The file `src/routeTree.gen.ts` is auto-generated — do not edit it.
+**Routing**: File-based via TanStack Router. Route files in `src/routes/`. Do not edit `src/routeTree.gen.ts` (auto-generated).
 
-**API endpoint**: `src/routes/api.chat.tsx` — server-side POST handler that orchestrates LLM calls using `@tanstack/ai` with an agent loop (maxIterations: 10). Returns streaming responses via `toHttpResponse()`.
+**Two chat endpoints:**
+- `src/routes/api/chat.tsx` — streaming POST for the browser UI (`toHttpResponse()`)
+- `src/routes/api/chat-sync.tsx` — synchronous JSON POST used by gateway and cron workers; LLM decides conversation action (`continue` | `new_conversation` | `close_conversation`)
 
-**Chat UI**: `src/components/Chat.tsx` — uses `useChat` hook from `@tanstack/ai-react` with `fetchHttpStream('/api/chat')` for streaming.
+**Chat service**: `src/services/chat.ts` — `buildChatOptions()` loads all tools (MCP + cronjob tools), configures the agent loop (`maxIterations: 10`). Also handles conversation persistence: `saveConversationToDb()`, `appendMessagesToConversation()`, `getOpenConversationByChatId()`, `closeConversation()`.
 
-**Tools system**: `src/tools/` — AI-callable tools with Zod-validated inputs. Currently contains a weather tool that calls the OpenWeather API. Tools are registered in the server-side chat handler.
+**Chat UI**: `src/components/Chat.tsx` — `useChat` hook from `@tanstack/ai-react` with `fetchHttpStream('/api/chat')`.
+
+**Tools system**: `src/tools/`
+- `crontool.ts` — 4 LLM-callable tools: `list_cronjobs`, `create_cronjob`, `update_cronjob`, `delete_cronjob`
+- `mcp.ts` — connects to Docker MCP Gateway via stdio, dynamically loads tools as Zod-validated tools
+- `index.ts` — exports tool factory functions; both are registered in `buildChatOptions()`
+
+**Workers**: `workers/`
+- `gateway/` — Telegram long-polling (`getUpdates`), routes messages to `/api/chat-sync`, sends replies; filters for bot mentions
+- `cron/` — polls DB every 5 minutes for active cronjobs, schedules them with `node-cron`, calls `/api/chat-sync` with the cronjob's prompt, logs results to `cronjobLogs`
+- `jobs/` — polls every 30s for `new` jobs, processes them, then generates resumes for `processed` jobs (up to 3 retries)
+
+**Database**: PostgreSQL via Drizzle ORM (`src/db/`). Schema in `src/db/schema.ts`:
+- `conversations` — id (UUID), title, source, chatId, userId, isClosed
+- `messages` — id, conversationId (FK), role, parts (JSONB)
+- `jobs` — id, title, company, description, status, skills (JSONB), resumePath, matchScore, retryCount
+- `cronjobs` — id, name, cronExpression, prompt, isActive, lastRunAt, lastResult
+- `cronjobLogs` — id, cronjobId (FK), status, result, error, durationMs, ranAt
 
 **Path aliases**: `@/*` and `#/*` both resolve to `./src/*`.
+
+**TypeScript configs**: `tsconfig.json` (app), `tsconfig.worker.json` (jobs/cron), `tsconfig.gateway.json` (gateway).
 
 ## Environment Variables
 
 - `OPENAI_API_KEY` — required for LLM calls
-- `OPEN_WEATHER_API` — required for the weather tool
+- `DATABASE_URL` — PostgreSQL connection string
+- `APP_URL` — base URL used by workers to call `/api/chat-sync` (e.g. `http://localhost:3000`)
+- `TELEGRAM_BOT_TOKEN` — from @BotFather
+- `TELEGRAM_BOT_USERNAME` — bot username without @
+- `OPEN_WEATHER_API` — for the legacy weather tool
