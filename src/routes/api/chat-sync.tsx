@@ -1,6 +1,4 @@
-import { chat } from '@tanstack/ai';
-import { openaiText } from '@tanstack/ai-openai';
-import { maxIterations } from '@tanstack/ai';
+import { chat, maxIterations } from '@tanstack/ai';
 import { createFileRoute } from '@tanstack/react-router';
 import {
   buildChatOptions,
@@ -58,14 +56,15 @@ export const Route = createFileRoute('/api/chat-sync')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { messages, title, source, chatId } = await request.json();
+        const { messages, title, source, chatId, userId } =
+          await request.json();
 
         // Non-gateway flow (no chatId): create conversation immediately
         if (!chatId) {
           try {
             const conversationId = crypto.randomUUID();
             const options = await buildChatOptions(messages, conversationId);
-            const text = await chat({ ...options, stream: false });
+            const text = await chat({ ...options, agentLoopStrategy: maxIterations(10), stream: false });
 
             await saveConversationToDb(
               conversationId,
@@ -103,6 +102,7 @@ export const Route = createFileRoute('/api/chat-sync')({
         try {
           const openConversation = await getOpenConversationByChatId(
             String(chatId),
+            userId ? String(userId) : null,
           );
 
           console.log(
@@ -125,12 +125,12 @@ export const Route = createFileRoute('/api/chat-sync')({
             { role: 'user' as const, content: messages[0].content },
           ];
 
-          // Single LLM call: determine action + generate response
+          // Single LLM call: determine action + generate response (with all tools)
+          const gatewayOptions = await buildChatOptions(allMessages);
           const rawDecision = await chat({
-            adapter: openaiText('gpt-5.2'),
-            messages: allMessages,
+            ...gatewayOptions,
             systemPrompts: [GATEWAY_SYSTEM_PROMPT],
-            agentLoopStrategy: maxIterations(1),
+            agentLoopStrategy: maxIterations(10),
             stream: false,
           });
 
@@ -170,6 +170,7 @@ export const Route = createFileRoute('/api/chat-sync')({
                 [userMessage, assistantMessage],
                 source ?? null,
                 String(chatId),
+                userId ? String(userId) : null,
               );
               break;
             }

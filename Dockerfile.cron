@@ -4,4 +4,4 @@ RUN npm install -g pnpm tsx
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
-CMD ["tsx", "--tsconfig", "tsconfig.gateway.json", "workers/gateway/index.ts"]
+CMD ["tsx", "--tsconfig", "tsconfig.worker.json", "workers/cron/index.ts"]

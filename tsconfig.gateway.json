@@ -4,5 +4,5 @@
     "types": ["node"],
     "lib": ["ES2022"]
   },
-  "include": ["gateway/**/*"]
+  "include": ["workers/gateway/**/*"]
 }

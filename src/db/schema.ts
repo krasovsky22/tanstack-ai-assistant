@@ -6,6 +6,7 @@ export const conversations = pgTable('conversations', {
   title: text('title').notNull(),
   source: text('source'),
   chatId: text('chat_id'),
+  userId: text('user_id'),
   isClosed: boolean('is_closed').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -42,4 +43,26 @@ export const messages = pgTable('messages', {
   role: text('role').notNull(),
   parts: jsonb('parts').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const cronjobs = pgTable('cronjobs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  cronExpression: text('cron_expression').notNull(),
+  prompt: text('prompt').notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+  lastRunAt: timestamp('last_run_at'),
+  lastResult: text('last_result'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const cronjobLogs = pgTable('cronjob_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  cronjobId: uuid('cronjob_id').notNull().references(() => cronjobs.id, { onDelete: 'cascade' }),
+  status: text('status').notNull(),
+  result: text('result'),
+  error: text('error'),
+  durationMs: integer('duration_ms'),
+  ranAt: timestamp('ran_at').defaultNow().notNull(),
 });

@@ -23,12 +23,48 @@ services:
       APP_URL: ${APP_URL:-http://host.docker.internal:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     volumes:
-      - ./gateway:/app/gateway
+      - ./workers/gateway:/app/workers/gateway
       - ./src:/app/src
       - ./.env:/app/.env
       - gateway_node_modules:/app/node_modules
     restart: unless-stopped
 
+  jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile.jobs
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/tanstack_ai
+      APP_URL: ${APP_URL:-http://host.docker.internal:3000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./workers/jobs:/app/workers/jobs
+      - ./src:/app/src
+      - ./.env:/app/.env
+      - jobs_node_modules:/app/node_modules
+    restart: unless-stopped
+
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile.cron
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/tanstack_ai
+      APP_URL: ${APP_URL:-http://host.docker.internal:3000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./workers/cron:/app/workers/cron
+      - ./src:/app/src
+      - ./.env:/app/.env
+      - cron_node_modules:/app/node_modules
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   gateway_node_modules:
+  jobs_node_modules:
+  cron_node_modules:

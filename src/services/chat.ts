@@ -6,8 +6,9 @@ export async function buildChatOptions(
   messages: any[],
   conversationId?: string,
 ) {
-  const { getMcpToolDefinitions } = await import('@/tools');
-  const tools = await getMcpToolDefinitions();
+  const { getMcpToolDefinitions, getCronjobTools } = await import('@/tools');
+  const [mcpTools, cronjobTools] = await Promise.all([getMcpToolDefinitions(), Promise.resolve(getCronjobTools())]);
+  const tools = [...mcpTools, ...cronjobTools];
   return {
     adapter: openaiText('gpt-5.2'),
     messages,
@@ -30,6 +31,7 @@ export async function saveConversationToDb(
   messages: MessageToSave[],
   source: string | null = null,
   chatId: string | null = null,
+  userId: string | null = null,
 ): Promise<void> {
   const { db } = await import('@/db');
   const { conversations, messages: messagesTable } = await import('@/db/schema');
@@ -40,6 +42,7 @@ export async function saveConversationToDb(
     title,
     source,
     chatId,
+    userId,
     updatedAt: new Date(),
   });
 
@@ -60,15 +63,24 @@ export async function saveConversationToDb(
     .where(eq(conversations.id, conversationId));
 }
 
-export async function getOpenConversationByChatId(chatId: string) {
+export async function getOpenConversationByChatId(
+  chatId: string,
+  userId: string | null = null,
+) {
   const { db } = await import('@/db');
   const { conversations, messages: messagesTable } = await import('@/db/schema');
-  const { eq, and, desc, asc } = await import('drizzle-orm');
+  const { eq, and, desc, asc, isNull } = await import('drizzle-orm');
+
+  const conditions = [
+    eq(conversations.chatId, chatId),
+    eq(conversations.isClosed, false),
+    userId ? eq(conversations.userId, userId) : isNull(conversations.userId),
+  ];
 
   const conversation = await db
     .select()
     .from(conversations)
-    .where(and(eq(conversations.chatId, chatId), eq(conversations.isClosed, false)))
+    .where(and(...conditions))
     .orderBy(desc(conversations.updatedAt))
     .limit(1)
     .then((rows) => rows[0] ?? null);

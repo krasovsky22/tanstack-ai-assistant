@@ -27,7 +27,7 @@ export const Route = createFileRoute('/api/reports/scrape-jobs')({
               content: `Navigate to this URL and extract all job listings: ${url}`,
             },
           ],
-          agentLoopStrategy: maxIterations(15),
+          agentLoopStrategy: maxIterations(10),
           systemPrompts: [
             `You are a job extraction assistant. Use playwright tools to navigate to the provided URL and extract ALL job listings visible on the page.
 

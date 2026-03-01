@@ -1,18 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
-// ─── Load .env BEFORE importing env-sensitive modules ─────────────────────
-// In ESM, static imports are evaluated before top-level code, so modules that
-// read process.env at load time (like src/db/index.ts) must be dynamically
-// imported AFTER this block.
-try {
-  for (const line of readFileSync(join(process.cwd(), '.env'), 'utf-8').split('\n')) {
-    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
-    if (m && !(m[1] in process.env)) {
-      process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
-    }
-  }
-} catch { /* .env not found — env must be set externally */ }
+import 'dotenv/config';
 
 // ─── Dynamic imports AFTER env vars are set ───────────────────────────────
 // Load @/db first so subsequent service imports get the cached, initialized db.

@@ -11,14 +11,14 @@ The gateway is provider-agnostic. Adding a new platform (WhatsApp, Slack, etc.) 
 ```
 Platform (e.g. Telegram)
         ↓  poll for messages
-gateway/providers/telegram.ts
+workers/gateway/providers/telegram.ts
         ↓  IncomingMessage
-gateway/handler.ts
+workers/gateway/handler.ts
         ↓  POST /api/chat-sync  { messages, title }
 Web app (src/routes/api/chat-sync.tsx)
         ↓  LLM call + DB writes
         ↑  { text }
-gateway/handler.ts
+workers/gateway/handler.ts
         ↓  provider.send(chatId, text)
 Platform
 ```
@@ -55,6 +55,8 @@ docker compose up gateway --build
 ```
 
 The `gateway` service in `docker-compose.yml` depends on `postgres` and connects to the web app via `APP_URL` (defaults to `http://host.docker.internal:3000`).
+
+> **File location:** `workers/gateway/` — the gateway lives inside the shared `workers/` directory alongside the job polling worker and cron worker.
 
 ---
 
@@ -96,7 +98,7 @@ Uses Telegram's [long-polling](https://core.telegram.org/bots/api#getupdates) AP
 
 ## Adding a new provider
 
-1. Create `gateway/providers/<name>.ts` implementing the `Provider` interface:
+1. Create `workers/gateway/providers/<name>.ts` implementing the `Provider` interface:
 
 ```typescript
 import type { IncomingMessage, Provider } from '../types.js';
@@ -118,7 +120,7 @@ export class MyProvider implements Provider {
 }
 ```
 
-2. Register it in `gateway/index.ts`:
+2. Register it in `workers/gateway/index.ts`:
 
 ```typescript
 const { MyProvider } = await import('./providers/my-provider.js');
