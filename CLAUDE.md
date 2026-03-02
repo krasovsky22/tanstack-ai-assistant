@@ -65,4 +65,12 @@ Package manager is **pnpm**.
 - `APP_URL` — base URL used by workers to call `/api/chat-sync` (e.g. `http://localhost:3000`)
 - `TELEGRAM_BOT_TOKEN` — from @BotFather
 - `TELEGRAM_BOT_USERNAME` — bot username without @
+- `TELEGRAM_ADMIN_CHAT_ID` — (optional) chat ID to receive bot startup notifications
 - `OPEN_WEATHER_API` — for the legacy weather tool
+
+## Workflow Rules
+
+When adding new environment variables:
+1. Add the variable to `.env.example` with a descriptive comment
+2. Document it in the "Environment Variables" section above
+3. Mark as "(optional)" or "required" as appropriate

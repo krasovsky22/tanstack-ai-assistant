@@ -41,12 +41,12 @@ function parseGatewayDecision(
   try {
     const parsed = JSON.parse(cleaned);
     const action: GatewayAction =
-      parsed.action ?? (hasOpenConversation ? 'continue' : 'no_action');
+      parsed.action ?? (hasOpenConversation ? 'continue' : 'new_conversation');
     const response: string = parsed.response ?? raw;
     return { action, response };
   } catch {
     return {
-      action: hasOpenConversation ? 'continue' : 'no_action',
+      action: hasOpenConversation ? 'continue' : 'new_conversation',
       response: raw,
     };
   }
@@ -59,12 +59,18 @@ export const Route = createFileRoute('/api/chat-sync')({
         const { messages, title, source, chatId, userId } =
           await request.json();
 
+        console.log('Recieved Request', messages, title);
+
         // Non-gateway flow (no chatId): create conversation immediately
         if (!chatId) {
           try {
             const conversationId = crypto.randomUUID();
             const options = await buildChatOptions(messages, conversationId);
-            const text = await chat({ ...options, agentLoopStrategy: maxIterations(10), stream: false });
+            const text = await chat({
+              ...options,
+              agentLoopStrategy: maxIterations(10),
+              stream: false,
+            });
 
             await saveConversationToDb(
               conversationId,

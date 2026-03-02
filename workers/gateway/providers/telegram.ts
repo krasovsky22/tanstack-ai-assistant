@@ -18,14 +18,58 @@ export class TelegramProvider implements Provider {
 
   private token: string;
   private botUsername: string;
+  private adminChatId: string | undefined;
   private running = false;
 
   constructor() {
     this.token = process.env.TELEGRAM_BOT_TOKEN ?? '';
     this.botUsername = process.env.TELEGRAM_BOT_USERNAME ?? '';
+    this.adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
     if (!this.token) throw new Error('TELEGRAM_BOT_TOKEN is not set');
     if (!this.botUsername) throw new Error('TELEGRAM_BOT_USERNAME is not set');
+  }
+
+  private async verifyConnection(): Promise<boolean> {
+    try {
+      const res = await fetch(
+        `https://api.telegram.org/bot${this.token}/getMe`,
+      );
+      console.log('[Telegram] getMe response status:', res);
+      if (!res.ok) {
+        console.error(`[Telegram] getMe failed: ${res.status}`);
+        return false;
+      }
+      const data = (await res.json()) as {
+        ok: boolean;
+        result?: { username: string };
+      };
+      if (data.ok && data.result) {
+        console.log(`[Telegram] Connected as @${data.result.username}`);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error(
+        '[Telegram] Connection verification failed:',
+        JSON.stringify(err, null, 2),
+      );
+      return false;
+    }
+  }
+
+  private async sendStartupNotification(): Promise<void> {
+    if (!this.adminChatId) return;
+
+    const timestamp = new Date().toISOString();
+    const message = `🤖 Bot connected and ready!\n\nTimestamp: ${timestamp}`;
+
+    try {
+      await this.send(this.adminChatId, message);
+      console.log('[Telegram] Startup notification sent');
+    } catch (err) {
+      console.error('[Telegram] Failed to send startup notification:', err);
+    }
   }
 
   private async sendTyping(chatId: number | string): Promise<void> {
@@ -57,10 +101,15 @@ export class TelegramProvider implements Provider {
   async start(
     onMessage: (msg: IncomingMessage) => Promise<void>,
   ): Promise<void> {
+    const connected = await this.verifyConnection();
+    if (!connected) {
+      throw new Error('Failed to connect to Telegram');
+    }
+
+    await this.sendStartupNotification();
+
     this.running = true;
     let offset = 0;
-
-    console.log('[Telegram] Polling started');
 
     while (this.running) {
       try {
@@ -89,6 +138,8 @@ export class TelegramProvider implements Provider {
           offset = update.update_id + 1;
 
           const post = update.channel_post ?? update.message;
+
+          console.log('received post', post, this.botUsername);
           if (!post?.text) continue;
           if (!post.text.includes(`@${this.botUsername}`)) continue;
 
@@ -97,6 +148,7 @@ export class TelegramProvider implements Provider {
             chatId: post.chat.id,
             provider: this.name,
           };
+          console.log('message to handle', msg);
 
           this.sendTyping(msg.chatId).catch(() => {});
           const typingInterval = setInterval(() => {
@@ -106,7 +158,10 @@ export class TelegramProvider implements Provider {
           onMessage(msg)
             .catch((err) => {
               console.error('[Telegram] Error handling message:', err);
-              this.send(msg.chatId, 'Sorry, something went wrong. Please try again.').catch(() => {});
+              this.send(
+                msg.chatId,
+                'Sorry, something went wrong. Please try again.',
+              ).catch(() => {});
             })
             .finally(() => {
               clearInterval(typingInterval);
@@ -114,7 +169,7 @@ export class TelegramProvider implements Provider {
         }
       } catch (err) {
         if (this.running) {
-          console.error('[Telegram] Poll error:', err);
+          console.error('[Telegram] Poll error:', JSON.stringify(err, null, 2));
           await sleep(5_000);
         }
       }

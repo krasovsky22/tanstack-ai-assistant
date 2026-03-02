@@ -6,6 +6,7 @@ export async function handleMessage(
   msg: IncomingMessage,
   provider: Provider,
 ): Promise<void> {
+  console.log(`[${provider.name}] Received message:`, msg, APP_URL);
   const res = await fetch(`${APP_URL}/api/chat-sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -18,7 +19,9 @@ export async function handleMessage(
   });
 
   if (!res.ok) {
-    throw new Error(`/api/chat-sync responded ${res.status}: ${await res.text()}`);
+    throw new Error(
+      `/api/chat-sync responded ${res.status}: ${await res.text()}`,
+    );
   }
 
   const { text } = (await res.json()) as { text: string };
