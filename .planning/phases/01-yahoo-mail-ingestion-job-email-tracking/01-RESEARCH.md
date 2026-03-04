@@ -1,6 +1,6 @@
 # Phase 1: Yahoo Mail Ingestion & Job Email Tracking - Research
 
-**Researched:** 2026-03-04
+**Researched:** 2026-03-04 (refreshed 2026-03-04)
 **Domain:** IMAP email ingestion, LLM classification/extraction, Drizzle schema, TanStack Start API routes, React Query UI
 **Confidence:** HIGH
 
@@ -8,7 +8,7 @@
 
 This phase adds Yahoo Mail IMAP ingestion to an existing TanStack Start + Drizzle ORM + OpenAI stack. The core work is: (1) a new `imapflow` + `mailparser` service that fetches unread emails from configurable folders, (2) LLM classification using the existing `chat()` + Zod pattern from `process-job.ts`, (3) job matching via Drizzle `ilike` queries + auto-creation of `'generated-from-email'` jobs, (4) a new `job_emails` Drizzle table (migration 0008), and (5) UI additions — a mail count badge on `JobCard` and a collapsible email thread on the job detail page.
 
-The project already has every infrastructure building block needed: the API route pattern (`createFileRoute` with `server.handlers`), the LLM extraction pattern (Zod schema + `chat()` from `@tanstack/ai`), the React Query data-fetching pattern (`useQuery`), the collapsible UI pattern (ChevronDown/Up toggle), and the migration pattern (hand-written SQL + Drizzle schema). No new architectural concepts are introduced.
+**Current codebase state (confirmed 2026-03-04):** The `job_emails` table does not yet exist in `src/db/schema.ts`. The `imapflow` and `mailparser` packages are not yet installed. No `src/routes/api/mail/` directory exists. No `src/services/mail-ingestion.ts` exists. The last migration is `0007_add_cronjob_logs_table.sql`. The next migration is `0008_add_job_emails_table.sql`. The `JOB_STATUSES` constant in `src/lib/job-constants.ts` does not yet include `'generated-from-email'`. Neither `STATUS_LABELS` in `index.tsx` nor `STATUS_LABELS` in `$id.tsx` includes it. The project already has every infrastructure building block needed: the API route pattern (`createFileRoute` with `server.handlers`), the LLM extraction pattern (Zod schema + `chat()` from `@tanstack/ai`), the React Query data-fetching pattern (`useQuery`), the collapsible UI pattern (ChevronDown/Up toggle), and the migration pattern (hand-written SQL + Drizzle schema). No new architectural concepts are introduced.
 
 **Primary recommendation:** Use `imapflow@^1.2.9` for IMAP and `mailparser` (from `nodemailer` ecosystem) for decoding raw RFC822 streams. Follow the `process-job.ts` pattern for LLM calls.
 
@@ -82,7 +82,7 @@ The project already has every infrastructure building block needed: the API rout
 ### Core
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| `imapflow` | ^1.2.9 | IMAP client — connect, search, fetch, mark-as-read | Modern async/await API; actively maintained (42k weekly downloads, last published 6 days before research date); used by EmailEngine in production; has TypeScript support built-in |
+| `imapflow` | ^1.2.9 | IMAP client — connect, search, fetch, mark-as-read | Modern async/await API; actively maintained (~42k weekly downloads); used by EmailEngine in production; ships its own TypeScript definitions |
 | `mailparser` | latest (part of `nodemailer` ecosystem) | Parse RFC822 email stream into structured object (text, html, from, subject, date) | Official nodemailer extra; `simpleParser` accepts imapflow download stream directly; handles MIME, encodings, attachments automatically |
 
 ### Supporting
@@ -118,18 +118,18 @@ src/
 │   └── mail-ingestion.ts     # IMAP connect/fetch/classify/persist — all business logic here
 ├── routes/api/mail/
 │   ├── ingest.tsx             # POST /api/mail/ingest — triggers ingestion, returns summary
-│   └── emails.tsx             # GET /api/mail/emails — returns raw Yahoo emails (no DB)
-│   └── email-count.tsx        # GET /api/mail/email-count?jobId=... — returns {count: N}
+│   ├── emails.tsx             # GET /api/mail/emails — returns raw Yahoo emails (no DB)
+│   ├── email-count.tsx        # GET /api/mail/email-count?jobId=... — returns {count: N}
 │   └── emails-by-job.tsx      # GET /api/mail/emails-by-job?jobId=... — email thread for detail page
 ├── db/
-│   ├── schema.ts              # Add jobEmails table
+│   ├── schema.ts              # Add jobEmails table (after cronjobLogs)
 │   └── migrations/
 │       └── 0008_add_job_emails_table.sql
-└── .env.example               # Add YAHOO_IMAP_* vars
+└── .env.example               # Add YAHOO_IMAP_* vars after the Telegram section
 ```
 
 ### Pattern 1: IMAP Connect → Search → Fetch → Parse → Disconnect
-**What:** Open a single `ImapFlow` client per ingestion call, lock the mailbox, do all operations, then logout. Never keep a persistent connection — this is a on-demand endpoint.
+**What:** Open a single `ImapFlow` client per ingestion call, lock the mailbox, do all operations, then logout. Never keep a persistent connection — this is an on-demand endpoint.
 **When to use:** Every call to `POST /api/mail/ingest`
 
 ```typescript
@@ -250,7 +250,7 @@ export const Route = createFileRoute('/api/mail/ingest')({
   server: {
     handlers: {
       POST: async ({ request: _request }) => {
-        const JSON_HEADERS = { 'Content-Type': 'application/json' };
+        const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
         try {
           const summary = await runIngestion(); // from mail-ingestion.ts
           return new Response(JSON.stringify(summary), { headers: JSON_HEADERS });
@@ -267,7 +267,7 @@ export const Route = createFileRoute('/api/mail/ingest')({
 
 ### Pattern 6: Drizzle Schema for job_emails
 **What:** Follow the same `pgTable()` pattern with uuid PK, FK to jobs, text columns, timestamp.
-**When to use:** Migration 0008
+**When to use:** Appended after `cronjobLogs` table in `src/db/schema.ts` (migration 0008)
 
 ```typescript
 // Source: follows src/db/schema.ts existing pattern
@@ -287,9 +287,16 @@ export const jobEmails = pgTable('job_emails', {
 });
 ```
 
+Note: The `pgTable` import is already present in `src/db/schema.ts` — no new imports needed beyond the column types already imported (`uuid`, `text`, `timestamp` are all already there).
+
 ### Pattern 7: Mail Badge on JobCard (React Query per-job)
 **What:** `useQuery` per job card fetching `GET /api/mail/email-count?jobId=xxx`, show `Mail` icon + count inline only if count > 0.
-**When to use:** Inside `JobCard` component
+**When to use:** Inside `JobCard` component in `src/routes/jobs/index.tsx`
+
+Confirmed from codebase inspection:
+- `useQuery` is already imported from `@tanstack/react-query` in `index.tsx`
+- `Mail` icon needs to be added to the existing lucide-react import line (currently: `Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, X, FileText`)
+- `STATUS_LABELS` and `STATUS_COLORS` are plain `Record<string, string>` objects (not typed enums) — easy to extend
 
 ```typescript
 // Source: follows useQuery pattern in src/routes/jobs/index.tsx
@@ -297,17 +304,18 @@ import { useQuery } from '@tanstack/react-query';
 import { Mail } from 'lucide-react';
 
 // Inside JobCard:
-const { data } = useQuery({
+const { data: emailCountData } = useQuery({
   queryKey: ['email-count', job.id],
   queryFn: async () => {
     const res = await fetch(`/api/mail/email-count?jobId=${job.id}`);
     return res.json() as Promise<{ count: number }>;
   },
   staleTime: 60_000,
+  initialData: { count: 0 },
 });
-const emailCount = data?.count ?? 0;
+const emailCount = emailCountData?.count ?? 0;
 
-// In JSX, inside the title area flex row:
+// In JSX, inside the title area flex row (after <StatusBadge status={job.status} />):
 {emailCount > 0 && (
   <span className="inline-flex items-center gap-1 text-xs text-gray-500">
     <Mail size={12} />
@@ -320,12 +328,40 @@ const emailCount = data?.count ?? 0;
 **What:** A `border-t` section at the bottom of `EditJobPage`, same ChevronDown/Up toggle as the `JobCard` Job Description section. Threads by normalized subject (strip `Re:`, `Fwd:` prefixes). Each email defaults to showing `email_llm_summarized`; "Show full email" toggle reveals `email_content`.
 **When to use:** In `src/routes/jobs/$id.tsx`
 
+Confirmed from codebase inspection:
+- `src/routes/jobs/$id.tsx` currently only imports `X` from `lucide-react` — needs `ChevronDown`, `ChevronUp`, `Mail` added
+- `useQuery` is NOT currently imported in `$id.tsx` — needs to be added from `@tanstack/react-query`
+- `useState` IS imported (`useState, useRef` from `react`)
+- `STATUS_LABELS` in `$id.tsx` is a plain `Record<string, string>` — does not include `resume_generated` or `failed` (different subset than `index.tsx`) — add `'generated-from-email': 'From Email'` only
+
 **Subject normalization for threading:**
 ```typescript
-// Strip Re: / Fwd: prefixes for grouping
-function normalizeSubject(subject: string): string {
-  return subject.replace(/^(re|fwd|fw)\s*:\s*/gi, '').trim().toLowerCase();
+// Strip Re: / Fwd: prefixes for grouping (handles chained prefixes)
+export function normalizeSubject(subject: string): string {
+  let s = subject;
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/^(re|fwd|fw)\s*:\s*/i, '').trim();
+  } while (s !== prev);
+  return s.toLowerCase();
 }
+```
+
+### Pattern 9: STATUS_LABELS / STATUS_COLORS Extensions
+**What:** Both `index.tsx` and `$id.tsx` maintain their own `STATUS_LABELS` records. Auto-created email jobs need `'generated-from-email'` to display as `'From Email'`.
+
+From `index.tsx` inspection — current STATUS_COLORS does NOT include `failed` (despite `JOB_STATUSES` having it). The fallback `bg-gray-100 text-gray-700` handles unknown statuses. Still, add both label and color for `generated-from-email`:
+
+```typescript
+// In index.tsx STATUS_LABELS — add:
+'generated-from-email': 'From Email',
+
+// In index.tsx STATUS_COLORS — add:
+'generated-from-email': 'bg-orange-100 text-orange-700',
+
+// In $id.tsx STATUS_LABELS — add:
+'generated-from-email': 'From Email',
 ```
 
 ### Anti-Patterns to Avoid
@@ -335,6 +371,7 @@ function normalizeSubject(subject: string): string {
 - **Using `node-imap` (the old `imap` npm package):** Callback-based, unmaintained, requires separate MIME parser wiring.
 - **Storing non-job emails:** LLM says not job-related → skip + mark as read → nothing in DB.
 - **Hand-rolling MIME decoding:** `mailparser` handles charset, quoted-printable, base64, multipart automatically.
+- **Marking emails as read before DB write:** If DB insert fails after marking read, the email is permanently lost (not in DB, won't be re-fetched). DB write first, mark-as-read second.
 
 ---
 
@@ -355,7 +392,7 @@ function normalizeSubject(subject: string): string {
 
 ### Pitfall 1: Yahoo IMAP Requires App Password, Not Account Password
 **What goes wrong:** Connecting with the regular Yahoo account password fails with authentication error if 2FA is enabled (which Yahoo increasingly requires).
-**Why it happens:** Yahoo mandates App Passwords for third-party IMAP access since they moved away from basic auth.
+**Why it happens:** Yahoo mandates App Passwords for third-party IMAP access.
 **How to avoid:** Document in `.env.example` that `YAHOO_IMAP_PASSWORD` must be a 16-character App Password generated at `myaccount.yahoo.com` → Security → App passwords. Not the login password.
 **Warning signs:** `ImapFlow` throws auth error on connect despite correct credentials.
 
@@ -368,7 +405,7 @@ function normalizeSubject(subject: string): string {
 ### Pitfall 3: Marking Emails as Read Before Confirming DB Write
 **What goes wrong:** If the DB insert fails after marking the email as read, the email is lost — not stored in DB, and won't be fetched again on next run.
 **Why it happens:** `messageFlagsAdd` is not transactional with the PostgreSQL insert.
-**How to avoid:** Do the DB insert first. Mark as read only after successful DB write (or after confirming the email is classified as non-job-related and should be skipped). For non-job emails: mark as read immediately since there's nothing to store.
+**How to avoid:** Do the DB insert first. Mark as read only after successful DB write. For non-job emails: mark as read immediately since there's nothing to store.
 **Warning signs:** Missing emails in `job_emails` table despite them disappearing from Yahoo inbox.
 
 ### Pitfall 4: imapflow `download()` Part Parameter
@@ -380,20 +417,26 @@ function normalizeSubject(subject: string): string {
 ### Pitfall 5: N+1 API Calls for Email Count Badges
 **What goes wrong:** Rendering 50 job cards each triggering an immediate `/api/mail/email-count` fetch causes 50 simultaneous DB queries.
 **Why it happens:** Per the decision, count is fetched per job card via separate API call.
-**How to avoid:** Set `staleTime: 60_000` on the `useQuery` so counts are cached for 60 seconds. The counts don't need to be real-time. Optionally add a short `initialData: { count: 0 }` to avoid loading state flicker.
+**How to avoid:** Set `staleTime: 60_000` on the `useQuery` so counts are cached for 60 seconds. Add `initialData: { count: 0 }` to avoid loading state flicker.
 **Warning signs:** 50 simultaneous network requests on page load, DB load spikes on the jobs dashboard.
 
 ### Pitfall 6: LLM Hallucinating Company/Title for Ambiguous Emails
 **What goes wrong:** LLM extracts "Unknown" or a generic company name, causing a false match or spurious job creation.
 **Why it happens:** Some recruiting emails are vague (e.g., "A great opportunity awaits").
-**How to avoid:** Require both `company` and `jobTitle` to be non-null, non-"Unknown" for matching. If either is null → create new job with `'generated-from-email'` status and placeholder values OR skip job creation and just store the email with `job_id: null`.
+**How to avoid:** Require both `company` and `jobTitle` to be non-null and non-`'Unknown'` for matching. If either is null → create new job with `'generated-from-email'` status.
 **Warning signs:** Jobs table filling up with `company: "Unknown"` entries.
 
 ### Pitfall 7: `YAHOO_MAIL_FOLDERS` With Invalid Folder Names
 **What goes wrong:** imapflow throws if you try to `getMailboxLock()` on a non-existent folder.
 **Why it happens:** Yahoo folder names are case-sensitive and may differ from expectations (e.g., `"Bulk Mail"` not `"Spam"`).
-**How to avoid:** Wrap each folder's lock attempt in try/catch and log a warning if the folder doesn't exist. Continue with other folders. Don't fail the entire ingestion for one bad folder name.
+**How to avoid:** Wrap each folder's lock attempt in try/catch and log a warning if the folder doesn't exist. Continue with other folders.
 **Warning signs:** Full ingestion fails when one configured folder name is wrong.
+
+### Pitfall 8: `$id.tsx` Missing `useQuery` and Lucide Imports
+**What goes wrong:** TypeScript compilation errors when adding the email thread component.
+**Why it happens:** `src/routes/jobs/$id.tsx` currently only imports `X` from lucide-react and does not import `useQuery` from `@tanstack/react-query`.
+**How to avoid:** Add `useQuery` import from `@tanstack/react-query`. Add `ChevronDown, ChevronUp, Mail` to the lucide-react import. Both must be done before adding the EmailThreadSection component.
+**Warning signs:** TypeScript errors like "Cannot find name 'useQuery'" or "Module '...' has no exported member 'ChevronDown'".
 
 ---
 
@@ -412,9 +455,25 @@ import { openaiText } from '@tanstack/ai-openai';
 import { z } from 'zod';
 import { db } from '@/db';
 import { jobs, jobEmails } from '@/db/schema';
-import { ilike, and, desc, eq, sql } from 'drizzle-orm';
+import { ilike, and, desc } from 'drizzle-orm';
 
-function createImapClient(folder?: string) {
+export function normalizeSubject(subject: string): string {
+  let s = subject;
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/^(re|fwd|fw)\s*:\s*/i, '').trim();
+  } while (s !== prev);
+  return s.toLowerCase();
+}
+
+export function getSearchSince(): Date {
+  const since = new Date();
+  since.setDate(since.getDate() - 10);
+  return since;
+}
+
+function createImapClient() {
   return new ImapFlow({
     host: 'imap.mail.yahoo.com',
     port: 993,
@@ -452,8 +511,7 @@ export async function runIngestion(): Promise<{
     .split(',')
     .map((f) => f.trim());
   const maxEmails = parseInt(process.env.YAHOO_MAIL_MAX_EMAILS ?? '50', 10);
-  const since = new Date();
-  since.setDate(since.getDate() - 10);
+  const since = getSearchSince();
 
   const summary = { fetched: 0, jobRelated: 0, matched: 0, created: 0 };
   const client = createImapClient();
@@ -472,7 +530,6 @@ export async function runIngestion(): Promise<{
       try {
         const uids = await client.search({ seen: false, since }, { uid: true });
         const batch = uids.slice(0, maxEmails - summary.fetched);
-
         const seenUids: number[] = [];
 
         for (const uid of batch) {
@@ -486,21 +543,19 @@ export async function runIngestion(): Promise<{
 
           summary.fetched++;
 
-          // LLM classify
           const classification = await chat({
             adapter: openaiText('gpt-5.2'),
             messages: [{ role: 'user', content: `Subject: ${subject}\n\nFrom: ${sender}\n\n${bodyText.slice(0, 3000)}` }],
-            systemPrompts: ['You are an email classifier for a job search assistant.'],
+            systemPrompts: ['You are an email classifier for a job search assistant. Classify whether this email is job-related (recruiter outreach, job application update, interview invite, offer, rejection). Extract company and job title if present.'],
             outputSchema: EmailClassificationSchema,
           });
 
-          // Always mark as read (job-related or not)
+          // Non-job emails: mark as read but don't store
           seenUids.push(uid as number);
 
           if (!classification.isJobRelated) continue;
           summary.jobRelated++;
 
-          // Job matching
           const company = classification.company;
           const title = classification.jobTitle;
           let matchedJobId: string | null = null;
@@ -518,11 +573,10 @@ export async function runIngestion(): Promise<{
           if (matchedJobId) {
             summary.matched++;
           } else {
-            // Auto-create job from email
             const extraction = await chat({
               adapter: openaiText('gpt-5.2'),
               messages: [{ role: 'user', content: bodyText.slice(0, 4000) }],
-              systemPrompts: ['Extract structured job data from this email.'],
+              systemPrompts: ['You are a job data extractor. Extract structured job information from this email for a job search tracker.'],
               outputSchema: JobExtractionSchema,
             });
             const [newJob] = await db
@@ -541,7 +595,7 @@ export async function runIngestion(): Promise<{
             summary.created++;
           }
 
-          // Persist job_email — DB write before mark-as-read
+          // DB write BEFORE mark-as-read (pitfall 3)
           await db.insert(jobEmails).values({
             jobId: matchedJobId,
             source: 'yahoo',
@@ -553,7 +607,7 @@ export async function runIngestion(): Promise<{
           });
         }
 
-        // Mark all processed emails as read
+        // Mark all processed emails as read after DB writes
         if (seenUids.length > 0) {
           await client.messageFlagsAdd(seenUids, ['\\Seen'], { uid: true });
         }
@@ -567,6 +621,50 @@ export async function runIngestion(): Promise<{
 
   console.log('[mail-ingestion] Summary:', summary);
   return summary;
+}
+
+export async function fetchRawEmails(): Promise<Array<{
+  subject: string;
+  sender: string;
+  receivedAt: Date;
+  bodyText: string;
+}>> {
+  const folders = (process.env.YAHOO_MAIL_FOLDERS ?? 'INBOX')
+    .split(',')
+    .map((f) => f.trim());
+  const since = getSearchSince();
+  const results: Array<{ subject: string; sender: string; receivedAt: Date; bodyText: string }> = [];
+  const client = createImapClient();
+  await client.connect();
+  try {
+    for (const folder of folders) {
+      let lock;
+      try {
+        lock = await client.getMailboxLock(folder);
+      } catch {
+        console.warn(`[mail-ingestion] Folder not found: ${folder}`);
+        continue;
+      }
+      try {
+        const uids = await client.search({ seen: false, since }, { uid: true });
+        for (const uid of uids) {
+          const { content } = await client.download(String(uid), null, { uid: true });
+          const parsed = await simpleParser(content);
+          results.push({
+            subject: parsed.subject ?? '',
+            sender: parsed.from?.text ?? '',
+            receivedAt: parsed.date ?? new Date(),
+            bodyText: parsed.text ?? parsed.html ?? '',
+          });
+        }
+      } finally {
+        lock.release();
+      }
+    }
+  } finally {
+    await client.logout();
+  }
+  return results;
 }
 ```
 
@@ -592,18 +690,34 @@ CREATE INDEX "job_emails_job_id_idx" ON "job_emails"("job_id");
 ```typescript
 // src/routes/api/mail/email-count.tsx
 import { createFileRoute } from '@tanstack/react-router';
+import { db } from '@/db';
+import { jobEmails } from '@/db/schema';
+import { eq, count } from 'drizzle-orm';
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export const Route = createFileRoute('/api/mail/email-count')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const { db } = await import('@/db');
-        const { jobEmails } = await import('@/db/schema');
-        const { eq, count } = await import('drizzle-orm');
-        const jobId = new URL(request.url).searchParams.get('jobId');
-        if (!jobId) return new Response(JSON.stringify({ count: 0 }), { headers: { 'Content-Type': 'application/json' } });
-        const [{ value }] = await db.select({ value: count() }).from(jobEmails).where(eq(jobEmails.jobId, jobId));
-        return new Response(JSON.stringify({ count: Number(value) }), { headers: { 'Content-Type': 'application/json' } });
+        try {
+          const jobId = new URL(request.url).searchParams.get('jobId');
+          if (!jobId) {
+            return new Response(JSON.stringify({ count: 0 }), { headers: JSON_HEADERS });
+          }
+          const [result] = await db
+            .select({ value: count() })
+            .from(jobEmails)
+            .where(eq(jobEmails.jobId, jobId));
+          return new Response(
+            JSON.stringify({ count: Number(result?.value ?? 0) }),
+            { headers: JSON_HEADERS },
+          );
+        } catch (err) {
+          console.error('[mail-email-count] Error:', err);
+          const error = err instanceof Error ? err.message : String(err);
+          return new Response(JSON.stringify({ error }), { status: 500, headers: JSON_HEADERS });
+        }
       },
     },
   },
@@ -638,32 +752,32 @@ App PW:   16-character code from myaccount.yahoo.com → Security → App passwo
 ## Open Questions
 
 1. **`generated-from-email` job status in `JOB_STATUSES` constant**
-   - What we know: `JOB_STATUSES` is exported from `src/lib/job-constants.ts`; `STATUS_LABELS` in `index.tsx` already maps known statuses
-   - What's unclear: Whether `'generated-from-email'` needs to be added to `JOB_STATUSES` array for the status dropdown to show it correctly, or if it should be a display-only value
-   - Recommendation: Add `'generated-from-email'` to `JOB_STATUSES` and add a label `'From Email'` in `STATUS_LABELS` in both `index.tsx` and `$id.tsx`
+   - What we know: `JOB_STATUSES` is exported from `src/lib/job-constants.ts`; `STATUS_LABELS` in both `index.tsx` and `$id.tsx` already map known statuses but as plain `Record<string, string>` (not typed against `JOB_STATUSES`)
+   - What's unclear: The `$id.tsx` `STATUS_LABELS` omits `resume_generated` and `failed` — it's a curated subset. `generated-from-email` needs to be added to both.
+   - Recommendation: Add `'generated-from-email'` to `JOB_STATUSES` array in `job-constants.ts` AND add label entries in both `index.tsx` and `$id.tsx` `STATUS_LABELS`. Add orange color entry in `index.tsx` `STATUS_COLORS`.
 
 2. **Email deduplication on repeated ingest calls**
    - What we know: Emails are marked as read on Yahoo after processing, which prevents re-fetching on next call
    - What's unclear: If Yahoo marks-as-read fails (network error), the email could be processed twice on retry
-   - Recommendation: Consider adding a `message_id` (email Message-ID header) uniqueness constraint on `job_emails` as an optional dedup layer; `parsed.messageId` is available from mailparser
+   - Recommendation: Accept the current approach for this phase. Optionally add a `message_id` uniqueness constraint on `job_emails` as a future dedup layer — `parsed.messageId` is available from mailparser.
 
 3. **LLM cost per ingestion run**
    - What we know: Each email requires at least 1 LLM call (classification); non-matched emails require 2 (classification + extraction)
    - What's unclear: At 50 emails per call, cost could be non-trivial with GPT-5.2
-   - Recommendation: For now, document in the service. Could add a cheaper classification model later (Claude Haiku, GPT-4o-mini) — that's a future optimization.
+   - Recommendation: Document in the service. Future optimization: cheaper classification model (GPT-4o-mini) — out of scope for this phase.
 
 ---
 
 ## Validation Architecture
 
-> config.json not found — nyquist_validation defaults to enabled.
+> `.planning/config.json` not found — nyquist_validation defaults to enabled.
 
 ### Test Framework
 | Property | Value |
 |----------|-------|
 | Framework | vitest ^3.0.5 |
-| Config file | none — vitest config is inline or uses defaults |
-| Quick run command | `pnpm vitest run` |
+| Config file | none — uses vitest defaults |
+| Quick run command | `pnpm vitest run src/services/mail-ingestion.test.ts` |
 | Full suite command | `pnpm test` |
 
 No existing test files were found in the project. Test infrastructure exists (vitest + @testing-library/react + jsdom are installed) but no tests have been written yet.
@@ -687,8 +801,6 @@ No existing test files were found in the project. Test infrastructure exists (vi
 - [ ] Mocking strategy for `ImapFlow` (mock the class entirely — avoid real IMAP connections in tests)
 - [ ] Mocking strategy for `chat()` from `@tanstack/ai` (mock to return fixed Zod-shaped objects)
 
-*(All gaps are Wave 0 — no test files exist yet in this project)*
-
 ---
 
 ## Sources
@@ -698,18 +810,18 @@ No existing test files were found in the project. Test infrastructure exists (vi
 - [imapflow.com/docs/api/imapflow-client/](https://imapflow.com/docs/api/imapflow-client/) — `messageFlagsAdd`, `download`, `fetchAll` signatures
 - [imapflow.com/docs/getting-started/quick-start/](https://imapflow.com/docs/getting-started/quick-start/) — connect, mailbox lock, logout pattern
 - [nodemailer.com/extras/mailparser](https://nodemailer.com/extras/mailparser) — `simpleParser` signature and result properties
-- [github.com/postalsys/imapflow issue #46](https://github.com/postalsys/imapflow/issues/46) — `download(uid, null)` + `simpleParser(stream)` integration pattern
 - Project source: `src/services/process-job.ts` — LLM extraction pattern with `chat()` + Zod
 - Project source: `src/routes/api/jobs/index.tsx` + `process.tsx` — API route handler pattern
-- Project source: `src/db/schema.ts` — Drizzle table definition pattern
+- Project source: `src/db/schema.ts` — Drizzle table definition pattern (confirmed current state)
+- Project source: `src/routes/jobs/index.tsx` — confirmed imports, STATUS_LABELS, STATUS_COLORS structure
+- Project source: `src/routes/jobs/$id.tsx` — confirmed lucide import scope (X only), missing useQuery
 
 ### Secondary (MEDIUM confidence)
 - [Yahoo Help: IMAP server settings](https://help.yahoo.com/kb/SLN4075.html) — `imap.mail.yahoo.com:993`, SSL required, App Password required
-- [npmtrends: imap vs imapflow](https://npmtrends.com/imap-vs-imap-simple-vs-imapflow-vs-node-mailer) — imapflow adoption trend
-- npm registry: imapflow@1.2.9, 42k weekly downloads, last published within the week
+- npm registry: imapflow active maintenance, high weekly downloads
 
 ### Tertiary (LOW confidence)
-- WebSearch synthesis for imapflow + mailparser integration pattern — verified with GitHub issue #46
+- WebSearch synthesis for imapflow + mailparser integration pattern — verified with imapflow docs and GitHub
 
 ---
 
@@ -717,8 +829,8 @@ No existing test files were found in the project. Test infrastructure exists (vi
 
 **Confidence breakdown:**
 - Standard stack: HIGH — imapflow and mailparser are both well-documented with official sources; Yahoo IMAP settings confirmed via official Yahoo Help
-- Architecture: HIGH — all patterns are drawn directly from existing project code (process-job.ts, api/jobs/index.tsx) plus verified imapflow docs
-- Pitfalls: HIGH — Yahoo App Password requirement is confirmed by official Yahoo Help; other pitfalls drawn from imapflow API behavior (lock release, download null parameter)
+- Architecture: HIGH — all patterns drawn directly from existing project code (process-job.ts, api/jobs/index.tsx) plus verified imapflow docs; codebase state freshly confirmed
+- Pitfalls: HIGH — Yahoo App Password requirement confirmed by official Yahoo Help; other pitfalls drawn from imapflow API behavior; Pitfall 8 newly identified from codebase inspection
 
 **Research date:** 2026-03-04
-**Valid until:** 2026-06-04 (90 days — imapflow and Yahoo IMAP settings are stable; the @tanstack packages are more volatile but this phase doesn't add new TanStack dependencies)
+**Valid until:** 2026-06-04 (90 days — imapflow and Yahoo IMAP settings are stable; TanStack packages are more volatile but this phase doesn't add new TanStack dependencies)
