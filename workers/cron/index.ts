@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 // ─── Dynamic imports AFTER env vars are set ───────────────────────────────
 const { db } = await import('@/db');
+const { CONVERSATION_SOURCES } = await import('@/lib/conversation-sources');
 const { cronjobs, cronjobLogs } = await import('@/db/schema');
 const { eq } = await import('drizzle-orm');
 const { schedule, validate } = await import('node-cron');
@@ -24,7 +25,7 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
       body: JSON.stringify({
         messages: [{ role: 'user', content: job.prompt }],
         title: `Cronjob: ${job.name}`,
-        source: 'cronjob',
+        source: CONVERSATION_SOURCES.CRONJOB,
       }),
     });
 

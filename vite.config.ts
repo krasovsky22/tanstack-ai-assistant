@@ -11,7 +11,7 @@ import { nitro } from 'nitro/vite'
 const config = defineConfig({
   plugins: [
     devtools(),
-    nitro({ rollupConfig: { external: [/^@sentry\//, 'postgres', /^drizzle-orm/] } }),
+    nitro({ rollupConfig: { external: [/^@sentry\//, 'postgres', /^drizzle-orm/, 'node-cron'] } }),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     tanstackStart(),

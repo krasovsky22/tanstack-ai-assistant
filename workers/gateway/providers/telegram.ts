@@ -1,4 +1,5 @@
 import type { IncomingMessage, Provider } from '../types.js';
+import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
 interface TelegramMessage {
   message_id: number;
@@ -14,7 +15,7 @@ interface TelegramUpdate {
 }
 
 export class TelegramProvider implements Provider {
-  readonly name = 'Telegram';
+  readonly name = CONVERSATION_SOURCES.TELEGRAM;
 
   private token: string;
   private botUsername: string;

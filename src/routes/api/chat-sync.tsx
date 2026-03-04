@@ -7,6 +7,7 @@ import {
   closeConversation,
   appendMessagesToConversation,
 } from '@/services/chat';
+import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
 type GatewayAction = 'continue' | 'new_conversation' | 'close_conversation';
 
@@ -61,7 +62,7 @@ export const Route = createFileRoute('/api/chat-sync')({
 
         console.log('Recieved Request', messages, title);
 
-        // Non-gateway flow (no chatId): create conversation immediately
+        // Non-gateway flow (no chatId): run chat, optionally persist conversation
         if (!chatId) {
           try {
             const conversationId = crypto.randomUUID();
@@ -72,23 +73,26 @@ export const Route = createFileRoute('/api/chat-sync')({
               stream: false,
             });
 
-            await saveConversationToDb(
-              conversationId,
-              title ?? 'Chat',
-              [
-                {
-                  id: crypto.randomUUID(),
-                  role: 'user',
-                  parts: [{ type: 'text', content: messages[0].content }],
-                },
-                {
-                  id: crypto.randomUUID(),
-                  role: 'assistant',
-                  parts: [{ type: 'text', content: text }],
-                },
-              ],
-              source ?? null,
-            );
+            // Cronjob source: do not persist — only return the response for cronjob logs
+            if (source !== CONVERSATION_SOURCES.CRONJOB) {
+              await saveConversationToDb(
+                conversationId,
+                title ?? 'Chat',
+                [
+                  {
+                    id: crypto.randomUUID(),
+                    role: 'user',
+                    parts: [{ type: 'text', content: messages[0].content }],
+                  },
+                  {
+                    id: crypto.randomUUID(),
+                    role: 'assistant',
+                    parts: [{ type: 'text', content: text }],
+                  },
+                ],
+                source ?? null,
+              );
+            }
 
             return new Response(JSON.stringify({ text }), {
               headers: { 'Content-Type': 'application/json' },

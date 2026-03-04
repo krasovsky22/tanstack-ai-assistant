@@ -19,7 +19,10 @@
     "gateway:dev": "tsx watch --env-file=.env --tsconfig tsconfig.gateway.json workers/gateway/index.ts",
     "cron": "tsx --tsconfig tsconfig.worker.json workers/cron/index.ts",
     "cron:dev": "tsx watch --tsconfig tsconfig.worker.json workers/cron/index.ts",
-    "dev:all": "pnpm dev & pnpm jobs:dev"
+    "dev:all": "pnpm dev & pnpm jobs:dev",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up",
+    "docker:down": "docker compose down"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

@@ -1,15 +1,35 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: tanstack_ai
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB:-tanstack_ai}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    volumes:
+      # Required for Docker MCP toolkit (weather, filesystem tools)
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOME}/.docker:/root/.docker:ro
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPEN_WEATHER_API: ${OPEN_WEATHER_API:-}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+    restart: unless-stopped
 
   gateway:
     build:
@@ -17,17 +37,13 @@ services:
       dockerfile: Dockerfile.gateway
     depends_on:
       - postgres
+      - ui
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/tanstack_ai?sslmode=disable
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
-      APP_URL: ${APP_URL:-http://host.docker.internal:3000}
+      APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-    volumes:
-      - ./workers/gateway:/app/workers/gateway
-      - ./src:/app/src
-      - ./.env:/app/.env
-      - gateway_node_modules:/app/node_modules
     restart: unless-stopped
 
   jobs:
@@ -36,15 +52,11 @@ services:
       dockerfile: Dockerfile.jobs
     depends_on:
       - postgres
+      - ui
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/tanstack_ai?sslmode=disable
-      APP_URL: ${APP_URL:-http://host.docker.internal:3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
+      APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-    volumes:
-      - ./workers/jobs:/app/workers/jobs
-      - ./src:/app/src
-      - ./.env:/app/.env
-      - jobs_node_modules:/app/node_modules
     restart: unless-stopped
 
   cron:
@@ -53,19 +65,12 @@ services:
       dockerfile: Dockerfile.cron
     depends_on:
       - postgres
+      - ui
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/tanstack_ai?sslmode=disable
-      APP_URL: ${APP_URL:-http://host.docker.internal:3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
+      APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-    volumes:
-      - ./workers/cron:/app/workers/cron
-      - ./src:/app/src
-      - ./.env:/app/.env
-      - cron_node_modules:/app/node_modules
     restart: unless-stopped
 
 volumes:
   postgres_data:
-  gateway_node_modules:
-  jobs_node_modules:
-  cron_node_modules:
