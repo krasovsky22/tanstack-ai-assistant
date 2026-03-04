@@ -28,6 +28,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPEN_WEATHER_API: ${OPEN_WEATHER_API:-}
+      NEWS_API_TOKEN: ${NEWS_API_TOKEN:-}
       APP_URL: ${APP_URL:-http://localhost:3000}
     restart: unless-stopped
 

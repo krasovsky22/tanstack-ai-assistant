@@ -27,8 +27,10 @@ cp .env.example .env
 ```
 
 Required variables:
+
 - `OPENAI_API_KEY` — OpenAI API key
 - `OPEN_WEATHER_API` — OpenWeather API key
+- `NEWS_API_TOKEN` — NewsAPI token for news search
 - `DATABASE_URL` — PostgreSQL connection string (default: `postgresql://postgres:password@localhost:5432/tanstack_ai`)
 - `APP_URL` — Base URL of the web app (default: `http://localhost:3000`), used by the gateway
 
@@ -106,8 +108,6 @@ If you prefer not to use Tailwind CSS:
 3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
 4. Uninstall the packages: `pnpm add @tailwindcss/vite tailwindcss --dev`
 
-
-
 ## Routing
 
 This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
@@ -125,7 +125,7 @@ Now that you have two routes you can use a `Link` component to navigate between 
 To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
 
 ```tsx
-import { Link } from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router';
 ```
 
 Then anywhere in your JSX you can use it like so:
@@ -145,7 +145,7 @@ In the File Based Routing setup the layout is located in `src/routes/__root.tsx`
 Here is an example layout that includes a header:
 
 ```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -172,7 +172,7 @@ export const Route = createRootRoute({
       </body>
     </html>
   ),
-})
+});
 ```
 
 More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
@@ -182,23 +182,23 @@ More information on layouts can be found in the [Layouts documentation](https://
 TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
 
 ```tsx
-import { createServerFn } from '@tanstack/react-start'
+import { createServerFn } from '@tanstack/react-start';
 
 const getServerTime = createServerFn({
   method: 'GET',
 }).handler(async () => {
-  return new Date().toISOString()
-})
+  return new Date().toISOString();
+});
 
 // Use in a component
 function MyComponent() {
-  const [time, setTime] = useState('')
-  
+  const [time, setTime] = useState('');
+
   useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
+    getServerTime().then(setTime);
+  }, []);
+
+  return <div>Server time: {time}</div>;
 }
 ```
 
@@ -207,8 +207,8 @@ function MyComponent() {
 You can create API routes by using the `server` property in your route definitions:
 
 ```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
+import { createFileRoute } from '@tanstack/react-router';
+import { json } from '@tanstack/react-start';
 
 export const Route = createFileRoute('/api/hello')({
   server: {
@@ -216,7 +216,7 @@ export const Route = createFileRoute('/api/hello')({
       GET: () => json({ message: 'Hello, World!' }),
     },
   },
-})
+});
 ```
 
 ## Data Fetching
@@ -226,25 +226,25 @@ There are multiple ways to fetch data in your application. You can use TanStack 
 For example:
 
 ```tsx
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/people')({
   loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
+    const response = await fetch('https://swapi.dev/api/people');
+    return response.json();
   },
   component: PeopleComponent,
-})
+});
 
 function PeopleComponent() {
-  const data = Route.useLoaderData()
+  const data = Route.useLoaderData();
   return (
     <ul>
       {data.results.map((person) => (
         <li key={person.name}>{person.name}</li>
       ))}
     </ul>
-  )
+  );
 }
 ```
 

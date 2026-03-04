@@ -15,10 +15,12 @@ Full-stack AI assistant platform built with TanStack Start, TanStack Router (fil
 - **Run single test**: `pnpm vitest run <path>`
 
 **Database:**
+
 - `pnpm db:migrate` — run Drizzle migrations
 - `pnpm db:push` — push schema changes directly
 
 **Workers (each runs as a separate process):**
+
 - `pnpm jobs` / `pnpm jobs:dev` — job processing worker
 - `pnpm gateway` / `pnpm gateway:dev` — Telegram gateway worker
 - `pnpm cron` / `pnpm cron:dev` — cronjob scheduler worker
@@ -30,6 +32,7 @@ Package manager is **pnpm**.
 **Routing**: File-based via TanStack Router. Route files in `src/routes/`. Do not edit `src/routeTree.gen.ts` (auto-generated).
 
 **Two chat endpoints:**
+
 - `src/routes/api/chat.tsx` — streaming POST for the browser UI (`toHttpResponse()`)
 - `src/routes/api/chat-sync.tsx` — synchronous JSON POST used by gateway and cron workers; LLM decides conversation action (`continue` | `new_conversation` | `close_conversation`)
 
@@ -38,16 +41,19 @@ Package manager is **pnpm**.
 **Chat UI**: `src/components/Chat.tsx` — `useChat` hook from `@tanstack/ai-react` with `fetchHttpStream('/api/chat')`.
 
 **Tools system**: `src/tools/`
+
 - `crontool.ts` — 4 LLM-callable tools: `list_cronjobs`, `create_cronjob`, `update_cronjob`, `delete_cronjob`
 - `mcp.ts` — connects to Docker MCP Gateway via stdio, dynamically loads tools as Zod-validated tools
 - `index.ts` — exports tool factory functions; both are registered in `buildChatOptions()`
 
 **Workers**: `workers/`
+
 - `gateway/` — Telegram long-polling (`getUpdates`), routes messages to `/api/chat-sync`, sends replies; filters for bot mentions
 - `cron/` — polls DB every 5 minutes for active cronjobs, schedules them with `node-cron`, calls `/api/chat-sync` with the cronjob's prompt, logs results to `cronjobLogs`
 - `jobs/` — polls every 30s for `new` jobs, processes them, then generates resumes for `processed` jobs (up to 3 retries)
 
 **Database**: PostgreSQL via Drizzle ORM (`src/db/`). Schema in `src/db/schema.ts`:
+
 - `conversations` — id (UUID), title, source, chatId, userId, isClosed
 - `messages` — id, conversationId (FK), role, parts (JSONB)
 - `jobs` — id, title, company, description, status, skills (JSONB), resumePath, matchScore, retryCount
@@ -67,10 +73,12 @@ Package manager is **pnpm**.
 - `TELEGRAM_BOT_USERNAME` — bot username without @
 - `TELEGRAM_ADMIN_CHAT_ID` — (optional) chat ID to receive bot startup notifications
 - `OPEN_WEATHER_API` — for the legacy weather tool
+- `NEWS_API_TOKEN` — (optional) required to use the News API tool
 
 ## Workflow Rules
 
 When adding new environment variables:
+
 1. Add the variable to `.env.example` with a descriptive comment
 2. Document it in the "Environment Variables" section above
 3. Mark as "(optional)" or "required" as appropriate

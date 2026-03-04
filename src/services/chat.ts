@@ -6,9 +6,14 @@ export async function buildChatOptions(
   messages: any[],
   conversationId?: string,
 ) {
-  const { getDockerMcpToolDefinitions, getCronjobTools } = await import('@/tools');
-  const [mcpTools, cronjobTools] = await Promise.all([getDockerMcpToolDefinitions(), Promise.resolve(getCronjobTools())]);
-  const tools = [...mcpTools, ...cronjobTools];
+  const { getDockerMcpToolDefinitions, getCronjobTools, getNewsApiTools } =
+    await import('@/tools');
+  const [mcpTools, cronjobTools, newsApiTools] = await Promise.all([
+    getDockerMcpToolDefinitions(),
+    Promise.resolve(getCronjobTools()),
+    Promise.resolve(getNewsApiTools()),
+  ]);
+  const tools = [...mcpTools, ...cronjobTools, ...newsApiTools];
   return {
     adapter: openaiText('gpt-5.2'),
     messages,
@@ -34,7 +39,8 @@ export async function saveConversationToDb(
   userId: string | null = null,
 ): Promise<void> {
   const { db } = await import('@/db');
-  const { conversations, messages: messagesTable } = await import('@/db/schema');
+  const { conversations, messages: messagesTable } =
+    await import('@/db/schema');
   const { eq } = await import('drizzle-orm');
 
   await db.insert(conversations).values({
@@ -68,7 +74,8 @@ export async function getOpenConversationByChatId(
   userId: string | null = null,
 ) {
   const { db } = await import('@/db');
-  const { conversations, messages: messagesTable } = await import('@/db/schema');
+  const { conversations, messages: messagesTable } =
+    await import('@/db/schema');
   const { eq, and, desc, asc, isNull } = await import('drizzle-orm');
 
   const conditions = [
@@ -112,7 +119,8 @@ export async function appendMessagesToConversation(
   messages: MessageToSave[],
 ): Promise<void> {
   const { db } = await import('@/db');
-  const { conversations, messages: messagesTable } = await import('@/db/schema');
+  const { conversations, messages: messagesTable } =
+    await import('@/db/schema');
   const { eq } = await import('drizzle-orm');
 
   if (messages.length > 0) {
