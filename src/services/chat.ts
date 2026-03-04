@@ -6,8 +6,8 @@ export async function buildChatOptions(
   messages: any[],
   conversationId?: string,
 ) {
-  const { getMcpToolDefinitions, getCronjobTools } = await import('@/tools');
-  const [mcpTools, cronjobTools] = await Promise.all([getMcpToolDefinitions(), Promise.resolve(getCronjobTools())]);
+  const { getDockerMcpToolDefinitions, getCronjobTools } = await import('@/tools');
+  const [mcpTools, cronjobTools] = await Promise.all([getDockerMcpToolDefinitions(), Promise.resolve(getCronjobTools())]);
   const tools = [...mcpTools, ...cronjobTools];
   return {
     adapter: openaiText('gpt-5.2'),

@@ -69,7 +69,7 @@ function jsonSchemaToZod(
   return isRequired ? zodType : zodType.optional();
 }
 
-export async function getMcpToolDefinitions() {
+export async function getDockerMcpToolDefinitions() {
   try {
     const client = await getMcpClient();
     const { tools } = await client.listTools();
@@ -94,7 +94,7 @@ export async function getMcpToolDefinitions() {
       });
     });
   } catch (error) {
-    console.error('[MCP] Failed to load tools from Docker MCP Gateway:', error);
+    console.warn('[Docker MCP] Not available, skipping tools:', (error as Error).message);
     return [];
   }
 }
