@@ -9,6 +9,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
+  server: {
+    host: process.env.HOST || 'localhost',
+  },
   plugins: [
     devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//, 'postgres', /^drizzle-orm/, 'node-cron'] } }),
