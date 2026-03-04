@@ -142,7 +142,9 @@ export function Chat({
                           key={idx}
                           className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-pre:bg-gray-100 prose-pre:p-3 prose-pre:rounded prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
                           dangerouslySetInnerHTML={{
-                            __html: marked.parse(part.content, { async: false }) as string,
+                            __html: marked.parse(part.content, {
+                              async: false,
+                            }) as string,
                           }}
                         />
                       );

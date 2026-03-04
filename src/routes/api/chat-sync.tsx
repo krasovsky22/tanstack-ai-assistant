@@ -1,4 +1,4 @@
-import { chat, maxIterations } from '@tanstack/ai';
+import { chat, maxIterations, StreamProcessor } from '@tanstack/ai';
 import { createFileRoute } from '@tanstack/react-router';
 import {
   buildChatOptions,
@@ -8,6 +8,36 @@ import {
   appendMessagesToConversation,
 } from '@/services/chat';
 import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
+
+/**
+ * Run chat with streaming and collect full messages including tool calls.
+ * Returns the final text response and the assistant UIMessage with all parts.
+ */
+async function runChatWithToolCollection(
+  options: Awaited<ReturnType<typeof buildChatOptions>>,
+  systemPrompts?: string[],
+) {
+  const processor = new StreamProcessor();
+
+  const stream = chat({
+    ...options,
+    ...(systemPrompts ? { systemPrompts } : {}),
+    agentLoopStrategy: maxIterations(10),
+  });
+
+  const result = await processor.process(stream);
+  const messages = processor.getMessages();
+
+  // Get the assistant message (last message from the processor)
+  const assistantMessage = messages.find((m) => m.role === 'assistant');
+
+  return {
+    text: result.content,
+    assistantParts: assistantMessage?.parts ?? [
+      { type: 'text' as const, content: result.content },
+    ],
+  };
+}
 
 type GatewayAction = 'continue' | 'new_conversation' | 'close_conversation';
 
@@ -60,43 +90,44 @@ export const Route = createFileRoute('/api/chat-sync')({
         const { messages, title, source, chatId, userId } =
           await request.json();
 
-        console.log('Recieved Request', messages, title);
+        console.log('Recieved Request', messages, title, chatId);
 
         // Non-gateway flow (no chatId): run chat, optionally persist conversation
         if (!chatId) {
           try {
             const conversationId = crypto.randomUUID();
             const options = await buildChatOptions(messages, conversationId);
-            const text = await chat({
-              ...options,
-              agentLoopStrategy: maxIterations(10),
-              stream: false,
-            });
+            const { text } = await runChatWithToolCollection(options);
 
             // Cronjob source: do not persist — only return the response for cronjob logs
-            if (source !== CONVERSATION_SOURCES.CRONJOB) {
-              await saveConversationToDb(
-                conversationId,
-                title ?? 'Chat',
-                [
-                  {
-                    id: crypto.randomUUID(),
-                    role: 'user',
-                    parts: [{ type: 'text', content: messages[0].content }],
-                  },
-                  {
-                    id: crypto.randomUUID(),
-                    role: 'assistant',
-                    parts: [{ type: 'text', content: text }],
-                  },
-                ],
-                source ?? null,
-              );
-            }
-
+            // if (source === CONVERSATION_SOURCES.CRONJOB) {
             return new Response(JSON.stringify({ text }), {
               headers: { 'Content-Type': 'application/json' },
             });
+            // }
+
+            // await saveConversationToDb(
+            //   conversationId,
+            //   title ?? 'Chat',
+            //   [
+            //     {
+            //       id: crypto.randomUUID(),
+            //       role: 'user',
+            //       parts: [
+            //         {
+            //           type: 'text',
+            //           content: messages[0].content,
+            //         },
+            //       ],
+            //     },
+            //     {
+            //       id: crypto.randomUUID(),
+            //       role: 'assistant',
+            //       parts: [{ type: 'text', content: text }],
+            //     },
+            //   ],
+            //   source ?? null,
+            // );
           } catch (err) {
             console.error('[chat-sync] Error:', err);
             return new Response(
@@ -137,12 +168,10 @@ export const Route = createFileRoute('/api/chat-sync')({
 
           // Single LLM call: determine action + generate response (with all tools)
           const gatewayOptions = await buildChatOptions(allMessages);
-          const rawDecision = await chat({
-            ...gatewayOptions,
-            systemPrompts: [GATEWAY_SYSTEM_PROMPT],
-            agentLoopStrategy: maxIterations(10),
-            stream: false,
-          });
+          const { text: rawDecision, assistantParts } =
+            await runChatWithToolCollection(gatewayOptions, [
+              GATEWAY_SYSTEM_PROMPT,
+            ]);
 
           const { action, response: responseText } = parseGatewayDecision(
             rawDecision,
@@ -161,7 +190,7 @@ export const Route = createFileRoute('/api/chat-sync')({
           const assistantMessage = {
             id: crypto.randomUUID(),
             role: 'assistant',
-            parts: [{ type: 'text', content: responseText }],
+            parts: assistantParts,
           };
 
           const conversationTitle =
@@ -190,6 +219,17 @@ export const Route = createFileRoute('/api/chat-sync')({
                   userMessage,
                   assistantMessage,
                 ]);
+              } else {
+                // No open conversation exists, create a new one
+                const newConvId = crypto.randomUUID();
+                await saveConversationToDb(
+                  newConvId,
+                  conversationTitle,
+                  [userMessage, assistantMessage],
+                  source ?? null,
+                  String(chatId),
+                  userId ? String(userId) : null,
+                );
               }
               break;
             }

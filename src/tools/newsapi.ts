@@ -15,31 +15,36 @@ export function getNewsApiTools() {
           ),
         q: z
           .string()
-          .nullish()
+          .optional()
+          .default('')
           .describe(
             'Keywords or phrases to search for in the article title and body. Required for "everything" endpoint if sources/domains are not provided.',
           ),
         sources: z
           .string()
-          .nullish()
+          .optional()
+          .default('')
           .describe(
             'A comma-seperated string of identifiers (maximum 20) for the news sources or blogs you want headlines from.',
           ),
         domains: z
           .string()
-          .nullish()
+          .optional()
+          .default('')
           .describe(
             'A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com) to restrict the search to. Only for "everything".',
           ),
         from: z
           .string()
           .optional()
+          .default('')
           .describe(
             'A date and optional time for the oldest article allowed. ISO 8601 format (e.g. 2026-03-04). Only for "everything".',
           ),
         to: z
           .string()
           .optional()
+          .default('')
           .describe(
             'A date and optional time for the newest article allowed. ISO 8601 format. Only for "everything".',
           ),
