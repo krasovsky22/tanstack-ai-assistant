@@ -15,19 +15,19 @@ export function getNewsApiTools() {
           ),
         q: z
           .string()
-          .optional()
+          .nullish()
           .describe(
             'Keywords or phrases to search for in the article title and body. Required for "everything" endpoint if sources/domains are not provided.',
           ),
         sources: z
           .string()
-          .optional()
+          .nullish()
           .describe(
             'A comma-seperated string of identifiers (maximum 20) for the news sources or blogs you want headlines from.',
           ),
         domains: z
           .string()
-          .optional()
+          .nullish()
           .describe(
             'A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com) to restrict the search to. Only for "everything".',
           ),

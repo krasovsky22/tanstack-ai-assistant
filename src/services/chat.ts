@@ -19,7 +19,9 @@ export async function buildChatOptions(
     messages,
     conversationId,
     agentLoopStrategy: maxIterations(10),
-    systemPrompts: ['You are a helpful assistant.'],
+    systemPrompts: [
+      'You are a helpful assistant. Always format your responses using Markdown for better readability. Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate.',
+    ],
     tools,
   };
 }

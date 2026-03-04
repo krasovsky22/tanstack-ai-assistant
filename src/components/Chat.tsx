@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
+import { marked } from 'marked';
 
 function prettifyJsonString(input: string) {
   try {
@@ -135,6 +136,17 @@ export function Chat({
               <div className="text-gray-900">
                 {message.parts.map((part, idx) => {
                   if (part.type === 'text') {
+                    if (message.role === 'assistant') {
+                      return (
+                        <div
+                          key={idx}
+                          className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-pre:bg-gray-100 prose-pre:p-3 prose-pre:rounded prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
+                          dangerouslySetInnerHTML={{
+                            __html: marked.parse(part.content, { async: false }) as string,
+                          }}
+                        />
+                      );
+                    }
                     return <div key={idx}>{part.content}</div>;
                   }
                   return null;
