@@ -9,6 +9,7 @@ export const JOB_STATUSES = [
   'rejected',
   'withdrawn',
   'failed',
+  'generated-from-email',
 ] as const;
 
 export type JobStatus = (typeof JOB_STATUSES)[number];

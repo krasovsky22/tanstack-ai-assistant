@@ -8,6 +8,62 @@
       "when": 1771929796105,
       "tag": "0000_elite_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771929796200,
+      "tag": "0001_add_resume_pdf_path",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771929796300,
+      "tag": "0002_add_job_error_tracking",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771929796400,
+      "tag": "0003_add_conversation_source",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771929796500,
+      "tag": "0004_add_conversation_gateway_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771929796600,
+      "tag": "0005_add_user_id_to_conversations",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771929796700,
+      "tag": "0006_add_cronjobs_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771929796800,
+      "tag": "0007_add_cronjob_logs_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772708459000,
+      "tag": "0008_add_job_emails_table",
+      "breakpoints": true
     }
   ]
 }

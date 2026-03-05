@@ -66,3 +66,15 @@ export const cronjobLogs = pgTable('cronjob_logs', {
   durationMs: integer('duration_ms'),
   ranAt: timestamp('ran_at').defaultNow().notNull(),
 });
+
+export const jobEmails = pgTable('job_emails', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
+  source: text('source').notNull(),
+  emailContent: text('email_content').notNull(),
+  emailLlmSummarized: text('email_llm_summarized').notNull(),
+  subject: text('subject').notNull(),
+  sender: text('sender').notNull(),
+  receivedAt: timestamp('received_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
