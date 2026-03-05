@@ -29,8 +29,16 @@ const EmailClassificationSchema = z.object({
     .describe(
       'Is this email job-related (recruiter outreach, application update, interview, offer, rejection)?',
     ),
-  company: z.string().nullable().describe('Company name if detectable, else null'),
-  jobTitle: z.string().nullable().describe('Job title if detectable, else null'),
+  company: z
+    .string()
+    .nullable()
+    .default('Unknown')
+    .describe('Company name if detectable, else null'),
+  jobTitle: z
+    .string()
+    .nullable()
+    .default('Unknown')
+    .describe('Job title if detectable, else null'),
   summary: z.string().describe('1-3 sentence summary of the email'),
 });
 
@@ -82,21 +90,26 @@ export async function runIngestion(): Promise<{
       }
 
       try {
-        const uids = await client.search({ seen: false, since }, { uid: true });
+        const uids =
+          (await client.search({ seen: false, since }, { uid: true })) || [];
         const remaining = maxEmails - summary.fetched;
         const batch = uids.slice(0, remaining);
         const seenUids: number[] = [];
 
         for (const uid of batch) {
           // Pitfall 4: use null as part to get full RFC822 message for mailparser
-          const { content } = await client.download(String(uid), null as unknown as string, {
-            uid: true,
-          });
+          const { content } = await client.download(
+            String(uid),
+            null as unknown as string,
+            {
+              uid: true,
+            },
+          );
           const parsed = await simpleParser(content);
 
           const subject = parsed.subject ?? '';
           const sender = parsed.from?.text ?? '';
-          const bodyText = parsed.text ?? parsed.html ?? '';
+          const bodyText = parsed.text || parsed.html || '';
           const receivedAt = parsed.date ?? new Date();
 
           summary.fetched++;
@@ -130,11 +143,21 @@ export async function runIngestion(): Promise<{
           let matchedJobId: string | null = null;
 
           // Pitfall 6: require non-null, non-Unknown values to avoid hallucination matches
-          if (company && title && company !== 'Unknown' && title !== 'Unknown') {
+          if (
+            company &&
+            title &&
+            company !== 'Unknown' &&
+            title !== 'Unknown'
+          ) {
             const [match] = await db
               .select({ id: jobs.id })
               .from(jobs)
-              .where(and(ilike(jobs.company, `%${company}%`), ilike(jobs.title, `%${title}%`)))
+              .where(
+                and(
+                  ilike(jobs.company, `%${company}%`),
+                  ilike(jobs.title, `%${title}%`),
+                ),
+              )
               .orderBy(desc(jobs.createdAt))
               .limit(1);
             matchedJobId = match?.id ?? null;
@@ -210,8 +233,12 @@ export async function fetchRawEmails(): Promise<
     .split(',')
     .map((f) => f.trim());
   const since = getSearchSince();
-  const results: Array<{ subject: string; sender: string; receivedAt: Date; bodyText: string }> =
-    [];
+  const results: Array<{
+    subject: string;
+    sender: string;
+    receivedAt: Date;
+    bodyText: string;
+  }> = [];
   const client = createImapClient();
 
   await client.connect();
@@ -227,15 +254,19 @@ export async function fetchRawEmails(): Promise<
       try {
         const uids = await client.search({ seen: false, since }, { uid: true });
         for (const uid of uids) {
-          const { content } = await client.download(String(uid), null as unknown as string, {
-            uid: true,
-          });
+          const { content } = await client.download(
+            String(uid),
+            null as unknown as string,
+            {
+              uid: true,
+            },
+          );
           const parsed = await simpleParser(content);
           results.push({
             subject: parsed.subject ?? '',
             sender: parsed.from?.text ?? '',
             receivedAt: parsed.date ?? new Date(),
-            bodyText: parsed.text ?? parsed.html ?? '',
+            bodyText: parsed.text || parsed.html || '',
           });
         }
       } finally {

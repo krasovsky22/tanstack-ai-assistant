@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MailIndexRouteImport } from './routes/mail/index'
 import { Route as JobsIndexRouteImport } from './routes/jobs/index'
 import { Route as CronjobsIndexRouteImport } from './routes/cronjobs/index'
 import { Route as ConversationsIndexRouteImport } from './routes/conversations/index'
@@ -31,6 +32,8 @@ import { Route as ApiMailIngestRouteImport } from './routes/api/mail/ingest'
 import { Route as ApiMailEmailsByJobRouteImport } from './routes/api/mail/emails-by-job'
 import { Route as ApiMailEmailsRouteImport } from './routes/api/mail/emails'
 import { Route as ApiMailEmailCountRouteImport } from './routes/api/mail/email-count'
+import { Route as ApiMailAllRouteImport } from './routes/api/mail/all'
+import { Route as ApiMailIdRouteImport } from './routes/api/mail/$id'
 import { Route as ApiJobsProcessRouteImport } from './routes/api/jobs/process'
 import { Route as ApiJobsGenerateResumeRouteImport } from './routes/api/jobs/generate-resume'
 import { Route as ApiJobsIdRouteImport } from './routes/api/jobs/$id'
@@ -42,6 +45,11 @@ import { Route as ApiCronjobsIdLogsRouteImport } from './routes/api/cronjobs/$id
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailIndexRoute = MailIndexRouteImport.update({
+  id: '/mail/',
+  path: '/mail/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JobsIndexRoute = JobsIndexRouteImport.update({
@@ -149,6 +157,16 @@ const ApiMailEmailCountRoute = ApiMailEmailCountRouteImport.update({
   path: '/api/mail/email-count',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMailAllRoute = ApiMailAllRouteImport.update({
+  id: '/api/mail/all',
+  path: '/api/mail/all',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMailIdRoute = ApiMailIdRouteImport.update({
+  id: '/api/mail/$id',
+  path: '/api/mail/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiJobsProcessRoute = ApiJobsProcessRouteImport.update({
   id: '/api/jobs/process',
   path: '/api/jobs/process',
@@ -198,11 +216,14 @@ export interface FileRoutesByFullPath {
   '/conversations/': typeof ConversationsIndexRoute
   '/cronjobs/': typeof CronjobsIndexRoute
   '/jobs/': typeof JobsIndexRoute
+  '/mail/': typeof MailIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/mail/$id': typeof ApiMailIdRoute
+  '/api/mail/all': typeof ApiMailAllRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
   '/api/mail/emails': typeof ApiMailEmailsRoute
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
@@ -228,11 +249,14 @@ export interface FileRoutesByTo {
   '/conversations': typeof ConversationsIndexRoute
   '/cronjobs': typeof CronjobsIndexRoute
   '/jobs': typeof JobsIndexRoute
+  '/mail': typeof MailIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/mail/$id': typeof ApiMailIdRoute
+  '/api/mail/all': typeof ApiMailAllRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
   '/api/mail/emails': typeof ApiMailEmailsRoute
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
@@ -260,11 +284,14 @@ export interface FileRoutesById {
   '/conversations/': typeof ConversationsIndexRoute
   '/cronjobs/': typeof CronjobsIndexRoute
   '/jobs/': typeof JobsIndexRoute
+  '/mail/': typeof MailIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/mail/$id': typeof ApiMailIdRoute
+  '/api/mail/all': typeof ApiMailAllRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
   '/api/mail/emails': typeof ApiMailEmailsRoute
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
@@ -293,11 +320,14 @@ export interface FileRouteTypes {
     | '/conversations/'
     | '/cronjobs/'
     | '/jobs/'
+    | '/mail/'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/mail/$id'
+    | '/api/mail/all'
     | '/api/mail/email-count'
     | '/api/mail/emails'
     | '/api/mail/emails-by-job'
@@ -323,11 +353,14 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/cronjobs'
     | '/jobs'
+    | '/mail'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/mail/$id'
+    | '/api/mail/all'
     | '/api/mail/email-count'
     | '/api/mail/emails'
     | '/api/mail/emails-by-job'
@@ -354,11 +387,14 @@ export interface FileRouteTypes {
     | '/conversations/'
     | '/cronjobs/'
     | '/jobs/'
+    | '/mail/'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/mail/$id'
+    | '/api/mail/all'
     | '/api/mail/email-count'
     | '/api/mail/emails'
     | '/api/mail/emails-by-job'
@@ -386,11 +422,14 @@ export interface RootRouteChildren {
   ConversationsIndexRoute: typeof ConversationsIndexRoute
   CronjobsIndexRoute: typeof CronjobsIndexRoute
   JobsIndexRoute: typeof JobsIndexRoute
+  MailIndexRoute: typeof MailIndexRoute
   ApiConversationsIdRoute: typeof ApiConversationsIdRoute
   ApiCronjobsIdRoute: typeof ApiCronjobsIdRouteWithChildren
   ApiJobsIdRoute: typeof ApiJobsIdRoute
   ApiJobsGenerateResumeRoute: typeof ApiJobsGenerateResumeRoute
   ApiJobsProcessRoute: typeof ApiJobsProcessRoute
+  ApiMailIdRoute: typeof ApiMailIdRoute
+  ApiMailAllRoute: typeof ApiMailAllRoute
   ApiMailEmailCountRoute: typeof ApiMailEmailCountRoute
   ApiMailEmailsRoute: typeof ApiMailEmailsRoute
   ApiMailEmailsByJobRoute: typeof ApiMailEmailsByJobRoute
@@ -408,6 +447,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail/': {
+      id: '/mail/'
+      path: '/mail'
+      fullPath: '/mail/'
+      preLoaderRoute: typeof MailIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs/': {
@@ -557,6 +603,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMailEmailCountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mail/all': {
+      id: '/api/mail/all'
+      path: '/api/mail/all'
+      fullPath: '/api/mail/all'
+      preLoaderRoute: typeof ApiMailAllRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mail/$id': {
+      id: '/api/mail/$id'
+      path: '/api/mail/$id'
+      fullPath: '/api/mail/$id'
+      preLoaderRoute: typeof ApiMailIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/jobs/process': {
       id: '/api/jobs/process'
       path: '/api/jobs/process'
@@ -650,11 +710,14 @@ const rootRouteChildren: RootRouteChildren = {
   ConversationsIndexRoute: ConversationsIndexRoute,
   CronjobsIndexRoute: CronjobsIndexRoute,
   JobsIndexRoute: JobsIndexRoute,
+  MailIndexRoute: MailIndexRoute,
   ApiConversationsIdRoute: ApiConversationsIdRoute,
   ApiCronjobsIdRoute: ApiCronjobsIdRouteWithChildren,
   ApiJobsIdRoute: ApiJobsIdRoute,
   ApiJobsGenerateResumeRoute: ApiJobsGenerateResumeRoute,
   ApiJobsProcessRoute: ApiJobsProcessRoute,
+  ApiMailIdRoute: ApiMailIdRoute,
+  ApiMailAllRoute: ApiMailAllRoute,
   ApiMailEmailCountRoute: ApiMailEmailCountRoute,
   ApiMailEmailsRoute: ApiMailEmailsRoute,
   ApiMailEmailsByJobRoute: ApiMailEmailsByJobRoute,

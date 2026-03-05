@@ -7,7 +7,7 @@ import {
   closeConversation,
   appendMessagesToConversation,
 } from '@/services/chat';
-import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
+// import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
 /**
  * Run chat with streaming and collect full messages including tool calls.
