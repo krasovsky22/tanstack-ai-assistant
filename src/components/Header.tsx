@@ -1,7 +1,16 @@
 import { Link } from '@tanstack/react-router';
 
 import { useState } from 'react';
-import { Briefcase, Clock, Home, Mail, Menu, MessageSquare, Search, X } from 'lucide-react';
+import {
+  Briefcase,
+  Clock,
+  Home,
+  Mail,
+  Menu,
+  MessageSquare,
+  Search,
+  X,
+} from 'lucide-react';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +78,7 @@ export default function Header() {
             }}
           >
             <MessageSquare size={20} />
-            <span className="font-medium">Conversations</span>
+            <span className="font-medium">AI</span>
           </Link>
 
           <div className="flex items-center gap-3 p-3 rounded-lg mb-1">

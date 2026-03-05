@@ -1,0 +1,279 @@
+import { toolDefinition } from '@tanstack/ai';
+import { z } from 'zod';
+
+function getBaseUrl() {
+  return process.env.APP_URL ?? 'http://localhost:3000';
+}
+
+async function apiFetch(path: string, init?: RequestInit) {
+  const res = await fetch(`${getBaseUrl()}${path}`, init);
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function withUiLink<T extends object>(data: T, uiPath: string): T & { uiLink: string } {
+  return { ...data, uiLink: `${getBaseUrl()}${uiPath}` };
+}
+
+function withUiLinks<T extends object>(items: T[], uiPathFn: (item: T) => string): Array<T & { uiLink: string }> {
+  return items.map((item) => ({ ...item, uiLink: `${getBaseUrl()}${uiPathFn(item)}` }));
+}
+
+export function getUiBackendApiTools() {
+  return [
+    // ── Jobs ──────────────────────────────────────────────────────────────────
+
+    toolDefinition({
+      name: 'list_jobs',
+      description:
+        'List all jobs. Optionally filter by status or search query (matches title, company, source).',
+      inputSchema: z.object({
+        status: z
+          .string()
+          .optional()
+          .default('')
+          .describe(
+            'Filter by status: new, processed, applied, rejected, etc. Omit or use "all" for all statuses.',
+          ),
+        search: z
+          .string()
+          .optional()
+          .default('')
+          .describe('Search term to filter by title, company, or source.'),
+      }),
+    }).server(async ({ status, search }) => {
+      const params = new URLSearchParams();
+      if (status) params.set('status', status);
+      if (search) params.set('search', search);
+      const qs = params.toString();
+      const data = await apiFetch(`/api/jobs/${qs ? `?${qs}` : ''}`);
+      return Array.isArray(data)
+        ? withUiLinks(data, (job: any) => `/jobs/${job.id}`)
+        : data;
+    }),
+
+    toolDefinition({
+      name: 'get_job',
+      description: 'Get a single job by its UUID.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the job'),
+      }),
+    }).server(async ({ id }) => {
+      const data = await apiFetch(`/api/jobs/${id}`);
+      return data && typeof data === 'object' ? withUiLink(data, `/jobs/${id}`) : data;
+    }),
+
+    toolDefinition({
+      name: 'create_job',
+      description: 'Create a new job listing.',
+      inputSchema: z.object({
+        title: z.string().describe('Job title'),
+        company: z.string().describe('Company name'),
+        description: z.string().describe('Full job description'),
+        source: z
+          .string()
+          .optional()
+          .describe('Source of the job listing (e.g. LinkedIn, Indeed)'),
+        status: z
+          .string()
+          .optional()
+          .describe('Initial status (default: "new")'),
+        link: z
+          .string()
+          .optional()
+          .default('')
+          .describe('URL to the original job posting'),
+        notes: z.string().optional().default('').describe('Additional notes'),
+      }),
+    }).server(async (body) => {
+      const data = await apiFetch('/api/jobs/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      return data?.id ? withUiLink(data, `/jobs/${data.id}`) : data;
+    }),
+
+    toolDefinition({
+      name: 'update_job',
+      description:
+        'Update fields on an existing job (title, company, description, status, notes, etc.).',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the job to update'),
+        title: z.string().optional().default(''),
+        company: z.string().optional().default(''),
+        description: z.string().optional().default(''),
+        source: z.string().optional().default(''),
+        status: z.string().optional().default('').describe('New status value'),
+        link: z.string().nullable().optional().default(null),
+        notes: z.string().nullable().optional().default(null),
+      }),
+    }).server(async ({ id, ...fields }) => {
+      const data = await apiFetch(`/api/jobs/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      return data && typeof data === 'object' ? withUiLink(data, `/jobs/${id}`) : data;
+    }),
+
+    toolDefinition({
+      name: 'delete_job',
+      description: 'Permanently delete a job by its UUID.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the job to delete'),
+      }),
+    }).server(async ({ id }) => {
+      return apiFetch(`/api/jobs/${id}`, { method: 'DELETE' });
+    }),
+
+    toolDefinition({
+      name: 'process_job',
+      description:
+        'Trigger AI processing on a job (extracts skills, sets match score, updates status to "processed"). If no id is provided, processes the next unprocessed job.',
+      inputSchema: z.object({
+        id: z
+          .string()
+          .optional()
+          .describe(
+            'UUID of the job to process. Omit to process the next new job.',
+          ),
+      }),
+    }).server(async ({ id }) => {
+      const data = await apiFetch('/api/jobs/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(id ? { id } : {}),
+      });
+      const jobId = id ?? data?.id;
+      return data && typeof data === 'object' && jobId ? withUiLink(data, `/jobs/${jobId}`) : data;
+    }),
+
+    toolDefinition({
+      name: 'generate_resume_for_job',
+      description:
+        'Generate a tailored resume for a job. If no id is provided, generates for the next processed job without a resume.',
+      inputSchema: z.object({
+        id: z
+          .string()
+          .optional()
+          .describe(
+            'UUID of the job to generate a resume for. Omit to pick the next eligible job.',
+          ),
+      }),
+    }).server(async ({ id }) => {
+      const data = await apiFetch('/api/jobs/generate-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(id ? { id } : {}),
+      });
+      const jobId = id ?? data?.id;
+      return data && typeof data === 'object' && jobId ? withUiLink(data, `/jobs/${jobId}`) : data;
+    }),
+
+    // ── Conversations ─────────────────────────────────────────────────────────
+
+    toolDefinition({
+      name: 'list_conversations',
+      description:
+        'List all saved conversations ordered by most recently updated.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const data = await apiFetch('/api/conversations/');
+      return Array.isArray(data)
+        ? withUiLinks(data, (conv: any) => `/conversations/${conv.id}`)
+        : data;
+    }),
+
+    toolDefinition({
+      name: 'get_conversation',
+      description: 'Get a conversation with its full message history.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the conversation'),
+      }),
+    }).server(async ({ id }) => {
+      const data = await apiFetch(`/api/conversations/${id}`);
+      return data && typeof data === 'object' ? withUiLink(data, `/conversations/${id}`) : data;
+    }),
+
+    toolDefinition({
+      name: 'delete_conversation',
+      description: 'Permanently delete a conversation and all its messages.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the conversation to delete'),
+      }),
+    }).server(async ({ id }) => {
+      return apiFetch(`/api/conversations/${id}`, { method: 'DELETE' });
+    }),
+
+    // ── Mail ──────────────────────────────────────────────────────────────────
+
+    toolDefinition({
+      name: 'list_all_emails',
+      description:
+        'List all ingested job-related emails with associated job title and company.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const data = await apiFetch('/api/mail/all');
+      return Array.isArray(data)
+        ? withUiLinks(data, (email: any) => (email.jobId ? `/jobs/${email.jobId}` : '/mail'))
+        : data;
+    }),
+
+    toolDefinition({
+      name: 'get_emails_by_job',
+      description: 'Get all emails associated with a specific job.',
+      inputSchema: z.object({
+        jobId: z.string().describe('UUID of the job'),
+      }),
+    }).server(async ({ jobId }) => {
+      const data = await apiFetch(
+        `/api/mail/emails-by-job?jobId=${encodeURIComponent(jobId)}`,
+      );
+      return Array.isArray(data)
+        ? withUiLinks(data, () => `/jobs/${jobId}`)
+        : data;
+    }),
+
+    toolDefinition({
+      name: 'get_email_count_for_job',
+      description: 'Get the number of emails associated with a specific job.',
+      inputSchema: z.object({
+        jobId: z.string().describe('UUID of the job'),
+      }),
+    }).server(async ({ jobId }) => {
+      const data = await apiFetch(
+        `/api/mail/email-count?jobId=${encodeURIComponent(jobId)}`,
+      );
+      return data && typeof data === 'object'
+        ? withUiLink(data, `/jobs/${jobId}`)
+        : { count: data, uiLink: `${getBaseUrl()}/jobs/${jobId}` };
+    }),
+
+    toolDefinition({
+      name: 'delete_email',
+      description: 'Delete a job email by its UUID.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the email to delete'),
+      }),
+    }).server(async ({ id }) => {
+      return apiFetch(`/api/mail/${id}`, { method: 'DELETE' });
+    }),
+
+    toolDefinition({
+      name: 'ingest_emails',
+      description:
+        'Trigger email ingestion — fetches new emails from the mail source and stores them in the database.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const data = await apiFetch('/api/mail/ingest', { method: 'POST' });
+      return data && typeof data === 'object'
+        ? withUiLink(data, '/mail')
+        : data;
+    }),
+  ];
+}

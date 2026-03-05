@@ -18,7 +18,7 @@ function ConversationsDashboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Conversations</h1>
         <Link
-          to="/"
+          to="/conversations/new"
           className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800"
         >
           New Chat
@@ -43,7 +43,7 @@ function ConversationList() {
     return (
       <div className="text-gray-500 text-center py-12">
         No conversations yet.{' '}
-        <Link to="/" className="text-blue-600 hover:underline">
+        <Link to="/conversations/new" className="text-blue-600 hover:underline">
           Start chatting
         </Link>
       </div>

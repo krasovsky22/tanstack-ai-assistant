@@ -5,7 +5,8 @@ export function getCronjobTools() {
   return [
     toolDefinition({
       name: 'list_cronjobs',
-      description: 'List all cronjobs with their schedule, active status, and last run result.',
+      description:
+        'List all cronjobs with their schedule, active status, and last run result.',
       inputSchema: z.object({}),
     }).server(async () => {
       const { db } = await import('@/db');
@@ -33,7 +34,9 @@ export function getCronjobTools() {
         cronExpression: z
           .string()
           .describe('Standard 5-field cron expression, e.g. "0 9 * * 1-5"'),
-        prompt: z.string().describe('The prompt the AI agent will receive when the job fires'),
+        prompt: z
+          .string()
+          .describe('The prompt the AI agent will receive when the job fires'),
         isActive: z
           .boolean()
           .optional()
@@ -58,9 +61,13 @@ export function getCronjobTools() {
         'or toggle it on/off without deleting it.',
       inputSchema: z.object({
         id: z.string().describe('UUID of the cronjob to update'),
-        name: z.string().optional().describe('New name'),
-        cronExpression: z.string().optional().describe('New cron expression'),
-        prompt: z.string().optional().describe('New prompt'),
+        name: z.string().optional().default('').describe('New name'),
+        cronExpression: z
+          .string()
+          .optional()
+          .default('')
+          .describe('New cron expression'),
+        prompt: z.string().optional().default('').describe('New prompt'),
         isActive: z
           .boolean()
           .optional()
@@ -73,7 +80,8 @@ export function getCronjobTools() {
 
       const updates: Record<string, unknown> = { updatedAt: new Date() };
       if (fields.name !== undefined) updates.name = fields.name;
-      if (fields.cronExpression !== undefined) updates.cronExpression = fields.cronExpression;
+      if (fields.cronExpression !== undefined)
+        updates.cronExpression = fields.cronExpression;
       if (fields.prompt !== undefined) updates.prompt = fields.prompt;
       if (fields.isActive !== undefined) updates.isActive = fields.isActive;
 
@@ -83,8 +91,14 @@ export function getCronjobTools() {
         .where(eq(cronjobs.id, id))
         .returning();
 
-      if (!row) return { success: false, error: `No cronjob found with id ${id}` };
-      return { success: true, id: row.id, name: row.name, isActive: row.isActive };
+      if (!row)
+        return { success: false, error: `No cronjob found with id ${id}` };
+      return {
+        success: true,
+        id: row.id,
+        name: row.name,
+        isActive: row.isActive,
+      };
     }),
 
     toolDefinition({
@@ -103,7 +117,8 @@ export function getCronjobTools() {
         .where(eq(cronjobs.id, id))
         .returning();
 
-      if (!row) return { success: false, error: `No cronjob found with id ${id}` };
+      if (!row)
+        return { success: false, error: `No cronjob found with id ${id}` };
       return { success: true, deleted: row.name };
     }),
   ];

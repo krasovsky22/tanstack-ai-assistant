@@ -19,6 +19,7 @@ import { Route as JobsExtractFromUrlRouteImport } from './routes/jobs/extract-fr
 import { Route as JobsIdRouteImport } from './routes/jobs/$id'
 import { Route as CronjobsNewRouteImport } from './routes/cronjobs/new'
 import { Route as CronjobsIdRouteImport } from './routes/cronjobs/$id'
+import { Route as ConversationsNewRouteImport } from './routes/conversations/new'
 import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -90,6 +91,11 @@ const CronjobsNewRoute = CronjobsNewRouteImport.update({
 const CronjobsIdRoute = CronjobsIdRouteImport.update({
   id: '/cronjobs/$id',
   path: '/cronjobs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConversationsNewRoute = ConversationsNewRouteImport.update({
+  id: '/conversations/new',
+  path: '/conversations/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConversationsIdRoute = ConversationsIdRouteImport.update({
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/conversations/$id': typeof ConversationsIdRoute
+  '/conversations/new': typeof ConversationsNewRoute
   '/cronjobs/$id': typeof CronjobsIdRouteWithChildren
   '/cronjobs/new': typeof CronjobsNewRoute
   '/jobs/$id': typeof JobsIdRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/conversations/$id': typeof ConversationsIdRoute
+  '/conversations/new': typeof ConversationsNewRoute
   '/cronjobs/new': typeof CronjobsNewRoute
   '/jobs/$id': typeof JobsIdRoute
   '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/conversations/$id': typeof ConversationsIdRoute
+  '/conversations/new': typeof ConversationsNewRoute
   '/cronjobs/$id': typeof CronjobsIdRouteWithChildren
   '/cronjobs/new': typeof CronjobsNewRoute
   '/jobs/$id': typeof JobsIdRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/chat-sync'
     | '/conversations/$id'
+    | '/conversations/new'
     | '/cronjobs/$id'
     | '/cronjobs/new'
     | '/jobs/$id'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/chat-sync'
     | '/conversations/$id'
+    | '/conversations/new'
     | '/cronjobs/new'
     | '/jobs/$id'
     | '/jobs/extract-from-url'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/chat-sync'
     | '/conversations/$id'
+    | '/conversations/new'
     | '/cronjobs/$id'
     | '/cronjobs/new'
     | '/jobs/$id'
@@ -414,6 +426,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiChatSyncRoute: typeof ApiChatSyncRoute
   ConversationsIdRoute: typeof ConversationsIdRoute
+  ConversationsNewRoute: typeof ConversationsNewRoute
   CronjobsIdRoute: typeof CronjobsIdRouteWithChildren
   CronjobsNewRoute: typeof CronjobsNewRoute
   JobsIdRoute: typeof JobsIdRoute
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       path: '/cronjobs/$id'
       fullPath: '/cronjobs/$id'
       preLoaderRoute: typeof CronjobsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conversations/new': {
+      id: '/conversations/new'
+      path: '/conversations/new'
+      fullPath: '/conversations/new'
+      preLoaderRoute: typeof ConversationsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conversations/$id': {
@@ -702,6 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiChatSyncRoute: ApiChatSyncRoute,
   ConversationsIdRoute: ConversationsIdRoute,
+  ConversationsNewRoute: ConversationsNewRoute,
   CronjobsIdRoute: CronjobsIdRouteWithChildren,
   CronjobsNewRoute: CronjobsNewRoute,
   JobsIdRoute: JobsIdRoute,
