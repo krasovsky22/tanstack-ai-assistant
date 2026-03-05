@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, X, FileText } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, X, FileText, Mail } from 'lucide-react';
 import { JOB_STATUSES } from '@/lib/job-constants';
 
 export const Route = createFileRoute('/jobs/')({
@@ -35,6 +35,7 @@ const STATUS_LABELS: Record<string, string> = {
   offer_received: 'Offer Received',
   rejected: 'Rejected',
   withdrawn: 'Withdrawn',
+  'generated-from-email': 'From Email',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -47,6 +48,7 @@ const STATUS_COLORS: Record<string, string> = {
   offer_received: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
   withdrawn: 'bg-slate-100 text-slate-600',
+  'generated-from-email': 'bg-orange-100 text-orange-700',
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -136,6 +138,18 @@ function JobCard({
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
 
+  // Pitfall 5 mitigation: staleTime 60s + initialData prevents N+1 request storm on page load
+  const { data: emailCountData } = useQuery({
+    queryKey: ['email-count', job.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/mail/email-count?jobId=${job.id}`);
+      return res.json() as Promise<{ count: number }>;
+    },
+    staleTime: 60_000,
+    initialData: { count: 0 },
+  });
+  const emailCount = emailCountData?.count ?? 0;
+
   return (
     <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
       <div className="p-4">
@@ -148,6 +162,12 @@ function JobCard({
                 </h3>
               )}
               <StatusBadge status={job.status} />
+              {emailCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                  <Mail size={12} />
+                  {emailCount}
+                </span>
+              )}
             </div>
             {job.company && (
               <p className="text-sm text-gray-600 mt-0.5">{job.company}</p>
