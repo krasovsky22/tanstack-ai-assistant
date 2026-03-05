@@ -27,7 +27,9 @@ import { Route as ApiCronjobsIndexRouteImport } from './routes/api/cronjobs/inde
 import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
 import { Route as CronjobsIdLogsRouteImport } from './routes/cronjobs/$id/logs'
 import { Route as ApiReportsScrapeJobsRouteImport } from './routes/api/reports/scrape-jobs'
+import { Route as ApiMailIngestRouteImport } from './routes/api/mail/ingest'
 import { Route as ApiMailEmailsByJobRouteImport } from './routes/api/mail/emails-by-job'
+import { Route as ApiMailEmailsRouteImport } from './routes/api/mail/emails'
 import { Route as ApiMailEmailCountRouteImport } from './routes/api/mail/email-count'
 import { Route as ApiJobsProcessRouteImport } from './routes/api/jobs/process'
 import { Route as ApiJobsGenerateResumeRouteImport } from './routes/api/jobs/generate-resume'
@@ -127,9 +129,19 @@ const ApiReportsScrapeJobsRoute = ApiReportsScrapeJobsRouteImport.update({
   path: '/api/reports/scrape-jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMailIngestRoute = ApiMailIngestRouteImport.update({
+  id: '/api/mail/ingest',
+  path: '/api/mail/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMailEmailsByJobRoute = ApiMailEmailsByJobRouteImport.update({
   id: '/api/mail/emails-by-job',
   path: '/api/mail/emails-by-job',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMailEmailsRoute = ApiMailEmailsRouteImport.update({
+  id: '/api/mail/emails',
+  path: '/api/mail/emails',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMailEmailCountRoute = ApiMailEmailCountRouteImport.update({
@@ -192,7 +204,9 @@ export interface FileRoutesByFullPath {
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
+  '/api/mail/emails': typeof ApiMailEmailsRoute
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
+  '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/cronjobs/$id/logs': typeof CronjobsIdLogsRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
@@ -220,7 +234,9 @@ export interface FileRoutesByTo {
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
+  '/api/mail/emails': typeof ApiMailEmailsRoute
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
+  '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/cronjobs/$id/logs': typeof CronjobsIdLogsRoute
   '/api/conversations': typeof ApiConversationsIndexRoute
@@ -250,7 +266,9 @@ export interface FileRoutesById {
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
+  '/api/mail/emails': typeof ApiMailEmailsRoute
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
+  '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/cronjobs/$id/logs': typeof CronjobsIdLogsRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
@@ -281,7 +299,9 @@ export interface FileRouteTypes {
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
     | '/api/mail/email-count'
+    | '/api/mail/emails'
     | '/api/mail/emails-by-job'
+    | '/api/mail/ingest'
     | '/api/reports/scrape-jobs'
     | '/cronjobs/$id/logs'
     | '/api/conversations/'
@@ -309,7 +329,9 @@ export interface FileRouteTypes {
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
     | '/api/mail/email-count'
+    | '/api/mail/emails'
     | '/api/mail/emails-by-job'
+    | '/api/mail/ingest'
     | '/api/reports/scrape-jobs'
     | '/cronjobs/$id/logs'
     | '/api/conversations'
@@ -338,7 +360,9 @@ export interface FileRouteTypes {
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
     | '/api/mail/email-count'
+    | '/api/mail/emails'
     | '/api/mail/emails-by-job'
+    | '/api/mail/ingest'
     | '/api/reports/scrape-jobs'
     | '/cronjobs/$id/logs'
     | '/api/conversations/'
@@ -368,7 +392,9 @@ export interface RootRouteChildren {
   ApiJobsGenerateResumeRoute: typeof ApiJobsGenerateResumeRoute
   ApiJobsProcessRoute: typeof ApiJobsProcessRoute
   ApiMailEmailCountRoute: typeof ApiMailEmailCountRoute
+  ApiMailEmailsRoute: typeof ApiMailEmailsRoute
   ApiMailEmailsByJobRoute: typeof ApiMailEmailsByJobRoute
+  ApiMailIngestRoute: typeof ApiMailIngestRoute
   ApiReportsScrapeJobsRoute: typeof ApiReportsScrapeJobsRoute
   ApiConversationsIndexRoute: typeof ApiConversationsIndexRoute
   ApiCronjobsIndexRoute: typeof ApiCronjobsIndexRoute
@@ -503,11 +529,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReportsScrapeJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mail/ingest': {
+      id: '/api/mail/ingest'
+      path: '/api/mail/ingest'
+      fullPath: '/api/mail/ingest'
+      preLoaderRoute: typeof ApiMailIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mail/emails-by-job': {
       id: '/api/mail/emails-by-job'
       path: '/api/mail/emails-by-job'
       fullPath: '/api/mail/emails-by-job'
       preLoaderRoute: typeof ApiMailEmailsByJobRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mail/emails': {
+      id: '/api/mail/emails'
+      path: '/api/mail/emails'
+      fullPath: '/api/mail/emails'
+      preLoaderRoute: typeof ApiMailEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mail/email-count': {
@@ -616,7 +656,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsGenerateResumeRoute: ApiJobsGenerateResumeRoute,
   ApiJobsProcessRoute: ApiJobsProcessRoute,
   ApiMailEmailCountRoute: ApiMailEmailCountRoute,
+  ApiMailEmailsRoute: ApiMailEmailsRoute,
   ApiMailEmailsByJobRoute: ApiMailEmailsByJobRoute,
+  ApiMailIngestRoute: ApiMailIngestRoute,
   ApiReportsScrapeJobsRoute: ApiReportsScrapeJobsRoute,
   ApiConversationsIndexRoute: ApiConversationsIndexRoute,
   ApiCronjobsIndexRoute: ApiCronjobsIndexRoute,
