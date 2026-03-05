@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+current_plan: 4 of 4 (Plans 01-01, 01-03 complete)
+status: unknown
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-05T11:09:57.932Z"
+progress:
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 4
+  completed_plans: 3
+---
+
 # Project State
 
 ## Current Status
@@ -5,8 +20,8 @@
 - **Active Phase:** 1 — Yahoo Mail Ingestion & Job Email Tracking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** 4 of 4 (Plans 01-01, 01-03 complete)
-- **Last session:** 2026-03-05
-- **Stopped At:** Completed 01-03-PLAN.md
+- **Last session:** 2026-03-05T11:09:57.928Z
+- **Stopped At:** Completed 01-02-PLAN.md
 
 ## Progress
 
@@ -25,6 +40,9 @@ Phase 01: [###.] 3/4 plans complete
 - **01-01:** Migration journal must match DB tracking table: when using db:push, also update _journal.json and insert hash rows into drizzle.__drizzle_migrations
 - **01-03:** Missing jobId returns { count: 0 } and [] respectively — safe fallbacks, not errors
 - **01-03:** emails-by-job selects exactly 6 fields (id, subject, sender, receivedAt, emailLlmSummarized, emailContent) matching Plan 04 UI contract
+- [Phase 01-02]: download() called with null part for full RFC822 stream — simpleParser needs raw stream, not named MIME part
+- [Phase 01-02]: DB insert(jobEmails) before messageFlagsAdd — ensures email re-processable if DB write fails (pitfall 3)
+- [Phase 01-02]: Per-folder try/catch around getMailboxLock so invalid folder logs warning and continues rather than aborting all ingestion
 
 ### Performance Metrics
 
@@ -32,3 +50,5 @@ Phase 01: [###.] 3/4 plans complete
 |-------|-------|----------|-------|-------|
 | 01    | 01-01 | 3 min    | 3     | 7     |
 | 01    | 01-03 | 2 min    | 2     | 3     |
+| Phase 01 P01-02 | 2min | 2 tasks | 6 files |
+
