@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate, useRouter } from '@tanstack/react-r
 import { createServerFn } from '@tanstack/react-start';
 import { useForm } from '@tanstack/react-form';
 import { useState, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Mail } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { JOB_STATUSES } from '@/lib/job-constants';
 
 const getJob = createServerFn({ method: 'GET' })
@@ -59,7 +60,129 @@ const STATUS_LABELS: Record<string, string> = {
   offer_received: 'Offer Received',
   rejected: 'Rejected',
   withdrawn: 'Withdrawn',
+  'generated-from-email': 'From Email',
 };
+
+type JobEmail = {
+  id: string;
+  subject: string;
+  sender: string;
+  receivedAt: string; // ISO string from JSON response
+  emailLlmSummarized: string;
+  emailContent: string;
+};
+
+type EmailThreadGroup = {
+  normalizedSubject: string;
+  emails: JobEmail[];
+};
+
+function normalizeEmailSubject(subject: string): string {
+  let s = subject;
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/^(re|fwd|fw)\s*:\s*/i, '').trim();
+  } while (s !== prev);
+  return s.toLowerCase();
+}
+
+function groupEmailsBySubject(emails: JobEmail[]): EmailThreadGroup[] {
+  const map = new Map<string, JobEmail[]>();
+  for (const email of emails) {
+    const key = normalizeEmailSubject(email.subject);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(email);
+  }
+  return Array.from(map.entries()).map(([normalizedSubject, emails]) => ({
+    normalizedSubject,
+    emails,
+  }));
+}
+
+function EmailItem({ email }: { email: JobEmail }) {
+  const [showFull, setShowFull] = useState(false);
+  return (
+    <div className="py-3 border-b last:border-b-0">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <span className="text-xs text-gray-500">{email.sender}</span>
+        <span className="text-xs text-gray-400 shrink-0">
+          {new Date(email.receivedAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </span>
+      </div>
+      <p className="text-sm text-gray-700">{email.emailLlmSummarized}</p>
+      {showFull && (
+        <pre className="mt-2 text-xs text-gray-600 whitespace-pre-wrap font-sans bg-gray-50 p-3 rounded border">
+          {email.emailContent}
+        </pre>
+      )}
+      <button
+        type="button"
+        onClick={() => setShowFull((v) => !v)}
+        className="mt-1 text-xs text-blue-600 hover:underline"
+      >
+        {showFull ? 'Hide full email' : 'Show full email'}
+      </button>
+    </div>
+  );
+}
+
+function EmailThreadSection({ jobId }: { jobId: string }) {
+  const [expanded, setExpanded] = useState(false);
+
+  // enabled: expanded — fetch only on first expand, not on page load
+  const { data: emails = [] } = useQuery<JobEmail[]>({
+    queryKey: ['emails-by-job', jobId],
+    queryFn: async () => {
+      const res = await fetch(`/api/mail/emails-by-job?jobId=${jobId}`);
+      return res.json();
+    },
+    enabled: expanded,
+    staleTime: 60_000,
+  });
+
+  const threads = groupEmailsBySubject(emails);
+
+  return (
+    <div className="mt-6 border rounded-lg bg-white shadow-sm overflow-hidden">
+      <div className="border-t">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-2 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+        >
+          <span className="flex items-center gap-1.5">
+            <Mail size={13} />
+            Emails
+          </span>
+          {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
+        {expanded && (
+          <div className="px-4 pb-4">
+            {threads.length === 0 ? (
+              <p className="text-sm text-gray-400 py-2">No emails linked to this job.</p>
+            ) : (
+              threads.map((thread) => (
+                <div key={thread.normalizedSubject} className="mb-4 last:mb-0">
+                  <p className="text-xs font-medium text-gray-600 mb-1 capitalize">
+                    {thread.normalizedSubject || '(no subject)'}
+                  </p>
+                  {thread.emails.map((email) => (
+                    <EmailItem key={email.id} email={email} />
+                  ))}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function SkillsInput({
   value,
@@ -443,6 +566,7 @@ function EditJobPage() {
           )}
         </form.Subscribe>
       </form>
+      <EmailThreadSection jobId={job.id} />
     </div>
   );
 }
