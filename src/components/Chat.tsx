@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
+import { useNavigate } from '@tanstack/react-router';
 import { marked } from 'marked';
 
 function prettifyJsonString(input: string) {
@@ -66,6 +67,8 @@ export function Chat({
   initialMessages,
 }: ChatProps) {
   const [input, setInput] = useState('');
+  const navigate = useNavigate();
+  const isNew = propConversationId === undefined;
 
   const conversationId = useMemo(
     () => propConversationId ?? crypto.randomUUID(),
@@ -80,16 +83,22 @@ export function Chat({
   });
 
   const prevStatus = useRef(status);
+  const navigatedRef = useRef(false);
   useEffect(() => {
     if (
       prevStatus.current === 'streaming' &&
       status === 'ready' &&
       messages.length > 0
     ) {
-      saveConversation(conversationId, messages);
+      saveConversation(conversationId, messages).then(() => {
+        if (isNew && !navigatedRef.current) {
+          navigatedRef.current = true;
+          navigate({ to: '/conversations/$id', params: { id: conversationId }, replace: true });
+        }
+      });
     }
     prevStatus.current = status;
-  }, [status, conversationId, messages]);
+  }, [status, conversationId, messages, isNew, navigate]);
 
   const latestAssistantMessage = useMemo(
     () =>

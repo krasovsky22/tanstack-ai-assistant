@@ -6,21 +6,32 @@ export async function buildChatOptions(
   messages: any[],
   conversationId?: string,
 ) {
-  const { getDockerMcpToolDefinitions, getCronjobTools, getNewsApiTools, getUiBackendApiTools } =
-    await import('@/tools');
+  const {
+    getDockerMcpToolDefinitions,
+    getCronjobTools,
+    getNewsApiTools,
+    getUiBackendApiTools,
+  } = await import('@/tools');
   const [mcpTools, cronjobTools, newsApiTools] = await Promise.all([
     getDockerMcpToolDefinitions(),
     Promise.resolve(getCronjobTools()),
     Promise.resolve(getNewsApiTools()),
   ]);
-  const tools = [...mcpTools, ...cronjobTools, ...newsApiTools, ...getUiBackendApiTools()];
+  const tools = [
+    ...mcpTools,
+    ...cronjobTools,
+    ...newsApiTools,
+    ...getUiBackendApiTools(),
+  ];
   return {
     adapter: openaiText('gpt-5.2'),
     messages,
     conversationId,
     agentLoopStrategy: maxIterations(10),
     systemPrompts: [
-      'You are a helpful assistant. Always format your responses using Markdown for better readability. Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate.',
+      'You are a helpful assistant. Always format your responses using Markdown for better readability. \
+      Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
+      When uiLink is provided, generate links in markdown format like this: [link text](uiLink) to enable quick navigation in the UI.',
     ],
     tools,
   };
