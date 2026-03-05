@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: 4 of 4 (Plans 01-01, 01-03 complete)
 status: unknown
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-05T11:09:57.932Z"
+stopped_at: "Completed 01-04 tasks 1+2; checkpoint:human-verify at Task 3"
+last_updated: "2026-03-05T11:14:09.231Z"
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 1 — Yahoo Mail Ingestion & Job Email Tracking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** 4 of 4 (Plans 01-01, 01-03 complete)
-- **Last session:** 2026-03-05T11:09:57.928Z
-- **Stopped At:** Completed 01-02-PLAN.md
+- **Last session:** 2026-03-05T11:14:09.226Z
+- **Stopped At:** Completed 01-04 tasks 1+2; checkpoint:human-verify at Task 3
 
 ## Progress
 
@@ -43,6 +43,8 @@ Phase 01: [###.] 3/4 plans complete
 - [Phase 01-02]: download() called with null part for full RFC822 stream — simpleParser needs raw stream, not named MIME part
 - [Phase 01-02]: DB insert(jobEmails) before messageFlagsAdd — ensures email re-processable if DB write fails (pitfall 3)
 - [Phase 01-02]: Per-folder try/catch around getMailboxLock so invalid folder logs warning and continues rather than aborting all ingestion
+- [Phase 01]: staleTime 60s + initialData { count: 0 } prevents N+1 HTTP spike on jobs list load with many JobCards
+- [Phase 01]: enabled: expanded on email thread query — no network request until user opens EmailThreadSection
 
 ### Performance Metrics
 
@@ -51,4 +53,5 @@ Phase 01: [###.] 3/4 plans complete
 | 01    | 01-01 | 3 min    | 3     | 7     |
 | 01    | 01-03 | 2 min    | 2     | 3     |
 | Phase 01 P01-02 | 2min | 2 tasks | 6 files |
+| Phase 01 P01-04 | 2min | 2 tasks | 2 files |
 
