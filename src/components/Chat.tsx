@@ -3,6 +3,7 @@ import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { marked } from 'marked';
 import { generateUUID } from '@/lib/uuid';
+import { Code } from './Code';
 
 interface PendingImage {
   base64: string;
@@ -13,6 +14,31 @@ interface PendingImage {
 interface PendingFile {
   name: string;
   content: string;
+}
+
+type MarkdownSegment =
+  | { type: 'text'; content: string }
+  | { type: 'code'; language: string; content: string };
+
+function splitMarkdownCodeBlocks(text: string): MarkdownSegment[] {
+  const segments: MarkdownSegment[] = [];
+  const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: 'code', language: match[1] || 'text', content: match[2].replace(/\n$/, '') });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    segments.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+
+  return segments;
 }
 
 function prettifyJsonString(input: string) {
@@ -322,16 +348,23 @@ export function Chat({
                 {message.parts.map((part, idx) => {
                   if (part.type === 'text') {
                     if (message.role === 'assistant') {
+                      const segments = splitMarkdownCodeBlocks(part.content);
                       return (
-                        <div
-                          key={idx}
-                          className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-pre:bg-gray-100 prose-pre:p-3 prose-pre:rounded prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
-                          dangerouslySetInnerHTML={{
-                            __html: marked.parse(part.content, {
-                              async: false,
-                            }) as string,
-                          }}
-                        />
+                        <div key={idx}>
+                          {segments.map((seg, segIdx) =>
+                            seg.type === 'code' ? (
+                              <Code key={segIdx} code={seg.content} language={seg.language} />
+                            ) : (
+                              <div
+                                key={segIdx}
+                                className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
+                                dangerouslySetInnerHTML={{
+                                  __html: marked.parse(seg.content, { async: false }) as string,
+                                }}
+                              />
+                            ),
+                          )}
+                        </div>
                       );
                     }
                     return <div key={idx}>{part.content}</div>;
