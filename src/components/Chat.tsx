@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
 import { useNavigate } from '@tanstack/react-router';
 import { marked } from 'marked';
+import { generateUUID } from '@/lib/uuid';
 
 function prettifyJsonString(input: string) {
   try {
@@ -71,7 +72,7 @@ export function Chat({
   const isNew = propConversationId === undefined;
 
   const conversationId = useMemo(
-    () => propConversationId ?? crypto.randomUUID(),
+    () => propConversationId ?? generateUUID(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -93,7 +94,11 @@ export function Chat({
       saveConversation(conversationId, messages).then(() => {
         if (isNew && !navigatedRef.current) {
           navigatedRef.current = true;
-          navigate({ to: '/conversations/$id', params: { id: conversationId }, replace: true });
+          navigate({
+            to: '/conversations/$id',
+            params: { id: conversationId },
+            replace: true,
+          });
         }
       });
     }
