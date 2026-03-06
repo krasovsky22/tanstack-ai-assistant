@@ -275,5 +275,56 @@ export function getUiBackendApiTools() {
         ? withUiLink(data, '/mail')
         : data;
     }),
+
+    // ── Generated Files ───────────────────────────────────────────────────────
+
+    toolDefinition({
+      name: 'list_generated_files',
+      description:
+        'List all AI-generated files (csv, txt, md) stored on the server. Optionally filter by filename.',
+      inputSchema: z.object({
+        search: z
+          .string()
+          .optional()
+          .default('')
+          .describe('Optional filename search filter.'),
+      }),
+    }).server(async ({ search }) => {
+      const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+      const data = await apiFetch(`/api/generated-files/${qs}`);
+      if (!Array.isArray(data)) return data;
+      return data.map((f: { id: string; filename: string }) => ({
+        ...f,
+        downloadUrl: `/api/files/${encodeURIComponent(f.filename)}`,
+      }));
+    }),
+
+    toolDefinition({
+      name: 'get_generated_file',
+      description: 'Get metadata for a single generated file by its UUID.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the generated file record'),
+      }),
+    }).server(async ({ id }) => {
+      const data = await apiFetch(`/api/generated-files/${id}`);
+      if (data && typeof data === 'object' && !data.error) {
+        return {
+          ...data,
+          downloadUrl: `/api/files/${encodeURIComponent((data as { filename: string }).filename)}`,
+        };
+      }
+      return data;
+    }),
+
+    toolDefinition({
+      name: 'delete_generated_file',
+      description:
+        'Delete a generated file by its UUID. Removes the DB record and the file from disk.',
+      inputSchema: z.object({
+        id: z.string().describe('UUID of the generated file record to delete'),
+      }),
+    }).server(async ({ id }) => {
+      return apiFetch(`/api/generated-files/${id}`, { method: 'DELETE' });
+    }),
   ];
 }

@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises';
 import type { IncomingMessage, IncomingImage, Provider } from '../types.js';
 import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
@@ -102,6 +103,33 @@ export class TelegramProvider implements Provider {
     );
     if (!res.ok) {
       console.error(`[Telegram] sendMessage failed: ${res.status}`);
+    }
+  }
+
+  async sendFile(
+    chatId: number | string,
+    filePath: string,
+    filename: string,
+  ): Promise<void> {
+    try {
+      const fileContent = await readFile(filePath);
+      const formData = new FormData();
+      formData.append('chat_id', String(chatId));
+      formData.append(
+        'document',
+        new Blob([fileContent]),
+        filename,
+      );
+
+      const res = await fetch(
+        `https://api.telegram.org/bot${this.token}/sendDocument`,
+        { method: 'POST', body: formData },
+      );
+      if (!res.ok) {
+        console.error(`[Telegram] sendDocument failed: ${res.status}`);
+      }
+    } catch (err) {
+      console.error('[Telegram] sendFile error:', err);
     }
   }
 

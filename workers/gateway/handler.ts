@@ -1,6 +1,21 @@
+import { join } from 'path';
 import type { IncomingMessage, Provider } from './types.js';
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
+const GENERATED_DIR = 'files/generated';
+
+// Extract generated file paths from LLM response text
+// Matches URLs like /api/files/report.csv
+function extractGeneratedFiles(text: string): { filename: string; filePath: string }[] {
+  const pattern = /\/api\/files\/([a-zA-Z0-9._-]+)/g;
+  const files: { filename: string; filePath: string }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    const filename = decodeURIComponent(match[1]);
+    files.push({ filename, filePath: join(GENERATED_DIR, filename) });
+  }
+  return files;
+}
 
 export async function handleMessage(
   msg: IncomingMessage,
@@ -10,7 +25,7 @@ export async function handleMessage(
 
   type ContentPart =
     | { type: 'text'; content: string }
-    | { type: 'image'; source: { type: 'data'; value: string }; metadata: { mimeType: string } };
+    | { type: 'image'; source: { type: 'data'; value: string; mimeType: string } };
 
   const messageContent: string | ContentPart[] =
     msg.images && msg.images.length > 0
@@ -42,4 +57,14 @@ export async function handleMessage(
 
   const { text } = (await res.json()) as { text: string };
   await provider.send(msg.chatId, text);
+
+  // Send any generated files as documents if the provider supports it
+  if (provider.sendFile) {
+    const files = extractGeneratedFiles(text);
+    for (const file of files) {
+      await provider.sendFile(msg.chatId, file.filePath, file.filename).catch(
+        (err) => console.error(`[${provider.name}] Failed to send file ${file.filename}:`, err),
+      );
+    }
+  }
 }

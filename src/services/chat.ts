@@ -11,6 +11,7 @@ export async function buildChatOptions(
     getCronjobTools,
     getNewsApiTools,
     getUiBackendApiTools,
+    getFileTools,
   } = await import('@/tools');
   const [mcpTools, cronjobTools, newsApiTools] = await Promise.all([
     getDockerMcpToolDefinitions(),
@@ -22,6 +23,7 @@ export async function buildChatOptions(
     ...cronjobTools,
     ...newsApiTools,
     ...getUiBackendApiTools(),
+    ...getFileTools(),
   ];
   return {
     adapter: openaiText('gpt-5.2'),
@@ -31,7 +33,9 @@ export async function buildChatOptions(
     systemPrompts: [
       'You are a helpful assistant. Always format your responses using Markdown for better readability. \
       Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
-      When uiLink is provided, generate links in markdown format like this: [link text](uiLink) to enable quick navigation in the UI.',
+      When uiLink is provided, generate links in markdown format like this: [link text](uiLink) to enable quick navigation in the UI. \
+      When the user uploads a text or CSV file, its content will be included in the message — analyze or answer questions about it. \
+      When asked to generate or export a file (csv, txt, md), use the generate_file tool and include the returned downloadUrl as a markdown link in your response.',
     ],
     tools,
   };

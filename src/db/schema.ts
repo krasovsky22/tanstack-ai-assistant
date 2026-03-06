@@ -67,6 +67,15 @@ export const cronjobLogs = pgTable('cronjob_logs', {
   ranAt: timestamp('ran_at').defaultNow().notNull(),
 });
 
+export const generatedFiles = pgTable('generated_files', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  filename: text('filename').notNull(),
+  filePath: text('file_path').notNull(),
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: integer('size_bytes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const jobEmails = pgTable('job_emails', {
   id: uuid('id').primaryKey().defaultRandom(),
   jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),

@@ -12,4 +12,6 @@ dist-ssr
 __unconfig*
 todos.json
 public/generated
+files/generated/*
+!files/generated/.gitkeep
 docker-compose.override.yml

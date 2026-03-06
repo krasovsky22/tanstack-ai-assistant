@@ -10,6 +10,11 @@ interface PendingImage {
   previewUrl: string;
 }
 
+interface PendingFile {
+  name: string;
+  content: string;
+}
+
 function prettifyJsonString(input: string) {
   try {
     return JSON.stringify(JSON.parse(input), null, 2);
@@ -75,6 +80,7 @@ export function Chat({
 }: ChatProps) {
   const [input, setInput] = useState('');
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const isNew = propConversationId === undefined;
@@ -132,25 +138,38 @@ export function Chat({
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
 
-    const newImages = await Promise.all(
+    const newImages: PendingImage[] = [];
+    const newTextFiles: PendingFile[] = [];
+
+    await Promise.all(
       files.map(
         (file) =>
-          new Promise<PendingImage>((resolve) => {
+          new Promise<void>((resolve) => {
             const reader = new FileReader();
-            reader.onload = () => {
-              const result = reader.result as string;
-              resolve({
-                base64: result.split(',')[1],
-                mimeType: file.type,
-                previewUrl: URL.createObjectURL(file),
-              });
-            };
-            reader.readAsDataURL(file);
+            if (file.type.startsWith('image/')) {
+              reader.onload = () => {
+                const result = reader.result as string;
+                newImages.push({
+                  base64: result.split(',')[1],
+                  mimeType: file.type,
+                  previewUrl: URL.createObjectURL(file),
+                });
+                resolve();
+              };
+              reader.readAsDataURL(file);
+            } else {
+              reader.onload = () => {
+                newTextFiles.push({ name: file.name, content: reader.result as string });
+                resolve();
+              };
+              reader.readAsText(file);
+            }
           }),
       ),
     );
 
-    setPendingImages((prev) => [...prev, ...newImages]);
+    if (newImages.length > 0) setPendingImages((prev) => [...prev, ...newImages]);
+    if (newTextFiles.length > 0) setPendingFiles((prev) => [...prev, ...newTextFiles]);
     e.target.value = '';
   };
 
@@ -161,14 +180,26 @@ export function Chat({
     });
   };
 
+  const removeFile = (index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!input.trim() && pendingImages.length === 0) || isLoading) return;
+    const hasAttachments =
+      pendingImages.length > 0 || pendingFiles.length > 0;
+    if ((!input.trim() && !hasAttachments) || isLoading) return;
 
-    if (pendingImages.length > 0) {
+    if (hasAttachments) {
       const content: Array<Record<string, unknown>> = [];
       if (input.trim()) {
         content.push({ type: 'text', content: input.trim() });
+      }
+      for (const file of pendingFiles) {
+        content.push({
+          type: 'text',
+          content: `[Attached file: ${file.name}]\n${file.content}`,
+        });
       }
       for (const img of pendingImages) {
         content.push({
@@ -176,9 +207,11 @@ export function Chat({
           source: { type: 'data', value: img.base64, mimeType: img.mimeType },
         });
       }
-      sendMessage({ content } as Parameters<typeof sendMessage>[0]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sendMessage({ content } as any);
       pendingImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
       setPendingImages([]);
+      setPendingFiles([]);
     } else {
       sendMessage(input);
     }
@@ -331,10 +364,10 @@ export function Chat({
       ) : null}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        {pendingImages.length > 0 && (
+        {(pendingImages.length > 0 || pendingFiles.length > 0) && (
           <div className="flex gap-2 flex-wrap">
             {pendingImages.map((img, i) => (
-              <div key={i} className="relative">
+              <div key={`img-${i}`} className="relative">
                 <img
                   src={img.previewUrl}
                   alt="pending"
@@ -349,13 +382,28 @@ export function Chat({
                 </button>
               </div>
             ))}
+            {pendingFiles.map((file, i) => (
+              <div
+                key={`file-${i}`}
+                className="relative flex items-center gap-1 px-2 py-1 rounded border bg-gray-50 text-xs text-gray-700 max-w-[160px]"
+              >
+                <span className="truncate">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="ml-1 text-gray-400 hover:text-black leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         )}
         <div className="flex gap-2">
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.txt,.csv,.md,text/plain,text/csv,text/markdown"
             multiple
             className="hidden"
             onChange={handleFileChange}
@@ -365,7 +413,7 @@ export function Chat({
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
             className="px-3 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-            title="Attach image"
+            title="Attach file"
           >
             📎
           </button>
@@ -379,7 +427,12 @@ export function Chat({
           />
           <button
             type="submit"
-            disabled={(!input.trim() && pendingImages.length === 0) || isLoading}
+            disabled={
+              (!input.trim() &&
+                pendingImages.length === 0 &&
+                pendingFiles.length === 0) ||
+              isLoading
+            }
             className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50"
           >
             Send
