@@ -90,7 +90,7 @@ export const Route = createFileRoute('/api/chat-sync')({
         const { messages, title, source, chatId, userId } =
           await request.json();
 
-        console.log('Recieved Request', messages, title, chatId);
+        console.log('Received Request', messages, title, chatId);
 
         // Non-gateway flow (no chatId): run chat, optionally persist conversation
         if (!chatId) {
@@ -166,6 +166,14 @@ export const Route = createFileRoute('/api/chat-sync')({
             { role: 'user' as const, content: messages[0].content },
           ];
 
+          // Extract text for title/logging (content may be string or ContentPart[])
+          const firstMessageText = Array.isArray(messages[0].content)
+            ? (messages[0].content as Array<{ type: string; content?: string }>)
+                .filter((p) => p.type === 'text')
+                .map((p) => p.content ?? '')
+                .join(' ')
+            : String(messages[0].content);
+
           // Single LLM call: determine action + generate response (with all tools)
           const gatewayOptions = await buildChatOptions(allMessages);
           const { text: rawDecision, assistantParts } =
@@ -185,7 +193,9 @@ export const Route = createFileRoute('/api/chat-sync')({
           const userMessage = {
             id: crypto.randomUUID(),
             role: 'user',
-            parts: [{ type: 'text', content: messages[0].content }],
+            parts: Array.isArray(messages[0].content)
+              ? messages[0].content
+              : [{ type: 'text', content: messages[0].content }],
           };
           const assistantMessage = {
             id: crypto.randomUUID(),
@@ -195,7 +205,7 @@ export const Route = createFileRoute('/api/chat-sync')({
 
           const conversationTitle =
             title ??
-            `${source ?? 'Gateway'}: ${messages[0].content.slice(0, 60)}`;
+            `${source ?? 'Gateway'}: ${firstMessageText.slice(0, 60)}`;
 
           switch (action) {
             case 'new_conversation': {

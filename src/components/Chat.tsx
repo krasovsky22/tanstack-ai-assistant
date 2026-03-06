@@ -4,6 +4,12 @@ import { useNavigate } from '@tanstack/react-router';
 import { marked } from 'marked';
 import { generateUUID } from '@/lib/uuid';
 
+interface PendingImage {
+  base64: string;
+  mimeType: string;
+  previewUrl: string;
+}
+
 function prettifyJsonString(input: string) {
   try {
     return JSON.stringify(JSON.parse(input), null, 2);
@@ -68,6 +74,8 @@ export function Chat({
   initialMessages,
 }: ChatProps) {
   const [input, setInput] = useState('');
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const isNew = propConversationId === undefined;
 
@@ -120,11 +128,60 @@ export function Chat({
     isLoading || status === 'submitted' || status === 'streaming';
   const agentStatusText = isAgentThinking ? 'Agent thinking…' : 'Agent typing…';
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    const newImages = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise<PendingImage>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              resolve({
+                base64: result.split(',')[1],
+                mimeType: file.type,
+                previewUrl: URL.createObjectURL(file),
+              });
+            };
+            reader.readAsDataURL(file);
+          }),
+      ),
+    );
+
+    setPendingImages((prev) => [...prev, ...newImages]);
+    e.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setPendingImages((prev) => {
+      URL.revokeObjectURL(prev[index].previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && pendingImages.length === 0) || isLoading) return;
 
-    sendMessage(input);
+    if (pendingImages.length > 0) {
+      const content: Array<Record<string, unknown>> = [];
+      if (input.trim()) {
+        content.push({ type: 'text', content: input.trim() });
+      }
+      for (const img of pendingImages) {
+        content.push({
+          type: 'image',
+          source: { type: 'data', value: img.base64, mimeType: img.mimeType },
+        });
+      }
+      sendMessage({ content } as Parameters<typeof sendMessage>[0]);
+      pendingImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      setPendingImages([]);
+    } else {
+      sendMessage(input);
+    }
     setInput('');
   };
 
@@ -164,6 +221,23 @@ export function Chat({
                       );
                     }
                     return <div key={idx}>{part.content}</div>;
+                  }
+                  if (part.type === 'image') {
+                    const imgPart = part as {
+                      type: 'image';
+                      source?: { type: string; value?: string; mimeType?: string };
+                    };
+                    if (imgPart.source?.type === 'data' && imgPart.source.value) {
+                      const mimeType = imgPart.source.mimeType ?? 'image/jpeg';
+                      return (
+                        <img
+                          key={idx}
+                          src={`data:${mimeType};base64,${imgPart.source.value}`}
+                          alt="attached image"
+                          className="max-w-sm max-h-64 rounded border mt-1"
+                        />
+                      );
+                    }
                   }
                   return null;
                 })}
@@ -256,22 +330,61 @@ export function Chat({
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-1 px-4 py-2 border rounded-lg"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={!input.trim() || isLoading}
-          className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50"
-        >
-          Send
-        </button>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        {pendingImages.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
+            {pendingImages.map((img, i) => (
+              <div key={i} className="relative">
+                <img
+                  src={img.previewUrl}
+                  alt="pending"
+                  className="w-16 h-16 object-cover rounded border"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-white rounded-full text-xs flex items-center justify-center leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="px-3 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            title="Attach image"
+          >
+            📎
+          </button>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 px-4 py-2 border rounded-lg"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={(!input.trim() && pendingImages.length === 0) || isLoading}
+            className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50"
+          >
+            Send
+          </button>
+        </div>
       </form>
     </div>
   );

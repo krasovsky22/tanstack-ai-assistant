@@ -1,10 +1,20 @@
-import type { IncomingMessage, Provider } from '../types.js';
+import type { IncomingMessage, IncomingImage, Provider } from '../types.js';
 import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
+
+interface TelegramPhotoSize {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  file_size?: number;
+}
 
 interface TelegramMessage {
   message_id: number;
   chat: { id: number; type: string };
   text?: string;
+  caption?: string;
+  photo?: TelegramPhotoSize[];
   date: number;
 }
 
@@ -141,13 +151,25 @@ export class TelegramProvider implements Provider {
           const post = update.channel_post ?? update.message;
 
           console.log('received post', post, this.botUsername);
-          if (!post?.text) continue;
-          if (!post.text.includes(`@${this.botUsername}`)) continue;
+          const postText = post?.text ?? post?.caption ?? '';
+          const hasPhoto = !!post?.photo?.length;
+          if (!post) continue;
+          if (!postText.includes(`@${this.botUsername}`) && !hasPhoto) continue;
+          if (hasPhoto && !postText.includes(`@${this.botUsername}`)) continue;
+
+          const images: IncomingImage[] = [];
+          if (hasPhoto && post.photo) {
+            // Use the largest photo (last in array)
+            const largestPhoto = post.photo[post.photo.length - 1];
+            const img = await downloadPhotoAsBase64(this.token, largestPhoto.file_id);
+            if (img) images.push(img);
+          }
 
           const msg: IncomingMessage = {
-            text: post.text,
+            text: postText,
             chatId: post.chat.id,
             provider: this.name,
+            ...(images.length > 0 ? { images } : {}),
           };
           console.log('message to handle', msg);
 
@@ -182,4 +204,37 @@ export class TelegramProvider implements Provider {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function downloadPhotoAsBase64(
+  token: string,
+  fileId: string,
+): Promise<IncomingImage | null> {
+  try {
+    const fileRes = await fetch(
+      `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
+    );
+    if (!fileRes.ok) return null;
+
+    const fileData = (await fileRes.json()) as {
+      ok: boolean;
+      result?: { file_path: string };
+    };
+    if (!fileData.ok || !fileData.result?.file_path) return null;
+
+    const dlRes = await fetch(
+      `https://api.telegram.org/file/bot${token}/${fileData.result.file_path}`,
+    );
+    if (!dlRes.ok) return null;
+
+    const buffer = await dlRes.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const ext = fileData.result.file_path.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const mimeType = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+
+    return { base64, mimeType };
+  } catch (err) {
+    console.error('[Telegram] Failed to download photo:', err);
+    return null;
+  }
 }
