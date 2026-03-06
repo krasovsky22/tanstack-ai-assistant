@@ -37,6 +37,7 @@ function ConversationPage() {
       <Chat
         conversationId={data.conversation.id}
         initialMessages={data.messages}
+        initialTitle={data.conversation.title}
       />
     </div>
   );

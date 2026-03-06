@@ -18,6 +18,22 @@ export const Route = createFileRoute('/api/conversations/$id')({
         });
       },
 
+      PATCH: async ({ params, request }) => {
+        const { db } = await import('@/db');
+        const { conversations } = await import('@/db/schema');
+        const { eq } = await import('drizzle-orm');
+        const { title } = await request.json();
+
+        await db
+          .update(conversations)
+          .set({ title, updatedAt: new Date() })
+          .where(eq(conversations.id, params.id));
+
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      },
+
       GET: async ({ params }) => {
         const { db } = await import('@/db');
         const { conversations, messages } = await import('@/db/schema');

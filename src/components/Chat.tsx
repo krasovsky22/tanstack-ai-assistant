@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { marked } from 'marked';
 import { generateUUID } from '@/lib/uuid';
 
@@ -56,6 +56,7 @@ function formatToolResultState(state: string) {
 interface ChatProps {
   conversationId?: string;
   initialMessages?: Array<UIMessage>;
+  initialTitle?: string;
 }
 
 async function saveConversation(
@@ -77,11 +78,17 @@ async function saveConversation(
 export function Chat({
   conversationId: propConversationId,
   initialMessages,
+  initialTitle,
 }: ChatProps) {
   const [input, setInput] = useState('');
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [title, setTitle] = useState(initialTitle ?? '');
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const isNew = propConversationId === undefined;
 
@@ -97,6 +104,32 @@ export function Chat({
     body: { conversationId },
   });
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const saveTitle = async (id: string, newTitle: string) => {
+    await fetch(`/api/conversations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newTitle }),
+    });
+  };
+
+  const startEditingTitle = () => {
+    setTitleDraft(title);
+    setEditingTitle(true);
+    setTimeout(() => titleInputRef.current?.select(), 0);
+  };
+
+  const commitTitle = async () => {
+    const trimmed = titleDraft.trim();
+    setEditingTitle(false);
+    if (!trimmed || trimmed === title) return;
+    setTitle(trimmed);
+    await saveTitle(conversationId, trimmed);
+  };
+
   const prevStatus = useRef(status);
   const navigatedRef = useRef(false);
   useEffect(() => {
@@ -105,7 +138,14 @@ export function Chat({
       status === 'ready' &&
       messages.length > 0
     ) {
+      const firstUserMessage = messages.find((m) => m.role === 'user');
+      const derivedTitle =
+        firstUserMessage?.parts.find((p) => p.type === 'text')?.content ??
+        'New conversation';
       saveConversation(conversationId, messages).then(() => {
+        if (isNew) {
+          setTitle(derivedTitle as string);
+        }
         if (isNew && !navigatedRef.current) {
           navigatedRef.current = true;
           navigate({
@@ -220,7 +260,48 @@ export function Chat({
 
   return (
     <div className="flex flex-col gap-4 p-4 max-w-3xl mx-auto">
-      <div className="text-lg font-semibold">Chat</div>
+      <nav className="flex items-center gap-3 text-sm">
+        <Link
+          to="/conversations"
+          className="text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          Dashboard
+        </Link>
+        <span className="text-gray-300">/</span>
+        <Link
+          to="/conversations/new"
+          className="text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          New Chat
+        </Link>
+      </nav>
+      <div className="flex items-center gap-2 min-w-0">
+        {editingTitle ? (
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={titleDraft}
+            onChange={(e) => setTitleDraft(e.target.value)}
+            onBlur={commitTitle}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitTitle();
+              if (e.key === 'Escape') setEditingTitle(false);
+            }}
+            className="text-lg font-semibold border-b border-gray-400 bg-transparent outline-none w-full"
+            autoFocus
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={startEditingTitle}
+            disabled={!title}
+            className="text-lg font-semibold text-left truncate hover:text-gray-600 disabled:cursor-default disabled:hover:text-inherit"
+            title="Click to edit title"
+          >
+            {title || 'Chat'}
+          </button>
+        )}
+      </div>
 
       {showAgentStatus ? (
         <div className="rounded-lg border px-3 py-2 text-sm bg-gray-50 text-gray-700">
@@ -355,6 +436,7 @@ export function Chat({
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {error ? (
