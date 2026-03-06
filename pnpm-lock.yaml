@@ -59,6 +59,9 @@ importers:
       '@tanstack/router-plugin':
         specifier: ^1.132.0
         version: 1.161.3(@tanstack/react-router@1.161.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite@7.3.1(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0))
+      crypto-randomuuid:
+        specifier: ^1.0.0
+        version: 1.0.0
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
@@ -1885,6 +1888,9 @@ packages:
     peerDependenciesMeta:
       srvx:
         optional: true
+
+  crypto-randomuuid@1.0.0:
+    resolution: {integrity: sha512-/RC5F4l1SCqD/jazwUF6+t34Cd8zTSAGZ7rvvZu1whZUhD2a5MOGKjSGowoGcpj/cbVZk1ZODIooJEQQq3nNAA==}
 
   css-select@5.2.2:
     resolution: {integrity: sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==}
@@ -5117,6 +5123,8 @@ snapshots:
   crossws@0.4.4(srvx@0.11.7):
     optionalDependencies:
       srvx: 0.11.7
+
+  crypto-randomuuid@1.0.0: {}
 
   css-select@5.2.2:
     dependencies:
