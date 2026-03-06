@@ -3,3 +3,4 @@ export { getCronjobTools } from './crontool';
 export { getNewsApiTools } from './newsapi';
 export { getUiBackendApiTools } from './ui-backend-api';
 export { getFileTools } from './filetool';
+export { getCmdTools } from './cmdtool';
