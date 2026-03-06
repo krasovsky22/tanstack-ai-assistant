@@ -258,7 +258,8 @@ export async function fetchRawEmails(): Promise<
         continue;
       }
       try {
-        const uids = await client.search({ seen: false, since }, { uid: true });
+        const uids =
+          (await client.search({ seen: false, since }, { uid: true })) || [];
         for (const uid of uids) {
           const { content } = await client.download(
             String(uid),
