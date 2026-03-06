@@ -112,6 +112,12 @@ export async function runIngestion(): Promise<{
           const bodyText = parsed.text || parsed.html || '';
           const receivedAt = parsed.date ?? new Date();
 
+          // Skip ignored sender addresses
+          if (sender.toLowerCase().includes('donotreply@match.indeed.com')) {
+            seenUids.push(uid as number);
+            continue;
+          }
+
           summary.fetched++;
 
           const classification = await chat({
