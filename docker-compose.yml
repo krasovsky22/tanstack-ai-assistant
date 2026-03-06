@@ -30,6 +30,10 @@ services:
       OPEN_WEATHER_API: ${OPEN_WEATHER_API:-}
       NEWS_API_TOKEN: ${NEWS_API_TOKEN:-}
       APP_URL: ${APP_URL:-http://localhost:3000}
+      YAHOO_IMAP_USER: ${YAHOO_IMAP_USER}
+      YAHOO_IMAP_PASSWORD: ${YAHOO_IMAP_PASSWORD}
+      YAHOO_MAIL_FOLDERS: ${YAHOO_MAIL_FOLDERS}
+      YAHOO_MAIL_MAX_EMAILS: ${YAHOO_MAIL_MAX_EMAILS}
     restart: unless-stopped
 
   gateway:
