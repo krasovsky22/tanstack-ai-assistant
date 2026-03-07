@@ -12,12 +12,28 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.12
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    sysctls:
+      - vm.max_map_count=262144
+
   ui:
     build:
       context: .
       dockerfile: Dockerfile.ui
     depends_on:
       - postgres
+      - elasticsearch
     ports:
       - "3000:3000"
     volumes:
@@ -34,6 +50,7 @@ services:
       YAHOO_IMAP_PASSWORD: ${YAHOO_IMAP_PASSWORD}
       YAHOO_MAIL_FOLDERS: ${YAHOO_MAIL_FOLDERS}
       YAHOO_MAIL_MAX_EMAILS: ${YAHOO_MAIL_MAX_EMAILS}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     restart: unless-stopped
 
   gateway:
@@ -43,12 +60,14 @@ services:
     depends_on:
       - postgres
       - ui
+      - elasticsearch
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
       APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     restart: unless-stopped
 
   jobs:
@@ -58,10 +77,12 @@ services:
     depends_on:
       - postgres
       - ui
+      - elasticsearch
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     restart: unless-stopped
 
   cron:
@@ -71,11 +92,14 @@ services:
     depends_on:
       - postgres
       - ui
+      - elasticsearch
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  elasticsearch_data:
