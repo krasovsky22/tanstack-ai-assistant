@@ -13,6 +13,7 @@ export async function buildChatOptions(
     getUiBackendApiTools,
     getFileTools,
     getCmdTools,
+    getMemoryTools,
   } = await import('@/tools');
   const [mcpTools, cronjobTools, newsApiTools] = await Promise.all([
     getDockerMcpToolDefinitions(),
@@ -26,6 +27,7 @@ export async function buildChatOptions(
     ...getUiBackendApiTools(),
     ...getFileTools(),
     ...getCmdTools(),
+    ...getMemoryTools(),
   ];
   return {
     adapter: openaiText('gpt-5.2'),

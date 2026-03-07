@@ -17,7 +17,7 @@ describe('getMemoryTools', () => {
   it('contains a search_memory tool', () => {
     const tools = getMemoryTools();
     // toolDefinition returns objects; check name property
-    const names = tools.map((t: Record<string, unknown>) => t['name']);
+    const names = tools.map((t) => (t as unknown as Record<string, unknown>)['name']);
     expect(names).toContain('search_memory');
   });
 });
