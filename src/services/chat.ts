@@ -15,19 +15,27 @@ export async function buildChatOptions(
     getCmdTools,
     getMemoryTools,
   } = await import('@/tools');
+  const disabledTools = new Set(
+    (process.env.DISABLE_TOOLS ?? '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  const enabled = (key: string) => !disabledTools.has(key);
+
   const [mcpTools, cronjobTools, newsApiTools] = await Promise.all([
-    getDockerMcpToolDefinitions(),
-    Promise.resolve(getCronjobTools()),
-    Promise.resolve(getNewsApiTools()),
+    enabled('mcp') ? getDockerMcpToolDefinitions() : Promise.resolve([]),
+    Promise.resolve(enabled('cronjob') ? getCronjobTools() : []),
+    Promise.resolve(enabled('news') ? getNewsApiTools() : []),
   ]);
   const tools = [
     ...mcpTools,
     ...cronjobTools,
     ...newsApiTools,
-    ...getUiBackendApiTools(),
-    ...getFileTools(),
-    ...getCmdTools(),
-    ...getMemoryTools(),
+    ...(enabled('ui') ? getUiBackendApiTools() : []),
+    ...(enabled('file') ? getFileTools() : []),
+    ...(enabled('cmd') ? getCmdTools() : []),
+    ...(enabled('memory') ? getMemoryTools() : []),
   ];
   return {
     adapter: openaiText('gpt-5.2'),
@@ -90,21 +98,8 @@ export async function saveConversationToDb(
     .where(eq(conversations.id, conversationId));
 
   // Index into Elasticsearch (fire-and-forget — failure must not break Postgres write)
-  const { indexDocument } = await import('@/services/elasticsearch');
-  const snippet = messages
-    .flatMap((m) => (m.parts as Array<{ type: string; text?: string }>))
-    .filter((p) => p.type === 'text')
-    .map((p) => p.text ?? '')
-    .join(' ')
-    .slice(0, 2000);
-  void indexDocument('memory_conversations', conversationId, {
-    conversationId,
-    title,
-    source,
-    messageSnippet: snippet,
-    source_type: 'conversation',
-    createdAt: new Date().toISOString(),
-  });
+  const { indexConversationMemory } = await import('@/services/memory');
+  void indexConversationMemory(conversationId, title, source, messages);
 }
 
 export async function getOpenConversationByChatId(
@@ -178,19 +173,7 @@ export async function appendMessagesToConversation(
     .where(eq(conversations.id, conversationId));
 
   // Re-index conversation with updated message snippet
-  const { indexDocument } = await import('@/services/elasticsearch');
-  const snippet = messages
-    .flatMap((m) => (m.parts as Array<{ type: string; text?: string }>))
-    .filter((p) => p.type === 'text')
-    .map((p) => p.text ?? '')
-    .join(' ')
-    .slice(0, 2000);
-  void indexDocument('memory_conversations', conversationId, {
-    conversationId,
-    title: conversationId, // title not available in append context; use ID as fallback
-    source: null,
-    messageSnippet: snippet,
-    source_type: 'conversation',
-    createdAt: new Date().toISOString(),
-  });
+  // title not available in append context; use ID as fallback
+  const { indexConversationMemory } = await import('@/services/memory');
+  void indexConversationMemory(conversationId, conversationId, null, messages);
 }

@@ -104,30 +104,6 @@ export const Route = createFileRoute('/api/chat-sync')({
             return new Response(JSON.stringify({ text }), {
               headers: { 'Content-Type': 'application/json' },
             });
-            // }
-
-            // await saveConversationToDb(
-            //   conversationId,
-            //   title ?? 'Chat',
-            //   [
-            //     {
-            //       id: crypto.randomUUID(),
-            //       role: 'user',
-            //       parts: [
-            //         {
-            //           type: 'text',
-            //           content: messages[0].content,
-            //         },
-            //       ],
-            //     },
-            //     {
-            //       id: crypto.randomUUID(),
-            //       role: 'assistant',
-            //       parts: [{ type: 'text', content: text }],
-            //     },
-            //   ],
-            //   source ?? null,
-            // );
           } catch (err) {
             console.error('[chat-sync] Error:', err);
             return new Response(
@@ -204,8 +180,7 @@ export const Route = createFileRoute('/api/chat-sync')({
           };
 
           const conversationTitle =
-            title ??
-            `${source ?? 'Gateway'}: ${firstMessageText.slice(0, 60)}`;
+            title ?? `${source ?? 'Gateway'}: ${firstMessageText.slice(0, 60)}`;
 
           switch (action) {
             case 'new_conversation': {

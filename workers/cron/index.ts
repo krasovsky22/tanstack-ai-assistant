@@ -47,17 +47,8 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
     }).returning();
 
     // Index into Elasticsearch (fire-and-forget)
-    const { indexDocument } = await import('@/services/elasticsearch');
-    void indexDocument('memory_cronjob_results', logRow.id, {
-      logId: logRow.id,
-      cronjobId: job.id,
-      cronjobName: job.name,
-      result: resultText,
-      error: null,
-      status: 'success',
-      source_type: 'cronjob_result',
-      ranAt: new Date().toISOString(),
-    });
+    const { indexCronjobResult } = await import('@/services/memory');
+    indexCronjobResult(logRow.id, job.id, job.name, resultText, null, 'success');
 
     await db
       .update(cronjobs)
@@ -77,17 +68,8 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
     }).returning();
 
     // Index into Elasticsearch (fire-and-forget)
-    const { indexDocument } = await import('@/services/elasticsearch');
-    void indexDocument('memory_cronjob_results', errorLogRow.id, {
-      logId: errorLogRow.id,
-      cronjobId: job.id,
-      cronjobName: job.name,
-      result: null,
-      error: errorMessage,
-      status: 'error',
-      source_type: 'cronjob_result',
-      ranAt: new Date().toISOString(),
-    });
+    const { indexCronjobResult } = await import('@/services/memory');
+    indexCronjobResult(errorLogRow.id, job.id, job.name, null, errorMessage, 'error');
 
     await db
       .update(cronjobs)

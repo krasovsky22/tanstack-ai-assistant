@@ -58,17 +58,8 @@ export const Route = createFileRoute('/api/jobs/')({
           .returning();
 
         // Index into Elasticsearch (fire-and-forget)
-        const { indexDocument } = await import('@/services/elasticsearch');
-        void indexDocument('memory_jobs', job.id, {
-          jobId: job.id,
-          title: job.title,
-          company: job.company,
-          description: job.description,
-          skills: (job.skills ?? []).join(' '),
-          status: job.status,
-          source_type: 'job',
-          createdAt: job.createdAt.toISOString(),
-        });
+        const { indexJob } = await import('@/services/memory');
+        indexJob(job);
 
         return new Response(JSON.stringify(job), {
           status: 201,

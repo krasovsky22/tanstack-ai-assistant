@@ -18,7 +18,7 @@ export function getMemoryTools() {
           .describe('Narrow results to a specific data type, or "all" for cross-type search'),
       }),
     }).server(async ({ query, source_type }) => {
-      const { searchMemory } = await import('@/services/elasticsearch');
+      const { searchMemory } = await import('@/services/memory');
       return searchMemory(query, source_type ?? 'all');
     }),
   ];

@@ -24,8 +24,6 @@ services:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-    sysctls:
-      - vm.max_map_count=262144
 
   ui:
     build:

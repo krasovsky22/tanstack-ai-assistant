@@ -1,6 +1,22 @@
-import { Client, estypes } from '@elastic/elasticsearch';
+import { Client } from '@elastic/elasticsearch';
+import type { estypes } from '@elastic/elasticsearch';
+
+export const ES_INDICES = {
+  conversations: 'memory_conversations',
+  jobs: 'memory_jobs',
+  cronjobResults: 'memory_cronjob_results',
+  generatedFiles: 'memory_generated_files',
+} as const;
+
+export const ES_SOURCE_TYPES = {
+  conversation: 'conversation',
+  job: 'job',
+  cronjobResult: 'cronjob_result',
+  generatedFile: 'generated_file',
+} as const;
 
 let _client: Client | null = null;
+let _initPromise: Promise<void> | null = null;
 
 export function getEsClient(): Client {
   if (!_client) {
@@ -11,11 +27,18 @@ export function getEsClient(): Client {
   return _client;
 }
 
+export function ensureInitialized(): Promise<void> {
+  if (!_initPromise) {
+    _initPromise = ensureIndices();
+  }
+  return _initPromise;
+}
+
 export async function ensureIndices(): Promise<void> {
   const client = getEsClient();
   const indices: Array<{ index: string; mappings: estypes.MappingTypeMapping }> = [
     {
-      index: 'memory_conversations',
+      index: ES_INDICES.conversations,
       mappings: {
         properties: {
           conversationId: { type: 'keyword' },
@@ -28,7 +51,7 @@ export async function ensureIndices(): Promise<void> {
       },
     },
     {
-      index: 'memory_jobs',
+      index: ES_INDICES.jobs,
       mappings: {
         properties: {
           jobId: { type: 'keyword' },
@@ -43,7 +66,7 @@ export async function ensureIndices(): Promise<void> {
       },
     },
     {
-      index: 'memory_cronjob_results',
+      index: ES_INDICES.cronjobResults,
       mappings: {
         properties: {
           logId: { type: 'keyword' },
@@ -58,7 +81,7 @@ export async function ensureIndices(): Promise<void> {
       },
     },
     {
-      index: 'memory_generated_files',
+      index: ES_INDICES.generatedFiles,
       mappings: {
         properties: {
           fileId: { type: 'keyword' },
@@ -91,6 +114,7 @@ export async function indexDocument(
   id: string,
   document: Record<string, unknown>,
 ): Promise<void> {
+  await ensureInitialized();
   try {
     await getEsClient().index({ index, id, document });
   } catch (err) {
@@ -99,68 +123,3 @@ export async function indexDocument(
   }
 }
 
-function buildSnippet(source: Record<string, unknown>): string {
-  const sourceType = source.source_type as string | undefined;
-  if (sourceType === 'conversation') {
-    return String(source.messageSnippet ?? source.title ?? '').slice(0, 300);
-  }
-  if (sourceType === 'job') {
-    return String(source.description ?? source.title ?? '').slice(0, 300);
-  }
-  if (sourceType === 'cronjob_result') {
-    return String(source.result ?? source.error ?? source.cronjobName ?? '').slice(0, 300);
-  }
-  if (sourceType === 'generated_file') {
-    return String(source.content ?? source.filename ?? '').slice(0, 300);
-  }
-  return String(source.title ?? source.filename ?? source.cronjobName ?? '').slice(0, 300);
-}
-
-const INDEX_MAP: Record<string, string> = {
-  conversation: 'memory_conversations',
-  job: 'memory_jobs',
-  cronjob_result: 'memory_cronjob_results',
-  generated_file: 'memory_generated_files',
-};
-
-export async function searchMemory(
-  query: string,
-  sourceType: string,
-): Promise<Array<{ source_type: string; snippet: string; score: number | null; timestamp: string | null }>> {
-  const indices =
-    sourceType === 'all'
-      ? Object.values(INDEX_MAP)
-      : [INDEX_MAP[sourceType] ?? 'memory_conversations'];
-
-  try {
-    const client = getEsClient();
-    const results = await client.search({
-      index: indices.join(','),
-      body: {
-        size: 7,
-        query: {
-          multi_match: {
-            query,
-            fields: ['title^2', 'content', 'description', 'result', 'messageSnippet', 'cronjobName'],
-            type: 'best_fields',
-            fuzziness: 'AUTO',
-          },
-        },
-        _source: true,
-      },
-    });
-
-    return results.hits.hits.map((hit) => {
-      const src = (hit._source ?? {}) as Record<string, unknown>;
-      return {
-        source_type: String(src.source_type ?? hit._index),
-        snippet: buildSnippet(src),
-        score: hit._score ?? null,
-        timestamp: String(src.createdAt ?? src.ranAt ?? ''),
-      };
-    });
-  } catch (err) {
-    console.error('[elasticsearch] searchMemory failed:', err);
-    return [];
-  }
-}
