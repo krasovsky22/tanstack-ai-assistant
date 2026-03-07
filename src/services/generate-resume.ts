@@ -112,6 +112,25 @@ async function runResumeGeneration(job: typeof jobs.$inferSelect) {
   await writeFile(join(outputDir, 'resume.md'), result.updatedResume, 'utf-8');
   await writeFile(join(outputDir, 'cover-letter.md'), result.coverLetter, 'utf-8');
 
+  // Index generated file content into Elasticsearch (fire-and-forget)
+  const { indexDocument } = await import('@/services/elasticsearch');
+  void indexDocument('memory_generated_files', `${job.id}-resume`, {
+    fileId: `${job.id}-resume`,
+    filename: 'resume.md',
+    content: result.updatedResume,
+    mimeType: 'text/markdown',
+    source_type: 'generated_file',
+    createdAt: new Date().toISOString(),
+  });
+  void indexDocument('memory_generated_files', `${job.id}-cover-letter`, {
+    fileId: `${job.id}-cover-letter`,
+    filename: 'cover-letter.md',
+    content: result.coverLetter,
+    mimeType: 'text/markdown',
+    source_type: 'generated_file',
+    createdAt: new Date().toISOString(),
+  });
+
   console.log('[generate-resume] Generating PDF...');
   const pdfBuffer = await markdownToPdf(result.updatedResume);
   await writeFile(join(outputDir, 'resume.pdf'), pdfBuffer);

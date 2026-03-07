@@ -39,11 +39,24 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
     const data = await res.json() as { text?: string; error?: string };
     const resultText = data.text ?? '';
 
-    await db.insert(cronjobLogs).values({
+    const [logRow] = await db.insert(cronjobLogs).values({
       cronjobId: job.id,
       status: 'success',
       result: resultText,
       durationMs,
+    }).returning();
+
+    // Index into Elasticsearch (fire-and-forget)
+    const { indexDocument } = await import('@/services/elasticsearch');
+    void indexDocument('memory_cronjob_results', logRow.id, {
+      logId: logRow.id,
+      cronjobId: job.id,
+      cronjobName: job.name,
+      result: resultText,
+      error: null,
+      status: 'success',
+      source_type: 'cronjob_result',
+      ranAt: new Date().toISOString(),
     });
 
     await db
@@ -56,11 +69,24 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
     const durationMs = Date.now() - startTime;
     const errorMessage = err instanceof Error ? err.message : String(err);
 
-    await db.insert(cronjobLogs).values({
+    const [errorLogRow] = await db.insert(cronjobLogs).values({
       cronjobId: job.id,
       status: 'error',
       error: errorMessage,
       durationMs,
+    }).returning();
+
+    // Index into Elasticsearch (fire-and-forget)
+    const { indexDocument } = await import('@/services/elasticsearch');
+    void indexDocument('memory_cronjob_results', errorLogRow.id, {
+      logId: errorLogRow.id,
+      cronjobId: job.id,
+      cronjobName: job.name,
+      result: null,
+      error: errorMessage,
+      status: 'error',
+      source_type: 'cronjob_result',
+      ranAt: new Date().toISOString(),
     });
 
     await db
