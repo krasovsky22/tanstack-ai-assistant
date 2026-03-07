@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: 1 of 4 (Phase 02 — Plan 02-01 complete)
-status: active
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-07T17:52:00.000Z"
+status: unknown
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-07T09:51:13.661Z"
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 7
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** 1 of 4 (Phase 02 — Plan 02-01 complete)
-- **Last session:** 2026-03-07T17:52:00.000Z
-- **Stopped At:** Completed 02-01-PLAN.md
+- **Last session:** 2026-03-07T09:51:13.659Z
+- **Stopped At:** Completed 02-03-PLAN.md
 
 ## Progress
 
@@ -49,6 +49,9 @@ Phase 02: [#...] 1/4 plans complete
 - [Phase 01]: enabled: expanded on email thread query — no network request until user opens EmailThreadSection
 - **02-01:** Elasticsearch 8.19.12 with security disabled and vm.max_map_count=262144 via sysctls; WSL2 users need sudo sysctl on host
 - **02-01:** Test files use vi.mock pattern (not @ts-expect-error) because elasticsearch.ts and memory.ts were present as untracked pre-plan work; Wave 0 tests pass now rather than fail
+- [Phase 02]: estypes.MappingTypeMapping used for index definition type safety; 400 status handled via meta.statusCode in catch (ES 8.x ignore option unavailable in TS types); indexDocument never re-throws — ES supplementary to Postgres
+- [Phase 02-03]: Used dynamic import for elasticsearch service in tool handler — allows tool to be tested without live ES
+- [Phase 02-03]: chat.test.ts uses full vi.mock(@/tools) approach — avoids Docker MCP connection noise and runs in 2ms vs 400ms
 
 ### Performance Metrics
 
@@ -59,4 +62,6 @@ Phase 02: [#...] 1/4 plans complete
 | Phase 01 P01-02 | 2min | 2 tasks | 6 files |
 | Phase 01 P01-04 | 2min | 2 tasks | 2 files |
 | 02    | 02-01 | 5 min    | 2     | 5     |
+| Phase 02 P02-02 | 4 min | 2 tasks | 4 files |
+| Phase 02 P02-03 | 3min | 2 tasks | 5 files |
 
