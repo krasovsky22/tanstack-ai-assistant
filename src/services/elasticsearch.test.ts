@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock the ES client before importing our module
 vi.mock('@elastic/elasticsearch', () => {
