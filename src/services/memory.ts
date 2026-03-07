@@ -1,5 +1,6 @@
 import {
   indexDocument,
+  deleteDocument,
   getEsClient,
   ensureInitialized,
   ES_INDICES,
@@ -9,6 +10,10 @@ import {
 export { ES_INDICES, ES_SOURCE_TYPES };
 
 // ─── Conversation ─────────────────────────────────────────────────────────────
+
+export async function deleteConversationMemory(conversationId: string): Promise<void> {
+  await deleteDocument(ES_INDICES.conversations, conversationId);
+}
 
 export function indexConversationMemory(
   conversationId: string,

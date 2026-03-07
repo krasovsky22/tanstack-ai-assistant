@@ -123,3 +123,16 @@ export async function indexDocument(
   }
 }
 
+export async function deleteDocument(index: string, id: string): Promise<void> {
+  await ensureInitialized();
+  try {
+    await getEsClient().delete({ index, id });
+  } catch (err: unknown) {
+    const errObj = err as Record<string, unknown>;
+    const meta = errObj['meta'] as Record<string, unknown> | undefined;
+    const statusCode = meta?.['statusCode'] as number | undefined;
+    if (statusCode === 404) return; // already gone, not an error
+    console.error(`[elasticsearch] Failed to delete ${index}/${id}:`, err);
+  }
+}
+

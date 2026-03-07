@@ -7,11 +7,14 @@ export const Route = createFileRoute('/api/conversations/$id')({
         const { db } = await import('@/db');
         const { conversations, messages } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { deleteConversationMemory } = await import('@/services/memory');
 
         await db.transaction(async (tx) => {
           await tx.delete(messages).where(eq(messages.conversationId, params.id));
           await tx.delete(conversations).where(eq(conversations.id, params.id));
         });
+
+        await deleteConversationMemory(params.id);
 
         return new Response(JSON.stringify({ ok: true }), {
           headers: { 'Content-Type': 'application/json' },
