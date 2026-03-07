@@ -25,7 +25,7 @@ Plans:
 **Goal:** Add Elasticsearch as a secondary search/retrieval index alongside Postgres. Index conversations, jobs, cronjob results, and generated resume files. Expose a `search_memory` LLM tool so the agent can recall past context via full-text search.
 **Requirements**: MEM-01, MEM-02, MEM-03, MEM-04, MEM-05, MEM-06
 **Depends on:** Phase 1
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 02-01-PLAN.md — Docker Compose ES service + env vars across all workers + Wave 0 test stubs

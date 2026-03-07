@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 1 of 4 (Phase 02 — Plan 02-01 complete)
-status: unknown
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-07T09:51:13.661Z"
+current_plan: 4 of 4 (Phase 02 — Plan 02-04 complete)
+status: complete
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-03-07T17:57:43Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
-- **Current Plan:** 1 of 4 (Phase 02 — Plan 02-01 complete)
-- **Last session:** 2026-03-07T09:51:13.659Z
-- **Stopped At:** Completed 02-03-PLAN.md
+- **Current Plan:** 4 of 4 (Phase 02 — Plan 02-04 complete)
+- **Last session:** 2026-03-07T17:57:43Z
+- **Stopped At:** Completed 02-04-PLAN.md
 
 ## Progress
 
 Phase 01: [####] 4/4 plans complete
-Phase 02: [#...] 1/4 plans complete
+Phase 02: [####] 4/4 plans complete
 
 ## Accumulated Context
 
@@ -52,6 +52,10 @@ Phase 02: [#...] 1/4 plans complete
 - [Phase 02]: estypes.MappingTypeMapping used for index definition type safety; 400 status handled via meta.statusCode in catch (ES 8.x ignore option unavailable in TS types); indexDocument never re-throws — ES supplementary to Postgres
 - [Phase 02-03]: Used dynamic import for elasticsearch service in tool handler — allows tool to be tested without live ES
 - [Phase 02-03]: chat.test.ts uses full vi.mock(@/tools) approach — avoids Docker MCP connection noise and runs in 2ms vs 400ms
+- [Phase 02-04]: void used on all indexDocument calls — fire-and-forget ensures ES failure cannot crash Postgres write path
+- [Phase 02-04]: appendMessagesToConversation uses conversationId as title fallback — title not available in that context
+- [Phase 02-04]: workers/cron changed cronjobLogs insert to use .returning() — needed to capture logRow.id for ES document ID
+- [Phase 02-04]: generate-resume indexes content before PDF generation — result.updatedResume and result.coverLetter still in scope
 
 ### Performance Metrics
 
@@ -64,4 +68,5 @@ Phase 02: [#...] 1/4 plans complete
 | 02    | 02-01 | 5 min    | 2     | 5     |
 | Phase 02 P02-02 | 4 min | 2 tasks | 4 files |
 | Phase 02 P02-03 | 3min | 2 tasks | 5 files |
+| 02    | 02-04 | 5 min    | 2     | 4     |
 
