@@ -2,30 +2,31 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 4 of 4 (Plans 01-01, 01-03 complete)
-status: unknown
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-07T09:15:48.776Z"
+current_plan: 1 of 4 (Phase 02 — Plan 02-01 complete)
+status: active
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-07T17:52:00.000Z"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 8
+  completed_plans: 5
 ---
 
 # Project State
 
 ## Current Status
 
-- **Active Phase:** 1 — Yahoo Mail Ingestion & Job Email Tracking
+- **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
-- **Current Plan:** 4 of 4 (Plans 01-01, 01-03 complete)
-- **Last session:** 2026-03-07T09:15:48.769Z
-- **Stopped At:** Phase 2 context gathered
+- **Current Plan:** 1 of 4 (Phase 02 — Plan 02-01 complete)
+- **Last session:** 2026-03-07T17:52:00.000Z
+- **Stopped At:** Completed 02-01-PLAN.md
 
 ## Progress
 
-Phase 01: [###.] 3/4 plans complete
+Phase 01: [####] 4/4 plans complete
+Phase 02: [#...] 1/4 plans complete
 
 ## Accumulated Context
 
@@ -46,6 +47,8 @@ Phase 01: [###.] 3/4 plans complete
 - [Phase 01-02]: Per-folder try/catch around getMailboxLock so invalid folder logs warning and continues rather than aborting all ingestion
 - [Phase 01]: staleTime 60s + initialData { count: 0 } prevents N+1 HTTP spike on jobs list load with many JobCards
 - [Phase 01]: enabled: expanded on email thread query — no network request until user opens EmailThreadSection
+- **02-01:** Elasticsearch 8.19.12 with security disabled and vm.max_map_count=262144 via sysctls; WSL2 users need sudo sysctl on host
+- **02-01:** Test files use vi.mock pattern (not @ts-expect-error) because elasticsearch.ts and memory.ts were present as untracked pre-plan work; Wave 0 tests pass now rather than fail
 
 ### Performance Metrics
 
@@ -55,4 +58,5 @@ Phase 01: [###.] 3/4 plans complete
 | 01    | 01-03 | 2 min    | 2     | 3     |
 | Phase 01 P01-02 | 2min | 2 tasks | 6 files |
 | Phase 01 P01-04 | 2min | 2 tasks | 2 files |
+| 02    | 02-01 | 5 min    | 2     | 5     |
 
