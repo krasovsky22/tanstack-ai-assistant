@@ -7,6 +7,7 @@ import {
   Clock,
   ArrowRight,
   Plus,
+  BookOpen,
 } from 'lucide-react';
 
 export const Route = createFileRoute('/')({ component: Dashboard });
@@ -15,6 +16,7 @@ type Job = { id: string; status: string };
 type Conversation = { id: string; isClosed: boolean };
 type Cronjob = { id: string; isActive: boolean };
 type Email = { id: string };
+type KbFile = { id: string; categories: string[] };
 
 function StatValue({ value, label }: { value: number; label: string }) {
   return (
@@ -235,6 +237,49 @@ function AutomationCard() {
   );
 }
 
+function KnowledgeBaseCard() {
+  const { data: files = [], isLoading } = useQuery<KbFile[]>({
+    queryKey: ['knowledge-base'],
+    queryFn: async () => {
+      const res = await fetch('/api/knowledge-base');
+      return res.json();
+    },
+  });
+
+  const uniqueCategories = [
+    ...new Set(files.flatMap((f) => f.categories ?? [])),
+  ].length;
+
+  return (
+    <SectionCard
+      icon={<BookOpen size={22} />}
+      iconBg="bg-violet-50"
+      iconColor="text-violet-600"
+      title="Knowledge Base"
+      description="Documents uploaded for AI context. Searched automatically before every response."
+      href="/knowledge-base"
+      action={
+        <Link
+          to="/knowledge-base"
+          className="flex items-center gap-1 text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+        >
+          <Plus size={12} /> Upload
+        </Link>
+      }
+      stats={
+        isLoading ? (
+          <span className="text-sm text-gray-400">Loading...</span>
+        ) : (
+          <>
+            <StatValue value={files.length} label="Documents" />
+            <StatValue value={uniqueCategories} label="Categories" />
+          </>
+        )
+      }
+    />
+  );
+}
+
 function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -251,6 +296,7 @@ function Dashboard() {
           <JobsCard />
           <MailCard />
           <AutomationCard />
+          <KnowledgeBaseCard />
         </div>
       </div>
     </div>
