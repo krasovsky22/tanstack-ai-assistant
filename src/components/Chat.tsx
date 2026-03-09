@@ -86,6 +86,121 @@ function formatToolResultState(state: string) {
   }
 }
 
+type MessagePart = {
+  type: string;
+  content?: string;
+  id?: string;
+  name?: string;
+  arguments?: string;
+  state?: string;
+  toolCallId?: string;
+  error?: string;
+};
+
+function AssistantMeta({
+  parts,
+  isStreaming,
+}: {
+  parts: MessagePart[];
+  isStreaming: boolean;
+}) {
+  const toolCalls = parts.filter((p) => p.type === 'tool-call');
+  const toolResults = parts.filter((p) => p.type === 'tool-result');
+  const thinkingParts = parts.filter((p) => p.type === 'thinking');
+  const hasDebugInfo =
+    thinkingParts.length > 0 || toolCalls.length > 0 || toolResults.length > 0;
+
+  if (!hasDebugInfo) return null;
+
+  const toolNames = toolCalls
+    .map((p) => p.name)
+    .filter(Boolean) as string[];
+  const uniqueTools = [...new Set(toolNames)];
+
+  return (
+    <details
+      className="mt-2 rounded border border-gray-200 bg-gray-50 text-[11px] text-gray-700"
+      open={isStreaming}
+    >
+      <summary className="cursor-pointer select-none px-2 py-1.5 font-semibold text-gray-600 flex items-center gap-2">
+        <span>How this was generated</span>
+        {uniqueTools.length > 0 && (
+          <span className="flex gap-1 flex-wrap">
+            {uniqueTools.map((name) => (
+              <span
+                key={name}
+                className="bg-blue-100 text-blue-700 rounded px-1 py-0.5 text-[10px] font-medium"
+              >
+                {name}
+              </span>
+            ))}
+          </span>
+        )}
+        {isStreaming && (
+          <span className="ml-auto text-[10px] text-gray-400 animate-pulse">
+            running…
+          </span>
+        )}
+      </summary>
+      <div className="px-2 pb-2 space-y-2 mt-1">
+        {thinkingParts.map((part, idx) => (
+          <div
+            key={`thinking-${idx}`}
+            className="rounded border border-gray-200 bg-white px-2 py-1"
+          >
+            <div className="font-semibold text-gray-500 mb-0.5">Thinking</div>
+            <div className="whitespace-pre-wrap text-gray-600">
+              {part.content}
+            </div>
+          </div>
+        ))}
+        {parts.map((part, idx) => {
+          if (part.type === 'tool-call') {
+            return (
+              <div
+                key={`tool-call-${part.id}-${idx}`}
+                className="rounded border border-blue-100 bg-white px-2 py-1"
+              >
+                <div className="font-semibold text-blue-700">
+                  Tool: {part.name}
+                  <span className="ml-1 font-normal text-gray-400">
+                    ({formatToolCallState(part.state ?? '')})
+                  </span>
+                </div>
+                <pre className="mt-1 whitespace-pre-wrap wrap-break-word text-gray-600">
+                  {prettifyJsonString(part.arguments ?? '')}
+                </pre>
+              </div>
+            );
+          }
+          if (part.type === 'tool-result') {
+            return (
+              <div
+                key={`tool-result-${part.toolCallId}-${idx}`}
+                className="rounded border border-green-100 bg-white px-2 py-1"
+              >
+                <div className="font-semibold text-green-700">
+                  Result
+                  <span className="ml-1 font-normal text-gray-400">
+                    ({formatToolResultState(part.state ?? '')})
+                  </span>
+                </div>
+                <pre className="mt-1 whitespace-pre-wrap wrap-break-word text-gray-600">
+                  {prettifyJsonString(part.content ?? '')}
+                </pre>
+                {part.error && (
+                  <div className="mt-1 text-red-600">Error: {part.error}</div>
+                )}
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+    </details>
+  );
+}
+
 interface ChatProps {
   conversationId?: string;
   initialMessages?: Array<UIMessage>;
@@ -414,80 +529,13 @@ export function Chat({
                 })}
 
                 {message.role === 'assistant' ? (
-                  <>
-                    {message.parts.some(
-                      (part) =>
-                        part.type === 'thinking' ||
-                        part.type === 'tool-call' ||
-                        part.type === 'tool-result',
-                    ) ? (
-                      <details className="mt-2 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-[11px] text-gray-700">
-                        <summary className="cursor-pointer select-none font-semibold text-gray-600">
-                          Execution log (debug)
-                        </summary>
-                        <div className="mt-2 space-y-2">
-                          {message.parts.map((part, idx) => {
-                            if (part.type === 'thinking') {
-                              return (
-                                <div
-                                  key={`thinking-${idx}`}
-                                  className="rounded border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-600"
-                                >
-                                  <div className="font-semibold">
-                                    Thinking step
-                                  </div>
-                                  <div className="whitespace-pre-wrap">
-                                    {part.content}
-                                  </div>
-                                </div>
-                              );
-                            }
-
-                            if (part.type === 'tool-call') {
-                              return (
-                                <div
-                                  key={`tool-call-${part.id}-${idx}`}
-                                  className="rounded border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-700"
-                                >
-                                  <div className="font-semibold">
-                                    Tool call: {part.name} (
-                                    {formatToolCallState(part.state)})
-                                  </div>
-                                  <pre className="mt-1 whitespace-pre-wrap wrap-break-word text-[11px] text-gray-600">
-                                    {prettifyJsonString(part.arguments)}
-                                  </pre>
-                                </div>
-                              );
-                            }
-
-                            if (part.type === 'tool-result') {
-                              return (
-                                <div
-                                  key={`tool-result-${part.toolCallId}-${idx}`}
-                                  className="rounded border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-700"
-                                >
-                                  <div className="font-semibold">
-                                    Tool result (
-                                    {formatToolResultState(part.state)})
-                                  </div>
-                                  <pre className="mt-1 whitespace-pre-wrap wrap-break-word text-[11px] text-gray-600">
-                                    {prettifyJsonString(part.content)}
-                                  </pre>
-                                  {part.error ? (
-                                    <div className="mt-1 text-red-600">
-                                      Error: {part.error}
-                                    </div>
-                                  ) : null}
-                                </div>
-                              );
-                            }
-
-                            return null;
-                          })}
-                        </div>
-                      </details>
-                    ) : null}
-                  </>
+                  <AssistantMeta
+                    parts={message.parts}
+                    isStreaming={
+                      showAgentStatus &&
+                      message.id === latestAssistantMessage?.id
+                    }
+                  />
                 ) : null}
               </div>
             </div>

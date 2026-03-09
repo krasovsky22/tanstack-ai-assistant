@@ -15,3 +15,5 @@ public/generated
 files/generated/*
 !files/generated/.gitkeep
 docker-compose.override.yml
+files/knowledge-base
+files/generated

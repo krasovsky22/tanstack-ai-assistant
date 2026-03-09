@@ -5,3 +5,4 @@ export { getUiBackendApiTools } from './ui-backend-api';
 export { getFileTools } from './filetool';
 export { getCmdTools } from './cmdtool';
 export { getMemoryTools } from './memory';
+export { getKnowledgeBaseTools } from './knowledgebasetool';

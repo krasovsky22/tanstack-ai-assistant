@@ -6,6 +6,7 @@ export const ES_INDICES = {
   jobs: 'memory_jobs',
   cronjobResults: 'memory_cronjob_results',
   generatedFiles: 'memory_generated_files',
+  knowledgeBase: 'knowledge_base',
 } as const;
 
 export const ES_SOURCE_TYPES = {
@@ -13,6 +14,7 @@ export const ES_SOURCE_TYPES = {
   job: 'job',
   cronjobResult: 'cronjob_result',
   generatedFile: 'generated_file',
+  knowledgeBase: 'knowledge_base',
 } as const;
 
 let _client: Client | null = null;
@@ -86,6 +88,22 @@ export async function ensureIndices(): Promise<void> {
         properties: {
           fileId: { type: 'keyword' },
           filename: { type: 'text' },
+          content: { type: 'text' },
+          mimeType: { type: 'keyword' },
+          source_type: { type: 'keyword' },
+          createdAt: { type: 'date' },
+        },
+      },
+    },
+    {
+      index: ES_INDICES.knowledgeBase,
+      mappings: {
+        properties: {
+          fileId: { type: 'keyword' },
+          filename: { type: 'text' },
+          originalName: { type: 'text' },
+          categories: { type: 'keyword' },
+          categoriesText: { type: 'text' },
           content: { type: 'text' },
           mimeType: { type: 'keyword' },
           source_type: { type: 'keyword' },

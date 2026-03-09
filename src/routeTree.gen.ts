@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MailIndexRouteImport } from './routes/mail/index'
+import { Route as KnowledgeBaseIndexRouteImport } from './routes/knowledge-base/index'
 import { Route as JobsIndexRouteImport } from './routes/jobs/index'
 import { Route as CronjobsIndexRouteImport } from './routes/cronjobs/index'
 import { Route as ConversationsIndexRouteImport } from './routes/conversations/index'
@@ -24,6 +25,7 @@ import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as CronjobsIdIndexRouteImport } from './routes/cronjobs/$id/index'
+import { Route as ApiKnowledgeBaseIndexRouteImport } from './routes/api/knowledge-base/index'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
 import { Route as ApiGeneratedFilesIndexRouteImport } from './routes/api/generated-files/index'
 import { Route as ApiCronjobsIndexRouteImport } from './routes/api/cronjobs/index'
@@ -36,6 +38,7 @@ import { Route as ApiMailEmailsRouteImport } from './routes/api/mail/emails'
 import { Route as ApiMailEmailCountRouteImport } from './routes/api/mail/email-count'
 import { Route as ApiMailAllRouteImport } from './routes/api/mail/all'
 import { Route as ApiMailIdRouteImport } from './routes/api/mail/$id'
+import { Route as ApiKnowledgeBaseIdRouteImport } from './routes/api/knowledge-base/$id'
 import { Route as ApiJobsProcessRouteImport } from './routes/api/jobs/process'
 import { Route as ApiJobsGenerateResumeRouteImport } from './routes/api/jobs/generate-resume'
 import { Route as ApiJobsIdRouteImport } from './routes/api/jobs/$id'
@@ -54,6 +57,11 @@ const IndexRoute = IndexRouteImport.update({
 const MailIndexRoute = MailIndexRouteImport.update({
   id: '/mail/',
   path: '/mail/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KnowledgeBaseIndexRoute = KnowledgeBaseIndexRouteImport.update({
+  id: '/knowledge-base/',
+  path: '/knowledge-base/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JobsIndexRoute = JobsIndexRouteImport.update({
@@ -121,6 +129,11 @@ const CronjobsIdIndexRoute = CronjobsIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CronjobsIdRoute,
 } as any)
+const ApiKnowledgeBaseIndexRoute = ApiKnowledgeBaseIndexRouteImport.update({
+  id: '/api/knowledge-base/',
+  path: '/api/knowledge-base/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiJobsIndexRoute = ApiJobsIndexRouteImport.update({
   id: '/api/jobs/',
   path: '/api/jobs/',
@@ -179,6 +192,11 @@ const ApiMailAllRoute = ApiMailAllRouteImport.update({
 const ApiMailIdRoute = ApiMailIdRouteImport.update({
   id: '/api/mail/$id',
   path: '/api/mail/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiKnowledgeBaseIdRoute = ApiKnowledgeBaseIdRouteImport.update({
+  id: '/api/knowledge-base/$id',
+  path: '/api/knowledge-base/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiJobsProcessRoute = ApiJobsProcessRouteImport.update({
@@ -241,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/conversations/': typeof ConversationsIndexRoute
   '/cronjobs/': typeof CronjobsIndexRoute
   '/jobs/': typeof JobsIndexRoute
+  '/knowledge-base/': typeof KnowledgeBaseIndexRoute
   '/mail/': typeof MailIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
@@ -249,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/knowledge-base/$id': typeof ApiKnowledgeBaseIdRoute
   '/api/mail/$id': typeof ApiMailIdRoute
   '/api/mail/all': typeof ApiMailAllRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
@@ -261,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/api/cronjobs/': typeof ApiCronjobsIndexRoute
   '/api/generated-files/': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
+  '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
   '/cronjobs/$id/': typeof CronjobsIdIndexRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
@@ -278,6 +299,7 @@ export interface FileRoutesByTo {
   '/conversations': typeof ConversationsIndexRoute
   '/cronjobs': typeof CronjobsIndexRoute
   '/jobs': typeof JobsIndexRoute
+  '/knowledge-base': typeof KnowledgeBaseIndexRoute
   '/mail': typeof MailIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
@@ -286,6 +308,7 @@ export interface FileRoutesByTo {
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/knowledge-base/$id': typeof ApiKnowledgeBaseIdRoute
   '/api/mail/$id': typeof ApiMailIdRoute
   '/api/mail/all': typeof ApiMailAllRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
@@ -298,6 +321,7 @@ export interface FileRoutesByTo {
   '/api/cronjobs': typeof ApiCronjobsIndexRoute
   '/api/generated-files': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs': typeof ApiJobsIndexRoute
+  '/api/knowledge-base': typeof ApiKnowledgeBaseIndexRoute
   '/cronjobs/$id': typeof CronjobsIdIndexRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
@@ -317,6 +341,7 @@ export interface FileRoutesById {
   '/conversations/': typeof ConversationsIndexRoute
   '/cronjobs/': typeof CronjobsIndexRoute
   '/jobs/': typeof JobsIndexRoute
+  '/knowledge-base/': typeof KnowledgeBaseIndexRoute
   '/mail/': typeof MailIndexRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
@@ -325,6 +350,7 @@ export interface FileRoutesById {
   '/api/jobs/$id': typeof ApiJobsIdRoute
   '/api/jobs/generate-resume': typeof ApiJobsGenerateResumeRoute
   '/api/jobs/process': typeof ApiJobsProcessRoute
+  '/api/knowledge-base/$id': typeof ApiKnowledgeBaseIdRoute
   '/api/mail/$id': typeof ApiMailIdRoute
   '/api/mail/all': typeof ApiMailAllRoute
   '/api/mail/email-count': typeof ApiMailEmailCountRoute
@@ -337,6 +363,7 @@ export interface FileRoutesById {
   '/api/cronjobs/': typeof ApiCronjobsIndexRoute
   '/api/generated-files/': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
+  '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
   '/cronjobs/$id/': typeof CronjobsIdIndexRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
@@ -357,6 +384,7 @@ export interface FileRouteTypes {
     | '/conversations/'
     | '/cronjobs/'
     | '/jobs/'
+    | '/knowledge-base/'
     | '/mail/'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
@@ -365,6 +393,7 @@ export interface FileRouteTypes {
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/knowledge-base/$id'
     | '/api/mail/$id'
     | '/api/mail/all'
     | '/api/mail/email-count'
@@ -377,6 +406,7 @@ export interface FileRouteTypes {
     | '/api/cronjobs/'
     | '/api/generated-files/'
     | '/api/jobs/'
+    | '/api/knowledge-base/'
     | '/cronjobs/$id/'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
@@ -394,6 +424,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/cronjobs'
     | '/jobs'
+    | '/knowledge-base'
     | '/mail'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
@@ -402,6 +433,7 @@ export interface FileRouteTypes {
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/knowledge-base/$id'
     | '/api/mail/$id'
     | '/api/mail/all'
     | '/api/mail/email-count'
@@ -414,6 +446,7 @@ export interface FileRouteTypes {
     | '/api/cronjobs'
     | '/api/generated-files'
     | '/api/jobs'
+    | '/api/knowledge-base'
     | '/cronjobs/$id'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
@@ -432,6 +465,7 @@ export interface FileRouteTypes {
     | '/conversations/'
     | '/cronjobs/'
     | '/jobs/'
+    | '/knowledge-base/'
     | '/mail/'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
@@ -440,6 +474,7 @@ export interface FileRouteTypes {
     | '/api/jobs/$id'
     | '/api/jobs/generate-resume'
     | '/api/jobs/process'
+    | '/api/knowledge-base/$id'
     | '/api/mail/$id'
     | '/api/mail/all'
     | '/api/mail/email-count'
@@ -452,6 +487,7 @@ export interface FileRouteTypes {
     | '/api/cronjobs/'
     | '/api/generated-files/'
     | '/api/jobs/'
+    | '/api/knowledge-base/'
     | '/cronjobs/$id/'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
@@ -471,6 +507,7 @@ export interface RootRouteChildren {
   ConversationsIndexRoute: typeof ConversationsIndexRoute
   CronjobsIndexRoute: typeof CronjobsIndexRoute
   JobsIndexRoute: typeof JobsIndexRoute
+  KnowledgeBaseIndexRoute: typeof KnowledgeBaseIndexRoute
   MailIndexRoute: typeof MailIndexRoute
   ApiConversationsIdRoute: typeof ApiConversationsIdRoute
   ApiCronjobsIdRoute: typeof ApiCronjobsIdRouteWithChildren
@@ -479,6 +516,7 @@ export interface RootRouteChildren {
   ApiJobsIdRoute: typeof ApiJobsIdRoute
   ApiJobsGenerateResumeRoute: typeof ApiJobsGenerateResumeRoute
   ApiJobsProcessRoute: typeof ApiJobsProcessRoute
+  ApiKnowledgeBaseIdRoute: typeof ApiKnowledgeBaseIdRoute
   ApiMailIdRoute: typeof ApiMailIdRoute
   ApiMailAllRoute: typeof ApiMailAllRoute
   ApiMailEmailCountRoute: typeof ApiMailEmailCountRoute
@@ -490,6 +528,7 @@ export interface RootRouteChildren {
   ApiCronjobsIndexRoute: typeof ApiCronjobsIndexRoute
   ApiGeneratedFilesIndexRoute: typeof ApiGeneratedFilesIndexRoute
   ApiJobsIndexRoute: typeof ApiJobsIndexRoute
+  ApiKnowledgeBaseIndexRoute: typeof ApiKnowledgeBaseIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -506,6 +545,13 @@ declare module '@tanstack/react-router' {
       path: '/mail'
       fullPath: '/mail/'
       preLoaderRoute: typeof MailIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/knowledge-base/': {
+      id: '/knowledge-base/'
+      path: '/knowledge-base'
+      fullPath: '/knowledge-base/'
+      preLoaderRoute: typeof KnowledgeBaseIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs/': {
@@ -599,6 +645,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CronjobsIdIndexRouteImport
       parentRoute: typeof CronjobsIdRoute
     }
+    '/api/knowledge-base/': {
+      id: '/api/knowledge-base/'
+      path: '/api/knowledge-base'
+      fullPath: '/api/knowledge-base/'
+      preLoaderRoute: typeof ApiKnowledgeBaseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/jobs/': {
       id: '/api/jobs/'
       path: '/api/jobs'
@@ -681,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mail/$id'
       fullPath: '/api/mail/$id'
       preLoaderRoute: typeof ApiMailIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/knowledge-base/$id': {
+      id: '/api/knowledge-base/$id'
+      path: '/api/knowledge-base/$id'
+      fullPath: '/api/knowledge-base/$id'
+      preLoaderRoute: typeof ApiKnowledgeBaseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/jobs/process': {
@@ -791,6 +851,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConversationsIndexRoute: ConversationsIndexRoute,
   CronjobsIndexRoute: CronjobsIndexRoute,
   JobsIndexRoute: JobsIndexRoute,
+  KnowledgeBaseIndexRoute: KnowledgeBaseIndexRoute,
   MailIndexRoute: MailIndexRoute,
   ApiConversationsIdRoute: ApiConversationsIdRoute,
   ApiCronjobsIdRoute: ApiCronjobsIdRouteWithChildren,
@@ -799,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsIdRoute: ApiJobsIdRoute,
   ApiJobsGenerateResumeRoute: ApiJobsGenerateResumeRoute,
   ApiJobsProcessRoute: ApiJobsProcessRoute,
+  ApiKnowledgeBaseIdRoute: ApiKnowledgeBaseIdRoute,
   ApiMailIdRoute: ApiMailIdRoute,
   ApiMailAllRoute: ApiMailAllRoute,
   ApiMailEmailCountRoute: ApiMailEmailCountRoute,
@@ -810,6 +872,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronjobsIndexRoute: ApiCronjobsIndexRoute,
   ApiGeneratedFilesIndexRoute: ApiGeneratedFilesIndexRoute,
   ApiJobsIndexRoute: ApiJobsIndexRoute,
+  ApiKnowledgeBaseIndexRoute: ApiKnowledgeBaseIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

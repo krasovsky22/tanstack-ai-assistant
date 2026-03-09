@@ -76,6 +76,19 @@ export const generatedFiles = pgTable('generated_files', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const knowledgebaseFiles = pgTable('knowledgebase_files', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  filename: text('filename').notNull(),
+  originalName: text('original_name').notNull(),
+  categories: jsonb('categories').$type<string[]>().notNull().default([]),
+  summary: text('summary'),
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: integer('size_bytes'),
+  filePath: text('file_path').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const jobEmails = pgTable('job_emails', {
   id: uuid('id').primaryKey().defaultRandom(),
   jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),

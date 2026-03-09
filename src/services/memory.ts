@@ -102,6 +102,84 @@ export function indexCronjobResult(
   });
 }
 
+// ─── Knowledge Base ───────────────────────────────────────────────────────────
+
+export function indexKnowledgeBaseFile(
+  fileId: string,
+  filename: string,
+  originalName: string,
+  categories: string[],
+  content: string,
+  mimeType: string,
+): void {
+  void indexDocument(ES_INDICES.knowledgeBase, fileId, {
+    fileId,
+    filename,
+    originalName,
+    categories,
+    categoriesText: categories.join(' '),
+    content,
+    mimeType,
+    source_type: ES_SOURCE_TYPES.knowledgeBase,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export async function deleteKnowledgeBaseMemory(fileId: string): Promise<void> {
+  await deleteDocument(ES_INDICES.knowledgeBase, fileId);
+}
+
+export async function searchKnowledgeBase(
+  query: string,
+  category?: string,
+): Promise<Array<{ fileId: string; filename: string; originalName: string; categories: string[]; snippet: string; score: number | null }>> {
+  await ensureInitialized();
+  try {
+    const client = getEsClient();
+    const filter = category ? [{ term: { 'categories.keyword': category } }] : [];
+    const results = await client.search({
+      index: ES_INDICES.knowledgeBase,
+      body: {
+        size: 5,
+        query: {
+          bool: {
+            must: {
+              multi_match: {
+                query,
+                fields: ['originalName^2', 'categoriesText^2', 'content', 'filename'],
+                type: 'best_fields',
+                fuzziness: 'AUTO',
+              },
+            },
+            ...(filter.length ? { filter } : {}),
+          },
+        },
+        _source: true,
+        highlight: {
+          fields: { content: { fragment_size: 300, number_of_fragments: 1 } },
+        },
+      },
+    });
+
+    return results.hits.hits.map((hit) => {
+      const src = (hit._source ?? {}) as Record<string, unknown>;
+      const highlight = (hit.highlight?.content?.[0]) ?? String(src.content ?? '').slice(0, 300);
+      const cats = Array.isArray(src.categories) ? (src.categories as string[]) : [];
+      return {
+        fileId: String(src.fileId ?? hit._id),
+        filename: String(src.filename ?? ''),
+        originalName: String(src.originalName ?? ''),
+        categories: cats,
+        snippet: highlight,
+        score: hit._score ?? null,
+      };
+    });
+  } catch (err) {
+    console.error('[memory] searchKnowledgeBase failed:', err);
+    return [];
+  }
+}
+
 // ─── Search ───────────────────────────────────────────────────────────────────
 
 const INDEX_MAP: Record<string, string> = {

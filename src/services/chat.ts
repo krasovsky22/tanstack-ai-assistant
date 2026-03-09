@@ -14,6 +14,7 @@ export async function buildChatOptions(
     getFileTools,
     getCmdTools,
     getMemoryTools,
+    getKnowledgeBaseTools,
   } = await import('@/tools');
   const disabledTools = new Set(
     (process.env.DISABLE_TOOLS ?? '')
@@ -36,6 +37,7 @@ export async function buildChatOptions(
     ...(enabled('file') ? getFileTools() : []),
     ...(enabled('cmd') ? getCmdTools() : []),
     ...(enabled('memory') ? getMemoryTools() : []),
+    ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
   ];
   return {
     adapter: openaiText('gpt-5.2'),
@@ -47,7 +49,10 @@ export async function buildChatOptions(
       Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
       When uiLink is provided, generate links in markdown format like this: [link text](uiLink) to enable quick navigation in the UI. \
       When the user uploads a text or CSV file, its content will be included in the message — analyze or answer questions about it. \
-      When asked to generate or export a file (csv, txt, md), use the generate_file tool and include the returned downloadUrl as a markdown link in your response.',
+      When asked to generate or export a file (csv, txt, md), use the generate_file tool and include the returned downloadUrl as a markdown link in your response. \
+      Always search the knowledge base using the search_knowledge_base tool before answering any user question. \
+      Treat the knowledge base as your primary source of truth — retrieve relevant content first, then supplement with your own knowledge only if the knowledge base returns no useful results. \
+      Always cite the document filename when using knowledge base content.',
     ],
     tools,
   };
