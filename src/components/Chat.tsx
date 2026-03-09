@@ -28,9 +28,16 @@ function splitMarkdownCodeBlocks(text: string): MarkdownSegment[] {
 
   while ((match = codeBlockRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+      segments.push({
+        type: 'text',
+        content: text.slice(lastIndex, match.index),
+      });
     }
-    segments.push({ type: 'code', language: match[1] || 'text', content: match[2].replace(/\n$/, '') });
+    segments.push({
+      type: 'code',
+      language: match[1] || 'text',
+      content: match[2].replace(/\n$/, ''),
+    });
     lastIndex = match.index + match[0].length;
   }
 
@@ -225,7 +232,10 @@ export function Chat({
               reader.readAsDataURL(file);
             } else {
               reader.onload = () => {
-                newTextFiles.push({ name: file.name, content: reader.result as string });
+                newTextFiles.push({
+                  name: file.name,
+                  content: reader.result as string,
+                });
                 resolve();
               };
               reader.readAsText(file);
@@ -234,8 +244,10 @@ export function Chat({
       ),
     );
 
-    if (newImages.length > 0) setPendingImages((prev) => [...prev, ...newImages]);
-    if (newTextFiles.length > 0) setPendingFiles((prev) => [...prev, ...newTextFiles]);
+    if (newImages.length > 0)
+      setPendingImages((prev) => [...prev, ...newImages]);
+    if (newTextFiles.length > 0)
+      setPendingFiles((prev) => [...prev, ...newTextFiles]);
     e.target.value = '';
   };
 
@@ -252,8 +264,7 @@ export function Chat({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const hasAttachments =
-      pendingImages.length > 0 || pendingFiles.length > 0;
+    const hasAttachments = pendingImages.length > 0 || pendingFiles.length > 0;
     if ((!input.trim() && !hasAttachments) || isLoading) return;
 
     if (hasAttachments) {
@@ -353,13 +364,19 @@ export function Chat({
                         <div key={idx}>
                           {segments.map((seg, segIdx) =>
                             seg.type === 'code' ? (
-                              <Code key={segIdx} code={seg.content} language={seg.language} />
+                              <Code
+                                key={segIdx}
+                                code={seg.content}
+                                language={seg.language}
+                              />
                             ) : (
                               <div
                                 key={segIdx}
                                 className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
                                 dangerouslySetInnerHTML={{
-                                  __html: marked.parse(seg.content, { async: false }) as string,
+                                  __html: marked.parse(seg.content, {
+                                    async: false,
+                                  }) as string,
                                 }}
                               />
                             ),
@@ -372,9 +389,16 @@ export function Chat({
                   if (part.type === 'image') {
                     const imgPart = part as {
                       type: 'image';
-                      source?: { type: string; value?: string; mimeType?: string };
+                      source?: {
+                        type: string;
+                        value?: string;
+                        mimeType?: string;
+                      };
                     };
-                    if (imgPart.source?.type === 'data' && imgPart.source.value) {
+                    if (
+                      imgPart.source?.type === 'data' &&
+                      imgPart.source.value
+                    ) {
                       const mimeType = imgPart.source.mimeType ?? 'image/jpeg';
                       return (
                         <img
@@ -500,7 +524,7 @@ export function Chat({
             {pendingFiles.map((file, i) => (
               <div
                 key={`file-${i}`}
-                className="relative flex items-center gap-1 px-2 py-1 rounded border bg-gray-50 text-xs text-gray-700 max-w-[160px]"
+                className="relative flex items-center gap-1 px-2 py-1 rounded border bg-gray-50 text-xs text-gray-700 max-w-40"
               >
                 <span className="truncate">{file.name}</span>
                 <button

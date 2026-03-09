@@ -92,17 +92,61 @@ export class TelegramProvider implements Provider {
     });
   }
 
+  private async fetchWithRetry(
+    url: string,
+    init: RequestInit,
+    label: string,
+    maxRetries = 3,
+    baseDelayMs = 1_000,
+  ): Promise<Response> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await fetch(url, init);
+        if (res.ok) return res;
+
+        const status = res.status;
+        // 4xx (except 429) are client errors — no point retrying
+        if (status >= 400 && status < 500 && status !== 429) {
+          console.error(`[Telegram] ${label} failed with ${status} (no retry)`);
+          return res;
+        }
+
+        lastError = new Error(`HTTP ${status}`);
+        console.warn(
+          `[Telegram] ${label} failed with ${status}, attempt ${attempt + 1}/${maxRetries + 1}`,
+        );
+      } catch (err) {
+        lastError = err;
+        console.warn(
+          `[Telegram] ${label} network error, attempt ${attempt + 1}/${maxRetries + 1}:`,
+          err,
+        );
+      }
+
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * 2 ** attempt;
+        console.log(`[Telegram] Retrying ${label} in ${delay}ms…`);
+        await sleep(delay);
+      }
+    }
+    throw lastError;
+  }
+
   async send(chatId: number | string, text: string): Promise<void> {
-    const res = await fetch(
-      `https://api.telegram.org/bot${this.token}/sendMessage`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text }),
-      },
-    );
-    if (!res.ok) {
-      console.error(`[Telegram] sendMessage failed: ${res.status}`);
+    try {
+      await this.fetchWithRetry(
+        `https://api.telegram.org/bot${this.token}/sendMessage`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text }),
+        },
+        `sendMessage(${chatId})`,
+      );
+    } catch (err) {
+      console.error(`[Telegram] sendMessage to ${chatId} failed after all retries:`, err);
+      throw err;
     }
   }
 
@@ -115,21 +159,16 @@ export class TelegramProvider implements Provider {
       const fileContent = await readFile(filePath);
       const formData = new FormData();
       formData.append('chat_id', String(chatId));
-      formData.append(
-        'document',
-        new Blob([fileContent]),
-        filename,
-      );
+      formData.append('document', new Blob([fileContent]), filename);
 
-      const res = await fetch(
+      await this.fetchWithRetry(
         `https://api.telegram.org/bot${this.token}/sendDocument`,
         { method: 'POST', body: formData },
+        `sendDocument(${chatId}, ${filename})`,
       );
-      if (!res.ok) {
-        console.error(`[Telegram] sendDocument failed: ${res.status}`);
-      }
     } catch (err) {
-      console.error('[Telegram] sendFile error:', err);
+      console.error(`[Telegram] sendFile ${filename} to ${chatId} failed after all retries:`, err);
+      throw err;
     }
   }
 
