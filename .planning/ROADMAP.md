@@ -38,7 +38,7 @@ Plans:
 **Goal:** Add 6 LLM-callable tools that integrate with the Jira Server REST API v2, enabling the AI assistant to search issues via JQL, read/update descriptions, manage comments, get issue details, and assign tickets — all authenticated via a personal access token.
 **Requirements**: JIRA-01, JIRA-02, JIRA-03, JIRA-04, JIRA-05, JIRA-06, JIRA-07, JIRA-08
 **Depends on:** Phase 2
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md — Wave 0 test stubs: jiratool.test.ts (JIRA-01–07) + chat.test.ts (JIRA-08), RED before implementation

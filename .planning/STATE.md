@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-03-07T09:59:41.975Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-11T08:45:12.928Z"
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 11
+  completed_plans: 9
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-07T17:57:43Z
-- **Stopped At:** Completed 02-04-PLAN.md
+- **Last session:** 2026-03-11T08:45:12.924Z
+- **Stopped At:** Completed 03-01-PLAN.md
 
 ## Progress
 
@@ -33,6 +33,7 @@ Phase 02: [####] 4/4 plans complete
 ### Roadmap Evolution
 - Phase 1 added: Yahoo Mail Ingestion & Job Email Tracking — pull Yahoo IMAP emails, LLM classify, match/create jobs, job_emails table, dashboard badges, job detail mail view
 - Phase 2 added: Add Elasticsearch to Docker stack for LLM memory - store generated files, conversations, and cronjob results
+- Phase 3 added: jira-integration
 
 ### Decisions
 
@@ -56,6 +57,9 @@ Phase 02: [####] 4/4 plans complete
 - [Phase 02-04]: appendMessagesToConversation uses conversationId as title fallback — title not available in that context
 - [Phase 02-04]: workers/cron changed cronjobLogs insert to use .returning() — needed to capture logRow.id for ES document ID
 - [Phase 02-04]: generate-resume indexes content before PDF generation — result.updatedResume and result.coverLetter still in scope
+- [Phase 03-01]: Wave 0 tests use @ts-expect-error on jiratool import — runtime import failure is the expected RED signal
+- [Phase 03-01]: chat.test.ts uses vi.mock('@/tools') full-mock pattern (established in 02-03) — avoids Docker MCP connection noise in test runs
+- [Phase 03-01]: jira_assign_issue uses { name: username } NOT { accountId } — Jira Server API vs Cloud distinction encoded in test assertions
 
 ### Performance Metrics
 
@@ -69,4 +73,5 @@ Phase 02: [####] 4/4 plans complete
 | Phase 02 P02-02 | 4 min | 2 tasks | 4 files |
 | Phase 02 P02-03 | 3min | 2 tasks | 5 files |
 | 02    | 02-04 | 5 min    | 2     | 4     |
+| Phase 03-jira-integration P03-01 | 3min | 2 tasks | 2 files |
 
