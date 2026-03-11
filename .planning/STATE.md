@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-11T08:45:12.928Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-11T08:49:16.622Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-11T08:45:12.924Z
-- **Stopped At:** Completed 03-01-PLAN.md
+- **Last session:** 2026-03-11T08:49:16.618Z
+- **Stopped At:** Completed 03-02-PLAN.md
 
 ## Progress
 
@@ -60,6 +60,8 @@ Phase 02: [####] 4/4 plans complete
 - [Phase 03-01]: Wave 0 tests use @ts-expect-error on jiratool import — runtime import failure is the expected RED signal
 - [Phase 03-01]: chat.test.ts uses vi.mock('@/tools') full-mock pattern (established in 02-03) — avoids Docker MCP connection noise in test runs
 - [Phase 03-01]: jira_assign_issue uses { name: username } NOT { accountId } — Jira Server API vs Cloud distinction encoded in test assertions
+- [Phase 03]: jira_add_comment returns res.json() directly (not wrapped) — matches test assertion toMatchObject({ id })
+- [Phase 03]: getJiraTools registered in buildChatOptions() with DISABLE_TOOLS=jira guard alongside existing tool groups
 
 ### Performance Metrics
 
@@ -74,4 +76,5 @@ Phase 02: [####] 4/4 plans complete
 | Phase 02 P02-03 | 3min | 2 tasks | 5 files |
 | 02    | 02-04 | 5 min    | 2     | 4     |
 | Phase 03-jira-integration P03-01 | 3min | 2 tasks | 2 files |
+| Phase 03 P03-02 | 2min | 1 tasks | 4 files |
 
