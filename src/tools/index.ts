@@ -6,3 +6,4 @@ export { getFileTools } from './filetool';
 export { getCmdTools } from './cmdtool';
 export { getMemoryTools } from './memory';
 export { getKnowledgeBaseTools } from './knowledgebasetool';
+export { getJiraTools } from './jiratool';
