@@ -1,22 +1,21 @@
 import { toolDefinition } from '@tanstack/ai';
 import { z } from 'zod';
+import {
+  getJiraConfig,
+  JIRA_CONFIG_ERROR,
+  searchIssues,
+  getIssue,
+  updateIssueDescription,
+  addComment,
+  getComments,
+  assignIssue,
+  createIssue,
+} from '@/services/jira';
 
-function jiraFetch(
-  baseUrl: string,
-  token: string,
-  path: string,
-  options?: RequestInit,
-) {
-  const url = `${baseUrl.replace(/\/$/, '')}/rest/api/2${path}`;
-  return fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...(options?.headers ?? {}),
-    },
-  });
+function cfg() {
+  const config = getJiraConfig();
+  if (!config) return { config: null, error: JIRA_CONFIG_ERROR } as const;
+  return { config, error: null } as const;
 }
 
 export function getJiraTools() {
@@ -26,7 +25,11 @@ export function getJiraTools() {
       description:
         'Search Jira issues using JQL (Jira Query Language). Returns a list of matching issues.',
       inputSchema: z.object({
-        jql: z.string().describe('JQL query string, e.g. "project = PROJ AND status = Open"'),
+        jql: z
+          .string()
+          .describe(
+            'JQL query string, e.g. "project = PROJ AND status = Open"',
+          ),
         maxResults: z
           .number()
           .int()
@@ -44,44 +47,10 @@ export function getJiraTools() {
           .describe('Index of the first result to return (for pagination)'),
       }),
     }).server(async ({ jql, maxResults, startAt }) => {
-      const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-      const token = process.env.JIRA_PAT;
-      if (!baseUrl || !token) {
-        return {
-          success: false,
-          error:
-            'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.',
-        };
-      }
-
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
       try {
-        const params = new URLSearchParams({
-          jql,
-          maxResults: String(maxResults),
-          startAt: String(startAt),
-          fields: 'summary,status,assignee,description,priority,issuetype,created,updated',
-        });
-        const res = await jiraFetch(baseUrl, token, `/search?${params.toString()}`);
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return {
-            success: false,
-            error:
-              (err.errorMessages ?? []).join('; ') ||
-              `Jira returned status ${res.status}`,
-          };
-        }
-        const data = await res.json();
-        return {
-          total: data.total,
-          maxResults: data.maxResults,
-          startAt: data.startAt,
-          issues: (data.issues ?? []).map((i: any) => ({
-            key: i.key,
-            id: i.id,
-            fields: i.fields,
-          })),
-        };
+        return await searchIssues(config, jql, maxResults ?? 10, startAt ?? 0);
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
       }
@@ -95,37 +64,10 @@ export function getJiraTools() {
         issueKey: z.string().describe('Jira issue key, e.g. PROJ-123'),
       }),
     }).server(async ({ issueKey }) => {
-      const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-      const token = process.env.JIRA_PAT;
-      if (!baseUrl || !token) {
-        return {
-          success: false,
-          error:
-            'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.',
-        };
-      }
-
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
       try {
-        const params = new URLSearchParams({
-          fields:
-            'summary,status,assignee,description,priority,issuetype,created,updated,comment',
-        });
-        const res = await jiraFetch(
-          baseUrl,
-          token,
-          `/issue/${issueKey}?${params.toString()}`,
-        );
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return {
-            success: false,
-            error:
-              (err.errorMessages ?? []).join('; ') ||
-              `Jira returned status ${res.status}`,
-          };
-        }
-        const data = await res.json();
-        return { key: data.key, id: data.id, fields: data.fields };
+        return await getIssue(config, issueKey);
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
       }
@@ -141,31 +83,10 @@ export function getJiraTools() {
           .describe('New plain-text description for the issue'),
       }),
     }).server(async ({ issueKey, description }) => {
-      const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-      const token = process.env.JIRA_PAT;
-      if (!baseUrl || !token) {
-        return {
-          success: false,
-          error:
-            'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.',
-        };
-      }
-
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
       try {
-        const res = await jiraFetch(baseUrl, token, `/issue/${issueKey}`, {
-          method: 'PUT',
-          body: JSON.stringify({ fields: { description } }),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return {
-            success: false,
-            error:
-              (err.errorMessages ?? []).join('; ') ||
-              `Jira returned status ${res.status}`,
-          };
-        }
-        // 204 No Content — do NOT call .json()
+        await updateIssueDescription(config, issueKey, description);
         return { success: true };
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
@@ -180,37 +101,10 @@ export function getJiraTools() {
         comment: z.string().describe('Comment text to add'),
       }),
     }).server(async ({ issueKey, comment }) => {
-      const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-      const token = process.env.JIRA_PAT;
-      if (!baseUrl || !token) {
-        return {
-          success: false,
-          error:
-            'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.',
-        };
-      }
-
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
       try {
-        const res = await jiraFetch(
-          baseUrl,
-          token,
-          `/issue/${issueKey}/comment`,
-          {
-            method: 'POST',
-            body: JSON.stringify({ body: comment }),
-          },
-        );
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return {
-            success: false,
-            error:
-              (err.errorMessages ?? []).join('; ') ||
-              `Jira returned status ${res.status}`,
-          };
-        }
-        // 201 Created — response body contains the created comment
-        return await res.json();
+        return await addComment(config, issueKey, comment);
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
       }
@@ -223,41 +117,10 @@ export function getJiraTools() {
         issueKey: z.string().describe('Jira issue key, e.g. PROJ-123'),
       }),
     }).server(async ({ issueKey }) => {
-      const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-      const token = process.env.JIRA_PAT;
-      if (!baseUrl || !token) {
-        return {
-          success: false,
-          error:
-            'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.',
-        };
-      }
-
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
       try {
-        const res = await jiraFetch(
-          baseUrl,
-          token,
-          `/issue/${issueKey}/comment`,
-        );
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return {
-            success: false,
-            error:
-              (err.errorMessages ?? []).join('; ') ||
-              `Jira returned status ${res.status}`,
-          };
-        }
-        const data = await res.json();
-        return {
-          issueKey,
-          comments: (data.comments ?? []).map((c: any) => ({
-            id: c.id,
-            author: c.author?.displayName ?? c.author?.name,
-            body: c.body,
-            created: c.created,
-          })),
-        };
+        return await getComments(config, issueKey);
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
       }
@@ -276,40 +139,105 @@ export function getJiraTools() {
           ),
       }),
     }).server(async ({ issueKey, username }) => {
-      const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-      const token = process.env.JIRA_PAT;
-      if (!baseUrl || !token) {
-        return {
-          success: false,
-          error:
-            'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.',
-        };
-      }
-
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
       try {
-        const res = await jiraFetch(
-          baseUrl,
-          token,
-          `/issue/${issueKey}/assignee`,
-          {
-            method: 'PUT',
-            body: JSON.stringify({ name: username === 'null' ? null : username }),
-          },
+        await assignIssue(
+          config,
+          issueKey,
+          username === 'null' ? null : username,
         );
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return {
-            success: false,
-            error:
-              (err.errorMessages ?? []).join('; ') ||
-              `Jira returned status ${res.status}`,
-          };
-        }
-        // 204 No Content — do NOT call .json()
         return { success: true };
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
       }
     }),
+
+    toolDefinition({
+      name: 'jira_create_issue',
+      description:
+        'Create a new Jira issue. projectKey defaults to JIRA_DEFAULT_PROJECT if not provided. issueType is inferred by AI from the summary/description if not provided.',
+      inputSchema: z.object({
+        summary: z
+          .string()
+          .default('Placeholder Summary')
+          .describe('Short summary / title of the issue'),
+        projectKey: z
+          .string()
+          .optional()
+          .default(process.env.JIRA_DEFAULT_PROJECT ?? '')
+          .describe(
+            'Jira project key, e.g. PROJ. Omit to use the configured default project.',
+          ),
+        issueType: z
+          .string()
+          .optional()
+          .default('Bug')
+          .describe(
+            'Issue type name, e.g. "Bug", "Task", "Story". Omit to let AI infer it from context.',
+          ),
+        description: z
+          .string()
+          .optional()
+          .default('Placeholder')
+          .describe('Optional plain-text description for the issue'),
+        assignee: z
+          .string()
+          .optional()
+          .default('')
+          .describe('Optional Jira username to assign the issue to'),
+        priority: z
+          .string()
+          .optional()
+          .default('Medium')
+          .describe('Optional priority name, e.g. "High", "Medium", "Low"'),
+        labels: z
+          .array(z.string())
+          .optional()
+          .default([])
+          .describe('Optional list of label strings to attach'),
+      }),
+    }).server(
+      async ({
+        summary,
+        projectKey,
+        issueType,
+        description,
+        assignee,
+        priority,
+        labels,
+      }) => {
+        const { config, error } = cfg();
+        if (!config) return { success: false, error };
+
+        const resolvedProjectKey =
+          projectKey ?? process.env.JIRA_DEFAULT_PROJECT;
+        if (!resolvedProjectKey) {
+          return {
+            success: false,
+            error:
+              'No project key provided and JIRA_DEFAULT_PROJECT is not configured.',
+          };
+        }
+
+        try {
+          const result = await createIssue(config, {
+            projectKey: resolvedProjectKey,
+            issueType,
+            summary: summary ?? 'Placeholder Summary',
+            description,
+            assignee,
+            priority,
+            labels,
+          });
+          return { success: true, ...result };
+        } catch (err: any) {
+          return {
+            success: false,
+            error: err?.error ?? err.message ?? 'Unknown error',
+          };
+        }
+      },
+    ),
   ];
 }

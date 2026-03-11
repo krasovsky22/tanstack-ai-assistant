@@ -54,7 +54,9 @@ export async function buildChatOptions(
       When asked to generate or export a file (csv, txt, md), use the generate_file tool and include the returned downloadUrl as a markdown link in your response. \
       Always search the knowledge base using the search_knowledge_base tool before answering any user question. \
       Treat the knowledge base as your primary source of truth — retrieve relevant content first, then supplement with your own knowledge only if the knowledge base returns no useful results. \
-      Always cite the document filename when using knowledge base content.',
+      Always cite the document filename when using knowledge base content. \
+      When working with Jira issues, always include a full clickable navigation link to each issue using the format: [PROJ-123](JIRA_BASE_URL/browse/PROJ-123) where JIRA_BASE_URL is the configured Jira instance URL. \
+      For newly created issues, always show the link so the user can navigate directly to it.',
     ],
     tools,
   };
