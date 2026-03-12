@@ -59,8 +59,10 @@ export async function buildChatOptions(
       Only proceed once all required parameters are supplied. \
       Supplement with your own knowledge only when the knowledge base returns no relevant results. \
       Always cite the document filename when using knowledge base content. \
-      When working with Jira issues, always include a full clickable navigation link to each issue using the format: [PROJ-123](JIRA_BASE_URL/browse/PROJ-123) where JIRA_BASE_URL is the configured Jira instance URL. \
-      For newly created issues, always show the link so the user can navigate directly to it.',
+      When working with Jira issues, always include a full clickable navigation link that opens new browser tab to each issue using the format: [PROJ-123](JIRA_BASE_URL/browse/PROJ-123) where JIRA_BASE_URL is the configured Jira instance URL. \
+      For newly created issues, always show the link so the user can navigate directly to it. \
+      Before searching Jira or answering questions about tickets, use search_memory with source_type "jira_ticket" to recall previously seen tickets from memory — this avoids redundant API calls and surfaces historical context. \
+      When Jira API results are returned, they are automatically stored in memory for future recall.',
     ],
     tools,
   };

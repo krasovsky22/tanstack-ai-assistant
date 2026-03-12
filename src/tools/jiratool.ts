@@ -11,6 +11,7 @@ import {
   assignIssue,
   createIssue,
 } from '@/services/jira';
+import { indexJiraTicket } from '@/services/memory';
 
 function cfg() {
   const config = getJiraConfig();
@@ -18,12 +19,48 @@ function cfg() {
   return { config, error: null } as const;
 }
 
+function indexIssueFields(
+  key: string,
+  id: string,
+  fields: Record<string, any>,
+) {
+  indexJiraTicket({
+    ticketKey: key,
+    ticketId: id,
+    summary: fields.summary ?? '',
+    description: extractDescriptionText(fields.description),
+    status: fields.status?.name,
+    assignee: fields.assignee?.displayName ?? fields.assignee?.name,
+    issueType: fields.issuetype?.name,
+    priority: fields.priority?.name,
+    createdAt: fields.created,
+    updatedAt: fields.updated,
+  });
+}
+
+function extractDescriptionText(description: unknown): string {
+  if (!description) return '';
+  if (typeof description === 'string') return description;
+  // ADF format: extract text nodes recursively
+  if (typeof description === 'object') {
+    const adf = description as Record<string, unknown>;
+    const content = adf.content as unknown[] | undefined;
+    if (!content) return '';
+    return content
+      .flatMap((block: any) => block?.content ?? [])
+      .filter((node: any) => node?.type === 'text')
+      .map((node: any) => node.text ?? '')
+      .join(' ');
+  }
+  return '';
+}
+
 export function getJiraTools() {
   return [
     toolDefinition({
       name: 'jira_search',
       description:
-        'Search Jira issues using JQL (Jira Query Language). Returns a list of matching issues.',
+        'Search Jira issues using JQL (Jira Query Language). Returns a list of matching issues with cursor-based pagination via nextPageToken.',
       inputSchema: z.object({
         jql: z
           .string()
@@ -34,27 +71,70 @@ export function getJiraTools() {
           .number()
           .int()
           .min(1)
-          .max(50)
+          .max(5000)
           .optional()
           .default(10)
-          .describe('Maximum number of results to return (1–50, default 10)'),
-        startAt: z
-          .number()
-          .int()
-          .min(0)
+          .describe('Maximum number of results to return (1–5000, default 10)'),
+        nextPageToken: z
+          .string()
           .optional()
-          .default(0)
-          .describe('Index of the first result to return (for pagination)'),
+          .describe(
+            'Cursor token for the next page of results, obtained from a previous search response',
+          ),
+        fields: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'List of field IDs to return for each issue. Defaults to summary, status, assignee, description, priority, issuetype, created, updated.',
+          ),
+        expand: z
+          .string()
+          .optional()
+          .describe(
+            'Comma-separated list of additional information to expand, e.g. "renderedFields,names,changelog"',
+          ),
+        properties: z
+          .array(z.string())
+          .optional()
+          .describe('List of issue property keys to include in the response'),
+        fieldsByKeys: z
+          .boolean()
+          .optional()
+          .describe(
+            'When true, fields are referenced by their key instead of ID',
+          ),
       }),
-    }).server(async ({ jql, maxResults, startAt }) => {
-      const { config, error } = cfg();
-      if (!config) return { success: false, error };
-      try {
-        return await searchIssues(config, jql, maxResults ?? 10, startAt ?? 0);
-      } catch (err: any) {
-        return { success: false, error: err.message ?? 'Unknown error' };
-      }
-    }),
+    }).server(
+      async ({
+        jql,
+        maxResults,
+        nextPageToken,
+        fields,
+        expand,
+        properties,
+        fieldsByKeys,
+      }) => {
+        const { config, error } = cfg();
+        if (!config) return { success: false, error };
+        try {
+          const result = await searchIssues(config, {
+            jql,
+            maxResults,
+            nextPageToken,
+            fields,
+            expand,
+            properties,
+            fieldsByKeys,
+          });
+          for (const issue of result.issues ?? []) {
+            indexIssueFields(issue.key, issue.id, issue.fields ?? {});
+          }
+          return result;
+        } catch (err: any) {
+          return { success: false, error: err.message ?? 'Unknown error' };
+        }
+      },
+    ),
 
     toolDefinition({
       name: 'jira_get_issue',
@@ -67,7 +147,9 @@ export function getJiraTools() {
       const { config, error } = cfg();
       if (!config) return { success: false, error };
       try {
-        return await getIssue(config, issueKey);
+        const result = await getIssue(config, issueKey);
+        indexIssueFields(result.key, result.id, result.fields ?? {});
+        return result;
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
       }
@@ -229,6 +311,16 @@ export function getJiraTools() {
             assignee,
             priority,
             labels,
+          });
+          indexJiraTicket({
+            ticketKey: result.key,
+            ticketId: result.id,
+            summary: summary ?? 'Placeholder Summary',
+            description,
+            issueType,
+            assignee,
+            priority,
+            projectKey: resolvedProjectKey,
           });
           return { success: true, ...result };
         } catch (err: any) {

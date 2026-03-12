@@ -12,7 +12,7 @@ export function getMemoryTools() {
       inputSchema: z.object({
         query: z.string().describe('Full-text search query'),
         source_type: z
-          .enum(['conversation', 'job', 'cronjob_result', 'generated_file', 'all'])
+          .enum(['conversation', 'job', 'cronjob_result', 'generated_file', 'jira_ticket', 'all'])
           .optional()
           .default('all')
           .describe('Narrow results to a specific data type, or "all" for cross-type search'),

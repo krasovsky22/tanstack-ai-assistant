@@ -93,20 +93,35 @@ ${description ? `Description: ${description}` : ''}`,
 
 // ── API methods ────────────────────────────────────────────────────────────
 
-export async function searchIssues(
-  config: JiraConfig,
-  jql: string,
-  maxResults: number,
-  startAt: number,
-) {
-  const params = new URLSearchParams({
+export interface SearchIssuesOptions {
+  jql: string;
+  maxResults?: number;
+  nextPageToken?: string;
+  fields?: string[];
+  expand?: string;
+  properties?: string[];
+  fieldsByKeys?: boolean;
+}
+
+export async function searchIssues(config: JiraConfig, opts: SearchIssuesOptions) {
+  const {
     jql,
-    maxResults: String(maxResults),
-    startAt: String(startAt),
-    fields:
-      'summary,status,assignee,description,priority,issuetype,created,updated',
-  });
-  const res = await jiraFetch(config, `/search?${params.toString()}`);
+    maxResults = 10,
+    nextPageToken,
+    fields = ['summary', 'status', 'assignee', 'description', 'priority', 'issuetype', 'created', 'updated'],
+    expand,
+    properties,
+    fieldsByKeys,
+  } = opts;
+
+  const params = new URLSearchParams({ jql, maxResults: String(maxResults) });
+  if (nextPageToken) params.set('nextPageToken', nextPageToken);
+  if (fields.length) params.set('fields', fields.join(','));
+  if (expand) params.set('expand', expand);
+  if (properties?.length) params.set('properties', properties.join(','));
+  if (fieldsByKeys !== undefined) params.set('fieldsByKeys', String(fieldsByKeys));
+
+  const res = await jiraFetch(config, `/search/jql?${params.toString()}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(
@@ -116,9 +131,8 @@ export async function searchIssues(
   }
   const data = await res.json();
   return {
-    total: data.total,
+    nextPageToken: data.nextPageToken ?? null,
     maxResults: data.maxResults,
-    startAt: data.startAt,
     issues: (data.issues ?? []).map((i: any) => ({
       key: i.key,
       id: i.id,
