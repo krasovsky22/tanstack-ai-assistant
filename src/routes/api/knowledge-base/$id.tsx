@@ -36,6 +36,62 @@ export const Route = createFileRoute('/api/knowledge-base/$id')({
         );
       },
 
+      PUT: async ({ request, params }) => {
+        const { db } = await import('@/db');
+        const { knowledgebaseFiles } = await import('@/db/schema');
+        const { eq } = await import('drizzle-orm');
+
+        const [existing] = await db
+          .select()
+          .from(knowledgebaseFiles)
+          .where(eq(knowledgebaseFiles.id, params.id))
+          .limit(1);
+
+        if (!existing) {
+          return new Response(JSON.stringify({ error: 'Not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const contentType = request.headers.get('content-type') ?? '';
+        if (!contentType.includes('application/json')) {
+          return new Response(JSON.stringify({ error: 'Expected application/json' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const body = await request.json();
+        if (typeof body.content !== 'string') {
+          return new Response(JSON.stringify({ error: 'content is required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const { writeFile } = await import('fs/promises');
+        await writeFile(existing.filePath, body.content, 'utf-8');
+        const sizeBytes = Buffer.byteLength(body.content as string, 'utf-8');
+
+        const [row] = await db
+          .update(knowledgebaseFiles)
+          .set({ sizeBytes, updatedAt: new Date() })
+          .where(eq(knowledgebaseFiles.id, params.id))
+          .returning();
+
+        try {
+          const { indexKnowledgeBaseFile } = await import('@/services/memory');
+          indexKnowledgeBaseFile(row.id, row.filename, row.originalName, row.categories, body.content as string, row.mimeType);
+        } catch {
+          // Non-fatal
+        }
+
+        return new Response(JSON.stringify(row), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      },
+
       PATCH: async ({ request, params }) => {
         const { db } = await import('@/db');
         const { knowledgebaseFiles } = await import('@/db/schema');

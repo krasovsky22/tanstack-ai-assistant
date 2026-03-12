@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import { Trash2, Upload, FolderEdit, FileText, Search, Eye, X, Tag } from 'lucide-react';
+import { Trash2, Upload, FolderEdit, FileText, Search, Eye, X, Tag, Pencil } from 'lucide-react';
 
 export const Route = createFileRoute('/knowledge-base/')({
   component: KnowledgeBaseDashboard,
@@ -216,6 +216,110 @@ function PreviewModal({ fileId, onClose }: { fileId: string; onClose: () => void
   );
 }
 
+// ─── Edit modal ────────────────────────────────────────────────────────────────
+
+function EditModal({
+  fileId,
+  onClose,
+  onSaved,
+}: {
+  fileId: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [content, setContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/knowledge-base/${fileId}`)
+      .then((r) => r.json())
+      .then((d: PreviewData) => { setContent(d.content); setIsLoading(false); })
+      .catch(() => { setError('Failed to load content'); setIsLoading(false); });
+  }, [fileId]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  async function handleSave() {
+    if (content === null) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/knowledge-base/${fileId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      onSaved();
+      onClose();
+    } catch {
+      setError('Failed to save. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <h2 className="font-semibold text-gray-900">Edit File Content</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-hidden px-6 py-4 flex flex-col min-h-0">
+          {isLoading ? (
+            <div className="space-y-2 flex-1">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className={`h-3 bg-gray-100 rounded animate-pulse ${i % 3 === 2 ? 'w-2/3' : 'w-full'}`} />
+              ))}
+            </div>
+          ) : error ? (
+            <p className="text-red-600 text-sm">{error}</p>
+          ) : (
+            <textarea
+              value={content ?? ''}
+              onChange={(e) => setContent(e.target.value)}
+              className="flex-1 w-full text-xs font-mono leading-relaxed border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[400px]"
+              spellCheck={false}
+            />
+          )}
+        </div>
+
+        <div className="px-6 py-3 border-t flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isLoading || saving || content === null}
+            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
 
 function KnowledgeBaseDashboard() {
@@ -230,6 +334,7 @@ function KnowledgeBaseDashboard() {
   const [recategorizeId, setRecategorizeId] = useState<string | null>(null);
   const [recategorizeValue, setRecategorizeValue] = useState<string[]>([]);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const queryParams = new URLSearchParams();
   if (searchQuery) queryParams.set('search', searchQuery);
@@ -312,6 +417,13 @@ function KnowledgeBaseDashboard() {
     <div className="max-w-5xl mx-auto p-6">
       {previewId && (
         <PreviewModal fileId={previewId} onClose={() => setPreviewId(null)} />
+      )}
+      {editId && (
+        <EditModal
+          fileId={editId}
+          onClose={() => setEditId(null)}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ['knowledge-base'] })}
+        />
       )}
 
       <div className="flex items-center justify-between mb-6">
@@ -457,6 +569,15 @@ function KnowledgeBaseDashboard() {
                         >
                           <Eye size={15} />
                         </button>
+                        {!file.mimeType.includes('pdf') && (
+                          <button
+                            onClick={() => setEditId(file.id)}
+                            title="Edit content"
+                            className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors cursor-pointer"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                        )}
                         <button
                           onClick={() => startRecategorize(file)}
                           title="Edit categories"
