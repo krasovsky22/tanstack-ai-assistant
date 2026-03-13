@@ -13,31 +13,10 @@ import {
   getTransitions,
   transitionIssue,
 } from '@/services/jira';
-import { indexJiraTicket } from '@/services/memory';
-
 function cfg() {
   const config = getJiraConfig();
   if (!config) return { config: null, error: JIRA_CONFIG_ERROR } as const;
   return { config, error: null } as const;
-}
-
-function indexIssueFields(
-  key: string,
-  id: string,
-  fields: Record<string, any>,
-) {
-  indexJiraTicket({
-    ticketKey: key,
-    ticketId: id,
-    summary: fields.summary ?? '',
-    description: extractDescriptionText(fields.description),
-    status: fields.status?.name,
-    assignee: fields.assignee?.displayName ?? fields.assignee?.name,
-    issueType: fields.issuetype?.name,
-    priority: fields.priority?.name,
-    createdAt: fields.created,
-    updatedAt: fields.updated,
-  });
 }
 
 function extractDescriptionText(description: unknown): string {
@@ -128,9 +107,6 @@ export function getJiraTools() {
             properties,
             fieldsByKeys,
           });
-          for (const issue of result.issues ?? []) {
-            indexIssueFields(issue.key, issue.id, issue.fields ?? {});
-          }
           return result;
         } catch (err: any) {
           return { success: false, error: err.message ?? 'Unknown error' };
@@ -150,7 +126,6 @@ export function getJiraTools() {
       if (!config) return { success: false, error };
       try {
         const result = await getIssue(config, issueKey);
-        indexIssueFields(result.key, result.id, result.fields ?? {});
         return result;
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
@@ -316,16 +291,6 @@ export function getJiraTools() {
             assignee: resolvedAssignee,
             priority,
             labels,
-          });
-          indexJiraTicket({
-            ticketKey: result.key,
-            ticketId: result.id,
-            summary: summary ?? 'Placeholder Summary',
-            description,
-            issueType,
-            assignee: resolvedAssignee,
-            priority,
-            projectKey: resolvedProjectKey,
           });
           return { success: true, ...result };
         } catch (err: any) {

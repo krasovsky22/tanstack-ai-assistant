@@ -7,7 +7,6 @@ export const ES_INDICES = {
   cronjobResults: 'memory_cronjob_results',
   generatedFiles: 'memory_generated_files',
   knowledgeBase: 'knowledge_base',
-  jiraTickets: 'memory_jira_tickets',
 } as const;
 
 export const ES_SOURCE_TYPES = {
@@ -16,7 +15,6 @@ export const ES_SOURCE_TYPES = {
   cronjobResult: 'cronjob_result',
   generatedFile: 'generated_file',
   knowledgeBase: 'knowledge_base',
-  jiraTicket: 'jira_ticket',
 } as const;
 
 let _client: Client | null = null;
@@ -110,25 +108,6 @@ export async function ensureIndices(): Promise<void> {
           mimeType: { type: 'keyword' },
           source_type: { type: 'keyword' },
           createdAt: { type: 'date' },
-        },
-      },
-    },
-    {
-      index: ES_INDICES.jiraTickets,
-      mappings: {
-        properties: {
-          ticketKey: { type: 'keyword' },
-          ticketId: { type: 'keyword' },
-          summary: { type: 'text' },
-          description: { type: 'text' },
-          status: { type: 'keyword' },
-          assignee: { type: 'text' },
-          issueType: { type: 'keyword' },
-          priority: { type: 'keyword' },
-          projectKey: { type: 'keyword' },
-          source_type: { type: 'keyword' },
-          createdAt: { type: 'date' },
-          updatedAt: { type: 'date' },
         },
       },
     },

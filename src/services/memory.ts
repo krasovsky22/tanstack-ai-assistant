@@ -180,82 +180,6 @@ export async function searchKnowledgeBase(
   }
 }
 
-// ─── Jira Ticket ──────────────────────────────────────────────────────────────
-
-export interface JiraTicketRecord {
-  ticketKey: string;
-  ticketId: string;
-  summary: string;
-  description?: string;
-  status?: string;
-  assignee?: string;
-  issueType?: string;
-  priority?: string;
-  projectKey?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export function indexJiraTicket(ticket: JiraTicketRecord): void {
-  void indexDocument(ES_INDICES.jiraTickets, ticket.ticketKey, {
-    ticketKey: ticket.ticketKey,
-    ticketId: ticket.ticketId,
-    summary: ticket.summary,
-    description: ticket.description ?? '',
-    status: ticket.status ?? '',
-    assignee: ticket.assignee ?? '',
-    issueType: ticket.issueType ?? '',
-    priority: ticket.priority ?? '',
-    projectKey: ticket.projectKey ?? ticket.ticketKey.split('-')[0] ?? '',
-    source_type: ES_SOURCE_TYPES.jiraTicket,
-    createdAt: ticket.createdAt ?? new Date().toISOString(),
-    updatedAt: ticket.updatedAt ?? new Date().toISOString(),
-  });
-}
-
-export async function searchJiraMemory(
-  query: string,
-): Promise<Array<{ ticketKey: string; summary: string; description: string; status: string; snippet: string; score: number | null }>> {
-  await ensureInitialized();
-  try {
-    const client = getEsClient();
-    const results = await client.search({
-      index: ES_INDICES.jiraTickets,
-      body: {
-        size: 5,
-        query: {
-          multi_match: {
-            query,
-            fields: ['ticketKey^3', 'summary^2', 'description', 'status', 'assignee', 'issueType'],
-            type: 'best_fields',
-            fuzziness: 'AUTO',
-          },
-        },
-        _source: true,
-        highlight: {
-          fields: { description: { fragment_size: 300, number_of_fragments: 1 } },
-        },
-      },
-    });
-
-    return results.hits.hits.map((hit) => {
-      const src = (hit._source ?? {}) as Record<string, unknown>;
-      const highlight = hit.highlight?.description?.[0] ?? String(src.description ?? '').slice(0, 300);
-      return {
-        ticketKey: String(src.ticketKey ?? hit._id),
-        summary: String(src.summary ?? ''),
-        description: String(src.description ?? ''),
-        status: String(src.status ?? ''),
-        snippet: highlight,
-        score: hit._score ?? null,
-      };
-    });
-  } catch (err) {
-    console.error('[memory] searchJiraMemory failed:', err);
-    return [];
-  }
-}
-
 // ─── Search ───────────────────────────────────────────────────────────────────
 
 const INDEX_MAP: Record<string, string> = {
@@ -263,7 +187,6 @@ const INDEX_MAP: Record<string, string> = {
   [ES_SOURCE_TYPES.job]: ES_INDICES.jobs,
   [ES_SOURCE_TYPES.cronjobResult]: ES_INDICES.cronjobResults,
   [ES_SOURCE_TYPES.generatedFile]: ES_INDICES.generatedFiles,
-  [ES_SOURCE_TYPES.jiraTicket]: ES_INDICES.jiraTickets,
 };
 
 function buildSnippet(source: Record<string, unknown>): string {
@@ -279,10 +202,6 @@ function buildSnippet(source: Record<string, unknown>): string {
   }
   if (sourceType === ES_SOURCE_TYPES.generatedFile) {
     return String(source.content ?? source.filename ?? '').slice(0, 300);
-  }
-  if (sourceType === ES_SOURCE_TYPES.jiraTicket) {
-    const key = source.ticketKey ? `[${source.ticketKey}] ` : '';
-    return `${key}${String(source.summary ?? '')} — ${String(source.description ?? '').slice(0, 200)}`.slice(0, 300);
   }
   return String(source.title ?? source.filename ?? source.cronjobName ?? '').slice(0, 300);
 }
@@ -306,7 +225,7 @@ export async function searchMemory(
         query: {
           multi_match: {
             query,
-            fields: ['title^2', 'content', 'description', 'result', 'messageSnippet', 'cronjobName', 'summary^2', 'ticketKey^3'],
+            fields: ['title^2', 'content', 'description', 'result', 'messageSnippet', 'cronjobName'],
             type: 'best_fields',
             fuzziness: 'AUTO',
           },
