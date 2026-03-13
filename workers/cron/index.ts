@@ -114,9 +114,15 @@ async function syncJobs() {
     }
 
     if (!scheduledTasks.has(job.id)) {
-      const task = schedule(job.cronExpression, () => {
-        runCronjob({ id: job.id, name: job.name, prompt: job.prompt }).catch((err) => {
-          console.error(`[cron] Unhandled error in job "${job.name}":`, err);
+      const jobId = job.id;
+      const task = schedule(job.cronExpression, async () => {
+        const [freshJob] = await db.select().from(cronjobs).where(eq(cronjobs.id, jobId));
+        if (!freshJob || !freshJob.isActive) {
+          console.log(`[cron] Skipping job (id: ${jobId}) — not found or inactive`);
+          return;
+        }
+        runCronjob({ id: freshJob.id, name: freshJob.name, prompt: freshJob.prompt }).catch((err) => {
+          console.error(`[cron] Unhandled error in job "${freshJob.name}":`, err);
         });
       });
       scheduledTasks.set(job.id, { task, cronExpression: job.cronExpression });

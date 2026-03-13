@@ -48,6 +48,8 @@ export async function buildChatOptions(
     agentLoopStrategy: maxIterations(15),
     systemPrompts: [
       'You are a helpful assistant. Always format your responses using Markdown for better readability. \
+      When updating any existing database record (cronjob, task, or similar), always fetch the current record first to obtain its existing field values. \
+      Use the existing values as the baseline and only override the fields the user explicitly asked to change — never blank out or omit fields the user did not mention. \
       Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
       When uiLink is provided, generate links in markdown format like this: [link text](uiLink) to enable quick navigation in the UI. \
       When the user uploads a text or CSV file, its content will be included in the message — analyze or answer questions about it. \

@@ -58,32 +58,51 @@ export function getCronjobTools() {
       name: 'update_cronjob',
       description:
         'Update an existing cronjob. Can change its name, cron expression, prompt, ' +
-        'or toggle it on/off without deleting it.',
+        'or toggle it on/off without deleting it. ' +
+        'IMPORTANT: Always call list_cronjobs first to retrieve current field values. ' +
+        'Only pass fields the user explicitly asked to change; omit all others so they are preserved as-is.',
       inputSchema: z.object({
         id: z.string().describe('UUID of the cronjob to update'),
-        name: z.string().optional().default('').describe('New name'),
+        name: z.string().optional().describe('New name (omit to keep existing)'),
         cronExpression: z
           .string()
           .optional()
-          .default('')
-          .describe('New cron expression'),
-        prompt: z.string().optional().default('').describe('New prompt'),
+          .describe('New cron expression (omit to keep existing)'),
+        prompt: z
+          .string()
+          .optional()
+          .describe('New prompt (omit to keep existing)'),
         isActive: z
           .boolean()
           .optional()
-          .describe('true to activate, false to deactivate'),
+          .describe('true to activate, false to deactivate (omit to keep existing)'),
       }),
     }).server(async ({ id, ...fields }) => {
       const { db } = await import('@/db');
       const { cronjobs } = await import('@/db/schema');
       const { eq } = await import('drizzle-orm');
 
-      const updates: Record<string, unknown> = { updatedAt: new Date() };
-      if (fields.name !== undefined) updates.name = fields.name;
-      if (fields.cronExpression !== undefined)
-        updates.cronExpression = fields.cronExpression;
-      if (fields.prompt !== undefined) updates.prompt = fields.prompt;
-      if (fields.isActive !== undefined) updates.isActive = fields.isActive;
+      // Fetch existing record so we can merge — never overwrite with empty/undefined
+      const existing = await db
+        .select()
+        .from(cronjobs)
+        .where(eq(cronjobs.id, id))
+        .then((rows) => rows[0] ?? null);
+
+      if (!existing)
+        return { success: false, error: `No cronjob found with id ${id}` };
+
+      const updates: Record<string, unknown> = {
+        updatedAt: new Date(),
+        name: fields.name !== undefined ? fields.name : existing.name,
+        cronExpression:
+          fields.cronExpression !== undefined
+            ? fields.cronExpression
+            : existing.cronExpression,
+        prompt: fields.prompt !== undefined ? fields.prompt : existing.prompt,
+        isActive:
+          fields.isActive !== undefined ? fields.isActive : existing.isActive,
+      };
 
       const [row] = await db
         .update(cronjobs)
@@ -92,7 +111,7 @@ export function getCronjobTools() {
         .returning();
 
       if (!row)
-        return { success: false, error: `No cronjob found with id ${id}` };
+        return { success: false, error: `Failed to update cronjob ${id}` };
       return {
         success: true,
         id: row.id,
