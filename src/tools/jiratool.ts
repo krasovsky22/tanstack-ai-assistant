@@ -10,6 +10,8 @@ import {
   getComments,
   assignIssue,
   createIssue,
+  getTransitions,
+  transitionIssue,
 } from '@/services/jira';
 import { indexJiraTicket } from '@/services/memory';
 
@@ -211,24 +213,23 @@ export function getJiraTools() {
     toolDefinition({
       name: 'jira_assign_issue',
       description:
-        'Assign a Jira issue to a user by their Jira username. Use the string "null" to unassign.',
+        'Assign a Jira issue to a user by their email address. Defaults to the configured JIRA_EMAIL when no email is specified. Use the string "null" to unassign.',
       inputSchema: z.object({
         issueKey: z.string().describe('Jira issue key, e.g. PROJ-123'),
-        username: z
+        email: z
           .string()
+          .nullish()
+          .default(process.env.JIRA_EMAIL ?? null)
           .describe(
-            'Jira username (name field) to assign. Use null string "null" to unassign.',
+            'Email address of the user to assign. Omit or pass null to assign to the default user (JIRA_EMAIL). Use "unassign" to remove assignee.',
           ),
       }),
-    }).server(async ({ issueKey, username }) => {
+    }).server(async ({ issueKey, email }) => {
       const { config, error } = cfg();
       if (!config) return { success: false, error };
+      const resolvedEmail = email ?? process.env.JIRA_EMAIL ?? null;
       try {
-        await assignIssue(
-          config,
-          issueKey,
-          username === 'null' ? null : username,
-        );
+        await assignIssue(config, issueKey, resolvedEmail);
         return { success: true };
       } catch (err: any) {
         return { success: false, error: err.message ?? 'Unknown error' };
@@ -266,8 +267,10 @@ export function getJiraTools() {
         assignee: z
           .string()
           .optional()
-          .default('')
-          .describe('Optional Jira username to assign the issue to'),
+          .default(process.env.JIRA_EMAIL ?? '')
+          .describe(
+            'Email address of the user to assign the issue to. Defaults to JIRA_EMAIL when omitted.',
+          ),
         priority: z
           .string()
           .optional()
@@ -303,12 +306,14 @@ export function getJiraTools() {
         }
 
         try {
+          const resolvedAssignee =
+            assignee || process.env.JIRA_EMAIL || undefined;
           const result = await createIssue(config, {
             projectKey: resolvedProjectKey,
             issueType,
             summary: summary ?? 'Placeholder Summary',
             description,
-            assignee,
+            assignee: resolvedAssignee,
             priority,
             labels,
           });
@@ -318,7 +323,7 @@ export function getJiraTools() {
             summary: summary ?? 'Placeholder Summary',
             description,
             issueType,
-            assignee,
+            assignee: resolvedAssignee,
             priority,
             projectKey: resolvedProjectKey,
           });
@@ -331,5 +336,37 @@ export function getJiraTools() {
         }
       },
     ),
+    toolDefinition({
+      name: 'jira_transition_issue',
+      description:
+        'Change the status of a Jira issue (e.g. move to "In Progress", "Done", "To Do"). Fetches available transitions and applies the one whose name best matches the requested status.',
+      inputSchema: z.object({
+        issueKey: z.string().describe('Jira issue key, e.g. PROJ-123'),
+        status: z
+          .string()
+          .describe(
+            'Target status name, e.g. "Done", "In Progress", "To Do". Case-insensitive.',
+          ),
+      }),
+    }).server(async ({ issueKey, status }) => {
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
+      try {
+        const transitions = await getTransitions(config, issueKey);
+        const target = transitions.find(
+          (t) => t.name.toLowerCase() === status.toLowerCase(),
+        );
+        if (!target) {
+          return {
+            success: false,
+            error: `No transition named "${status}" found. Available: ${transitions.map((t) => t.name).join(', ')}`,
+          };
+        }
+        await transitionIssue(config, issueKey, target.id);
+        return { success: true, transitionedTo: target.to.name };
+      } catch (err: any) {
+        return { success: false, error: err.message ?? 'Unknown error' };
+      }
+    }),
   ];
 }

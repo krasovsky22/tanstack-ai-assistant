@@ -190,14 +190,38 @@ export async function getComments(config: JiraConfig, issueKey: string) {
   };
 }
 
+export async function findUserByEmail(
+  config: JiraConfig,
+  email: string,
+): Promise<string | null> {
+  const params = new URLSearchParams({ query: email });
+  const res = await jiraFetch(config, `/user/search?${params.toString()}`);
+  if (!res.ok) return null;
+  const users: any[] = await res.json().catch(() => []);
+  const match = users.find(
+    (u) => u.emailAddress?.toLowerCase() === email.toLowerCase(),
+  );
+  return match?.accountId ?? users[0]?.accountId ?? null;
+}
+
 export async function assignIssue(
   config: JiraConfig,
   issueKey: string,
-  username: string | null,
+  email: string | null,
 ) {
+  let body: Record<string, unknown>;
+  if (email === null) {
+    body = { accountId: null };
+  } else {
+    const accountId = await findUserByEmail(config, email);
+    if (!accountId) {
+      throw new Error(`No Jira user found with email: ${email}`);
+    }
+    body = { accountId };
+  }
   const res = await jiraFetch(config, `/issue/${issueKey}/assignee`, {
     method: 'PUT',
-    body: JSON.stringify({ name: username }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -218,6 +242,37 @@ export interface CreateIssueParams {
   labels?: string[];
 }
 
+export async function getTransitions(config: JiraConfig, issueKey: string) {
+  const res = await jiraFetch(config, `/issue/${issueKey}/transitions`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err.errorMessages ?? []).join('; ') ||
+        `Jira returned status ${res.status}`,
+    );
+  }
+  const data = await res.json();
+  return (data.transitions ?? []) as Array<{ id: string; name: string; to: { name: string } }>;
+}
+
+export async function transitionIssue(
+  config: JiraConfig,
+  issueKey: string,
+  transitionId: string,
+) {
+  const res = await jiraFetch(config, `/issue/${issueKey}/transitions`, {
+    method: 'POST',
+    body: JSON.stringify({ transition: { id: transitionId } }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err.errorMessages ?? []).join('; ') ||
+        `Jira returned status ${res.status}`,
+    );
+  }
+}
+
 export async function createIssue(
   config: JiraConfig,
   params: CreateIssueParams,
@@ -233,7 +288,10 @@ export async function createIssue(
   };
 
   if (description !== undefined) fields.description = toAdf(description);
-  if (assignee !== undefined) fields.assignee = { name: assignee };
+  if (assignee) {
+    const accountId = await findUserByEmail(config, assignee);
+    if (accountId) fields.assignee = { accountId };
+  }
   if (priority !== undefined) fields.priority = { name: priority };
   if (labels !== undefined) fields.labels = labels;
 
