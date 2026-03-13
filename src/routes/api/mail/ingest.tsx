@@ -8,8 +8,8 @@ export const Route = createFileRoute('/api/mail/ingest')({
     handlers: {
       POST: async ({ request: _request }) => {
         try {
-          const summary = await runIngestion();
-          return new Response(JSON.stringify(summary), { headers: JSON_HEADERS });
+          const emails = await runIngestion();
+          return new Response(JSON.stringify(emails), { headers: JSON_HEADERS });
         } catch (err) {
           console.error('[mail-ingest] Error:', err);
           const error = err instanceof Error ? err.message : String(err);

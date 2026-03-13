@@ -267,13 +267,46 @@ export function getUiBackendApiTools() {
     toolDefinition({
       name: 'ingest_emails',
       description:
-        'Trigger email ingestion — fetches new emails from the mail source and stores them in the database.',
+        'Fetch unseen emails from the mail source and return them as raw data. You must classify each email (is it job-related? extract company, job title, summary) and then call store_classified_emails with your classifications.',
       inputSchema: z.object({}),
     }).server(async () => {
-      const data = await apiFetch('/api/mail/ingest', { method: 'POST' });
-      return data && typeof data === 'object'
-        ? withUiLink(data, '/mail')
-        : data;
+      return apiFetch('/api/mail/ingest', { method: 'POST' });
+    }),
+
+    toolDefinition({
+      name: 'store_classified_emails',
+      description:
+        'Store your email classifications from ingest_emails. For each job-related email, provide company, jobTitle, summary and optionally extracted job fields (extractedTitle, extractedCompany, extractedDescription, extractedSkills, extractedJobLocation) for emails that need a new job record created.',
+      inputSchema: z.object({
+        emails: z.array(
+          z.object({
+            subject: z.string(),
+            sender: z.string(),
+            receivedAt: z.string().describe('ISO date string'),
+            bodyText: z.string(),
+            isJobRelated: z.boolean(),
+            company: z.string().nullable().optional(),
+            jobTitle: z.string().nullable().optional(),
+            summary: z.string().nullable().optional().describe('1-3 sentence summary'),
+            extractedTitle: z.string().nullable().optional(),
+            extractedCompany: z.string().nullable().optional(),
+            extractedDescription: z.string().nullable().optional(),
+            extractedSkills: z.array(z.string()).optional(),
+            extractedJobLocation: z.string().nullable().optional(),
+          }),
+        ),
+      }),
+    }).server(async ({ emails }) => {
+      const payload = emails.map((e) => ({
+        ...e,
+        receivedAt: new Date(e.receivedAt),
+      }));
+      const data = await apiFetch('/api/mail/store-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return data && typeof data === 'object' ? withUiLink(data, '/mail') : data;
     }),
 
     // ── Generated Files ───────────────────────────────────────────────────────

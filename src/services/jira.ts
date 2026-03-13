@@ -1,6 +1,3 @@
-import { chat } from '@tanstack/ai';
-import { openaiText } from '@tanstack/ai-openai';
-
 // ── Config ─────────────────────────────────────────────────────────────────
 
 export interface JiraConfig {
@@ -52,45 +49,6 @@ export function jiraFetch(
   });
 }
 
-// ── Issue type inference ───────────────────────────────────────────────────
-
-async function getProjectIssueTypes(
-  config: JiraConfig,
-  projectKey: string,
-): Promise<string[]> {
-  const res = await jiraFetch(config, `/project/${projectKey}`);
-  if (!res.ok) return ['Bug', 'Task', 'Story', 'Improvement', 'Epic'];
-  const data = await res.json();
-  return (data.issueTypes ?? []).map((t: { name: string }) => t.name);
-}
-
-export async function inferIssueType(
-  config: JiraConfig,
-  projectKey: string,
-  summary: string,
-  description?: string,
-): Promise<string> {
-  const types = await getProjectIssueTypes(config, projectKey);
-
-  const result = await chat({
-    adapter: openaiText('gpt-4o-mini'),
-    messages: [
-      {
-        role: 'user',
-        content: `You are a Jira project manager. Given the following issue details, select the most appropriate issue type from the available list. Reply with ONLY the issue type name, nothing else.
-
-Available issue types: ${types.join(', ')}
-
-Summary: ${summary}
-${description ? `Description: ${description}` : ''}`,
-      },
-    ],
-  });
-
-  const inferred = result.text?.trim() ?? '';
-  return types.includes(inferred) ? inferred : (types[0] ?? 'Task');
-}
-
 // ── API methods ────────────────────────────────────────────────────────────
 
 export interface SearchIssuesOptions {
@@ -103,12 +61,24 @@ export interface SearchIssuesOptions {
   fieldsByKeys?: boolean;
 }
 
-export async function searchIssues(config: JiraConfig, opts: SearchIssuesOptions) {
+export async function searchIssues(
+  config: JiraConfig,
+  opts: SearchIssuesOptions,
+) {
   const {
     jql,
     maxResults = 10,
     nextPageToken,
-    fields = ['summary', 'status', 'assignee', 'description', 'priority', 'issuetype', 'created', 'updated'],
+    fields = [
+      'summary',
+      'status',
+      'assignee',
+      'description',
+      'priority',
+      'issuetype',
+      'created',
+      'updated',
+    ],
     expand,
     properties,
     fieldsByKeys,
@@ -119,7 +89,8 @@ export async function searchIssues(config: JiraConfig, opts: SearchIssuesOptions
   if (fields.length) params.set('fields', fields.join(','));
   if (expand) params.set('expand', expand);
   if (properties?.length) params.set('properties', properties.join(','));
-  if (fieldsByKeys !== undefined) params.set('fieldsByKeys', String(fieldsByKeys));
+  if (fieldsByKeys !== undefined)
+    params.set('fieldsByKeys', String(fieldsByKeys));
 
   const res = await jiraFetch(config, `/search/jql?${params.toString()}`);
   if (!res.ok) {
@@ -131,7 +102,7 @@ export async function searchIssues(config: JiraConfig, opts: SearchIssuesOptions
   }
   const data = await res.json();
   return {
-    nextPageToken: data.nextPageToken ?? null,
+    nextPageToken: data.nextPageToken ?? undefined,
     maxResults: data.maxResults,
     issues: (data.issues ?? []).map((i: any) => ({
       key: i.key,
@@ -251,12 +222,9 @@ export async function createIssue(
   config: JiraConfig,
   params: CreateIssueParams,
 ) {
-  const { projectKey, summary, description, assignee, priority, labels } =
-    params;
+  const { summary, description, assignee, priority, labels } = params;
 
-  const issueType =
-    params.issueType ??
-    (await inferIssueType(config, projectKey, summary, description));
+  const issueType = params.issueType ?? 'Task';
 
   const fields: Record<string, unknown> = {
     project: { id: 10001 },

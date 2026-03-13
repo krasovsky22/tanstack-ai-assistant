@@ -74,6 +74,7 @@ Package manager is **pnpm**.
 - `TELEGRAM_ADMIN_CHAT_ID` — (optional) chat ID to receive bot startup notifications
 - `OPEN_WEATHER_API` — for the legacy weather tool
 - `NEWS_API_TOKEN` — (optional) required to use the News API tool
+- `DISABLE_SECTIONS` — (optional) comma-separated UI sections to hide/disable. Valid keys: `ai`, `jobs`, `mail`, `knowledge-base`, `cronjobs`
 
 ## Workflow Rules
 

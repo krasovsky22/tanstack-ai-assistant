@@ -1,8 +1,5 @@
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
-import { chat } from '@tanstack/ai';
-import { openaiText } from '@tanstack/ai-openai';
-import { z } from 'zod';
 import { db } from '@/db';
 import { jobs, jobEmails } from '@/db/schema';
 import { ilike, and, desc } from 'drizzle-orm';
@@ -23,32 +20,29 @@ export function getSearchSince(): Date {
   return since;
 }
 
-const EmailClassificationSchema = z.object({
-  isJobRelated: z
-    .boolean()
-    .describe(
-      'Is this email job-related (recruiter outreach, application update, interview, offer, rejection)?',
-    ),
-  company: z
-    .string()
-    .nullable()
-    .default('Unknown')
-    .describe('Company name if detectable, else null'),
-  jobTitle: z
-    .string()
-    .nullable()
-    .default('Unknown')
-    .describe('Job title if detectable, else null'),
-  summary: z.string().describe('1-3 sentence summary of the email'),
-});
+export interface RawEmail {
+  subject: string;
+  sender: string;
+  receivedAt: Date;
+  bodyText: string;
+}
 
-const JobExtractionSchema = z.object({
-  title: z.string().nullable().default('Unknown'),
-  company: z.string().nullable().default('Unknown'),
-  description: z.string().nullable().default(''),
-  skills: z.array(z.string()).default([]),
-  jobLocation: z.string().nullable().default(null),
-});
+export interface ClassifiedEmail {
+  subject: string;
+  sender: string;
+  receivedAt: Date;
+  bodyText: string;
+  isJobRelated: boolean;
+  company?: string | null;
+  jobTitle?: string | null;
+  summary?: string | null;
+  // Populated by LLM only when no existing job matches and a new one should be created
+  extractedTitle?: string | null;
+  extractedCompany?: string | null;
+  extractedDescription?: string | null;
+  extractedSkills?: string[];
+  extractedJobLocation?: string | null;
+}
 
 function createImapClient() {
   return new ImapFlow({
@@ -63,24 +57,23 @@ function createImapClient() {
   });
 }
 
-export async function runIngestion(): Promise<{
-  fetched: number;
-  jobRelated: number;
-  matched: number;
-  created: number;
-}> {
+/**
+ * Fetches unseen emails from IMAP, marks them as seen, and returns raw email
+ * data for the calling LLM to classify. AI classification and DB storage are
+ * handled separately via storeClassifiedEmails().
+ */
+export async function runIngestion(): Promise<RawEmail[]> {
   const folders = (process.env.YAHOO_MAIL_FOLDERS ?? 'INBOX')
     .split(',')
     .map((f) => f.trim());
   const maxEmails = parseInt(process.env.YAHOO_MAIL_MAX_EMAILS ?? '50', 10);
   const since = getSearchSince();
-  const summary = { fetched: 0, jobRelated: 0, matched: 0, created: 0 };
+  const results: RawEmail[] = [];
   const client = createImapClient();
 
   await client.connect();
   try {
     for (const folder of folders) {
-      // Pitfall 7: per-folder error catching — invalid folder name must not abort all ingestion
       let lock;
       try {
         lock = await client.getMailboxLock(folder);
@@ -92,25 +85,18 @@ export async function runIngestion(): Promise<{
       try {
         const uids =
           (await client.search({ seen: false, since }, { uid: true })) || [];
-        const remaining = maxEmails - summary.fetched;
-        const batch = uids.slice(0, remaining);
+        const batch = uids.slice(0, maxEmails - results.length);
         const seenUids: number[] = [];
 
         for (const uid of batch) {
-          // Pitfall 4: use null as part to get full RFC822 message for mailparser
           const { content } = await client.download(
             String(uid),
             null as unknown as string,
-            {
-              uid: true,
-            },
+            { uid: true },
           );
           const parsed = await simpleParser(content);
 
-          const subject = parsed.subject ?? '';
           const sender = parsed.from?.text ?? '';
-          const bodyText = parsed.text || parsed.html || '';
-          const receivedAt = parsed.date ?? new Date();
 
           // Skip ignored sender addresses
           if (sender.toLowerCase().includes('donotreply@match.indeed.com')) {
@@ -118,112 +104,93 @@ export async function runIngestion(): Promise<{
             continue;
           }
 
-          summary.fetched++;
-
-          const classification = await chat({
-            adapter: openaiText('gpt-5.2'),
-            messages: [
-              {
-                role: 'user',
-                content: `Subject: ${subject}\n\nFrom: ${sender}\n\n${bodyText.slice(0, 3000)}`,
-              },
-            ],
-            systemPrompts: [
-              'You are an email classifier for a job search assistant. Classify whether this email is job-related (recruiter outreach, job application update, interview invite, offer, rejection). Extract company and job title if present.',
-            ],
-            outputSchema: EmailClassificationSchema,
-          });
-
-          // All processed emails (job-related or not) get marked as read
           seenUids.push(uid as number);
-
-          if (!classification.isJobRelated) {
-            // Non-job email: skip, do not store. Mark as read later.
-            continue;
-          }
-
-          summary.jobRelated++;
-
-          const company = classification.company;
-          const title = classification.jobTitle;
-          let matchedJobId: string | null = null;
-
-          // Pitfall 6: require non-null, non-Unknown values to avoid hallucination matches
-          if (
-            company &&
-            title &&
-            company !== 'Unknown' &&
-            title !== 'Unknown'
-          ) {
-            const [match] = await db
-              .select({ id: jobs.id })
-              .from(jobs)
-              .where(
-                and(
-                  ilike(jobs.company, `%${company}%`),
-                  ilike(jobs.title, `%${title}%`),
-                ),
-              )
-              .orderBy(desc(jobs.createdAt))
-              .limit(1);
-            matchedJobId = match?.id ?? null;
-          }
-
-          if (matchedJobId) {
-            summary.matched++;
-          } else {
-            // Auto-create a new job from the email
-            const extraction = await chat({
-              adapter: openaiText('gpt-5.2'),
-              messages: [{ role: 'user', content: bodyText.slice(0, 4000) }],
-              systemPrompts: [
-                'You are a job data extractor. Extract structured job information from this email for a job search tracker.',
-              ],
-              outputSchema: JobExtractionSchema,
-            });
-            const [newJob] = await db
-              .insert(jobs)
-              .values({
-                title: extraction.title ?? 'Unknown',
-                company: extraction.company ?? 'Unknown',
-                description: extraction.description ?? bodyText.slice(0, 2000),
-                source: 'email',
-                status: 'generated-from-email',
-                skills: extraction.skills,
-                jobLocation: extraction.jobLocation,
-              })
-              .returning();
-            matchedJobId = newJob.id;
-            summary.created++;
-          }
-
-          // Pitfall 3: DB write BEFORE marking as read — if DB fails, email is re-fetched next run
-          await db.insert(jobEmails).values({
-            jobId: matchedJobId,
-            source: 'yahoo',
-            emailContent: bodyText,
-            emailLlmSummarized: classification.summary,
-            subject,
+          results.push({
+            subject: parsed.subject ?? '',
             sender,
-            receivedAt,
+            receivedAt: parsed.date ?? new Date(),
+            bodyText: parsed.text || parsed.html || '',
           });
         }
 
-        // Mark all processed emails as read AFTER DB writes complete
         if (seenUids.length > 0) {
           await client.messageFlagsAdd(seenUids, ['\\Seen'], { uid: true });
         }
       } finally {
-        // Pitfall 2: always release the mailbox lock
         lock.release();
       }
+
+      if (results.length >= maxEmails) break;
     }
   } finally {
-    // Pitfall 1/2: always logout regardless of errors
     await client.logout();
   }
 
-  console.log('[mail-ingestion] Summary:', summary);
+  console.log(`[mail-ingestion] Fetched ${results.length} emails`);
+  return results;
+}
+
+/**
+ * Stores LLM-classified emails: matches or creates jobs, inserts jobEmail records.
+ */
+export async function storeClassifiedEmails(
+  emails: ClassifiedEmail[],
+): Promise<{ jobRelated: number; matched: number; created: number }> {
+  const summary = { jobRelated: 0, matched: 0, created: 0 };
+
+  for (const email of emails) {
+    if (!email.isJobRelated) continue;
+
+    summary.jobRelated++;
+    const { subject, sender, receivedAt, bodyText, company, jobTitle, summary: emailSummary } = email;
+    let matchedJobId: string | null = null;
+
+    if (company && jobTitle && company !== 'Unknown' && jobTitle !== 'Unknown') {
+      const [match] = await db
+        .select({ id: jobs.id })
+        .from(jobs)
+        .where(
+          and(
+            ilike(jobs.company, `%${company}%`),
+            ilike(jobs.title, `%${jobTitle}%`),
+          ),
+        )
+        .orderBy(desc(jobs.createdAt))
+        .limit(1);
+      matchedJobId = match?.id ?? null;
+    }
+
+    if (matchedJobId) {
+      summary.matched++;
+    } else {
+      const [newJob] = await db
+        .insert(jobs)
+        .values({
+          title: email.extractedTitle ?? company ?? 'Unknown',
+          company: email.extractedCompany ?? company ?? 'Unknown',
+          description: email.extractedDescription ?? bodyText.slice(0, 2000),
+          source: 'email',
+          status: 'generated-from-email',
+          skills: email.extractedSkills ?? [],
+          jobLocation: email.extractedJobLocation ?? null,
+        })
+        .returning();
+      matchedJobId = newJob.id;
+      summary.created++;
+    }
+
+    await db.insert(jobEmails).values({
+      jobId: matchedJobId,
+      source: 'yahoo',
+      emailContent: bodyText,
+      emailLlmSummarized: emailSummary ?? '',
+      subject,
+      sender,
+      receivedAt,
+    });
+  }
+
+  console.log('[mail-ingestion] Store summary:', summary);
   return summary;
 }
 

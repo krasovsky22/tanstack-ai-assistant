@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
 import { useState } from 'react';
+import { useDisabledSections } from '@/lib/sections';
 import {
   Briefcase,
   BookOpen,
@@ -15,6 +16,9 @@ import {
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: sectionsData } = useDisabledSections();
+  const disabled = new Set(sectionsData?.disabled ?? []);
+  const enabled = (key: string) => !disabled.has(key);
 
   return (
     <>
@@ -69,97 +73,111 @@ export default function Header() {
 
           {/* Demo Links Start */}
 
-          <Link
-            to="/conversations"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <MessageSquare size={20} />
-            <span className="font-medium">AI</span>
-          </Link>
+          {enabled('ai') && (
+            <Link
+              to="/conversations"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+              }}
+            >
+              <MessageSquare size={20} />
+              <span className="font-medium">AI</span>
+            </Link>
+          )}
 
-          <div className="flex items-center gap-3 p-3 rounded-lg mb-1">
-            <Briefcase size={20} />
-            <span className="font-medium text-gray-400">Job Search</span>
-          </div>
+          {enabled('jobs') && (
+            <>
+              <div className="flex items-center gap-3 p-3 rounded-lg mb-1">
+                <Briefcase size={20} />
+                <span className="font-medium text-gray-400">Job Search</span>
+              </div>
 
-          <Link
-            to="/jobs"
-            onClick={() => setIsOpen(false)}
-            activeOptions={{ exact: true }}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
-            }}
-          >
-            <Home size={18} />
-            <span className="font-medium">Dashboard</span>
-          </Link>
+              <Link
+                to="/jobs"
+                onClick={() => setIsOpen(false)}
+                activeOptions={{ exact: true }}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
+                activeProps={{
+                  className:
+                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
+                }}
+              >
+                <Home size={18} />
+                <span className="font-medium">Dashboard</span>
+              </Link>
 
-          <Link
-            to="/jobs/extract-from-url"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
-            }}
-          >
-            <Search size={18} />
-            <span className="font-medium">Extract From Url</span>
-          </Link>
+              <Link
+                to="/jobs/extract-from-url"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
+                activeProps={{
+                  className:
+                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
+                }}
+              >
+                <Search size={18} />
+                <span className="font-medium">Extract From Url</span>
+              </Link>
+            </>
+          )}
 
-          <Link
-            to="/mail"
-            onClick={() => setIsOpen(false)}
-            activeOptions={{ exact: true }}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2 mt-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2 mt-2',
-            }}
-          >
-            <Mail size={20} />
-            <span className="font-medium">Mail</span>
-          </Link>
+          {enabled('mail') && (
+            <Link
+              to="/mail"
+              onClick={() => setIsOpen(false)}
+              activeOptions={{ exact: true }}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2 mt-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2 mt-2',
+              }}
+            >
+              <Mail size={20} />
+              <span className="font-medium">Mail</span>
+            </Link>
+          )}
 
-          <Link
-            to="/knowledge-base"
-            onClick={() => setIsOpen(false)}
-            activeOptions={{ exact: true }}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2 mt-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2 mt-2',
-            }}
-          >
-            <BookOpen size={20} />
-            <span className="font-medium">Knowledge Base</span>
-          </Link>
+          {enabled('knowledge-base') && (
+            <Link
+              to="/knowledge-base"
+              onClick={() => setIsOpen(false)}
+              activeOptions={{ exact: true }}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2 mt-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2 mt-2',
+              }}
+            >
+              <BookOpen size={20} />
+              <span className="font-medium">Knowledge Base</span>
+            </Link>
+          )}
 
-          <div className="flex items-center gap-3 p-3 rounded-lg mb-1 mt-2">
-            <Clock size={20} />
-            <span className="font-medium text-gray-400">Automation</span>
-          </div>
+          {enabled('cronjobs') && (
+            <>
+              <div className="flex items-center gap-3 p-3 rounded-lg mb-1 mt-2">
+                <Clock size={20} />
+                <span className="font-medium text-gray-400">Automation</span>
+              </div>
 
-          <Link
-            to="/cronjobs"
-            onClick={() => setIsOpen(false)}
-            activeOptions={{ exact: true }}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
-            }}
-          >
-            <Home size={18} />
-            <span className="font-medium">Dashboard</span>
-          </Link>
+              <Link
+                to="/cronjobs"
+                onClick={() => setIsOpen(false)}
+                activeOptions={{ exact: true }}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
+                activeProps={{
+                  className:
+                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
+                }}
+              >
+                <Home size={18} />
+                <span className="font-medium">Dashboard</span>
+              </Link>
+            </>
+          )}
 
           {/* Demo Links End */}
         </nav>

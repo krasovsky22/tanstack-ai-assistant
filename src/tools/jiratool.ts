@@ -77,7 +77,7 @@ export function getJiraTools() {
           .describe('Maximum number of results to return (1–5000, default 10)'),
         nextPageToken: z
           .string()
-          .optional()
+          .nullish()
           .describe(
             'Cursor token for the next page of results, obtained from a previous search response',
           ),
@@ -89,7 +89,7 @@ export function getJiraTools() {
           ),
         expand: z
           .string()
-          .optional()
+          .nullish()
           .describe(
             'Comma-separated list of additional information to expand, e.g. "renderedFields,names,changelog"',
           ),
@@ -120,9 +120,9 @@ export function getJiraTools() {
           const result = await searchIssues(config, {
             jql,
             maxResults,
-            nextPageToken,
+            nextPageToken: nextPageToken ?? undefined,
             fields,
-            expand,
+            expand: expand ?? undefined,
             properties,
             fieldsByKeys,
           });
@@ -238,7 +238,7 @@ export function getJiraTools() {
     toolDefinition({
       name: 'jira_create_issue',
       description:
-        'Create a new Jira issue. projectKey defaults to JIRA_DEFAULT_PROJECT if not provided. issueType is inferred by AI from the summary/description if not provided.',
+        'Create a new Jira issue. projectKey defaults to JIRA_DEFAULT_PROJECT if not provided. You must determine the appropriate issueType (e.g. "Bug", "Task", "Story") from the context before calling this tool.',
       inputSchema: z.object({
         summary: z
           .string()
