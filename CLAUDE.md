@@ -88,6 +88,8 @@ When adding new environment variables:
 
 **UI Components**: Always use Chakra UI components when writing UI code. Prefer Chakra UI primitives (`Box`, `Stack`, `Button`, `Input`, `Text`, `Heading`, `Flex`, `Grid`, etc.) over raw HTML elements or custom CSS. Use Chakra's theming system for colors, spacing, and typography. Only reach for plain HTML or custom styles when Chakra UI has no suitable component.
 
+**UI Agent**: For any task that involves creating, modifying, or refactoring UI components, pages, or visual features, always delegate to the `ui-developer` agent via the Agent tool. This includes new routes, forms, modals, layouts, navigation, and any browser-visible functionality.
+
 When adding new UI functionality:
 
 After implementing a new UI feature or modifying existing UI components, proactively invoke the `playwright-qa-tester` agent to write and execute Playwright tests against the running dev server (port 3000). The agent will validate the feature works correctly using real browser interactions. This applies to:
