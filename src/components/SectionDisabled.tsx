@@ -1,11 +1,22 @@
+import { Code, Flex, Heading, Text } from '@chakra-ui/react';
+
 export default function SectionDisabled({ name }: { name: string }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
-      <p className="text-4xl mb-4">🚫</p>
-      <h2 className="text-xl font-semibold text-gray-800 mb-2">{name} is disabled</h2>
-      <p className="text-gray-500 text-sm">
-        This section has been disabled via the <code className="bg-gray-100 px-1 rounded">DISABLE_SECTIONS</code> environment variable.
-      </p>
-    </div>
+    <Flex
+      flexDir="column"
+      align="center"
+      justify="center"
+      minH="60vh"
+      textAlign="center"
+      p="8"
+    >
+      <Text fontSize="4xl" mb="4">🚫</Text>
+      <Heading size="lg" color="gray.800" mb="2">{name} is disabled</Heading>
+      <Text color="gray.500" fontSize="sm">
+        This section has been disabled via the{' '}
+        <Code px="1" borderRadius="sm">DISABLE_SECTIONS</Code>{' '}
+        environment variable.
+      </Text>
+    </Flex>
   );
 }

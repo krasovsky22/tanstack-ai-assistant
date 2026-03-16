@@ -4,6 +4,16 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { marked } from 'marked';
 import { generateUUID } from '@/lib/uuid';
 import { Code } from './Code';
+import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Input,
+  Spinner,
+  Text,
+} from '@chakra-ui/react';
 
 interface PendingImage {
   base64: string;
@@ -58,31 +68,21 @@ function prettifyJsonString(input: string) {
 
 function formatToolCallState(state: string) {
   switch (state) {
-    case 'awaiting-input':
-      return 'awaiting input';
-    case 'input-streaming':
-      return 'receiving arguments';
-    case 'input-complete':
-      return 'ready';
-    case 'approval-requested':
-      return 'awaiting approval';
-    case 'approval-responded':
-      return 'approval received';
-    default:
-      return state;
+    case 'awaiting-input': return 'awaiting input';
+    case 'input-streaming': return 'receiving arguments';
+    case 'input-complete': return 'ready';
+    case 'approval-requested': return 'awaiting approval';
+    case 'approval-responded': return 'approval received';
+    default: return state;
   }
 }
 
 function formatToolResultState(state: string) {
   switch (state) {
-    case 'streaming':
-      return 'streaming result';
-    case 'complete':
-      return 'completed';
-    case 'error':
-      return 'error';
-    default:
-      return state;
+    case 'streaming': return 'streaming result';
+    case 'complete': return 'completed';
+    case 'error': return 'error';
+    default: return state;
   }
 }
 
@@ -112,91 +112,67 @@ function AssistantMeta({
 
   if (!hasDebugInfo) return null;
 
-  const toolNames = toolCalls
-    .map((p) => p.name)
-    .filter(Boolean) as string[];
+  const toolNames = toolCalls.map((p) => p.name).filter(Boolean) as string[];
   const uniqueTools = [...new Set(toolNames)];
 
   return (
     <details
-      className="mt-2 rounded border border-gray-200 bg-gray-50 text-[11px] text-gray-700"
+      style={{ marginTop: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '11px', color: '#374151' }}
       open={isStreaming}
     >
-      <summary className="cursor-pointer select-none px-2 py-1.5 font-semibold text-gray-600 flex items-center gap-2">
+      <summary style={{ cursor: 'pointer', padding: '6px 8px', fontWeight: 600, color: '#6b7280', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span>How this was generated</span>
         {uniqueTools.length > 0 && (
-          <span className="flex gap-1 flex-wrap">
+          <span style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {uniqueTools.map((name) => (
-              <span
-                key={name}
-                className="bg-blue-100 text-blue-700 rounded px-1 py-0.5 text-[10px] font-medium"
-              >
-                {name}
-              </span>
+              <Badge key={name} colorPalette="blue" size="sm" variant="subtle">{name}</Badge>
             ))}
           </span>
         )}
         {isStreaming && (
-          <span className="ml-auto text-[10px] text-gray-400 animate-pulse">
-            running…
-          </span>
+          <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#9ca3af' }}>running…</span>
         )}
       </summary>
-      <div className="px-2 pb-2 space-y-2 mt-1">
+      <Box px="2" pb="2" spaceY="2" mt="1">
         {thinkingParts.map((part, idx) => (
-          <div
-            key={`thinking-${idx}`}
-            className="rounded border border-gray-200 bg-white px-2 py-1"
-          >
-            <div className="font-semibold text-gray-500 mb-0.5">Thinking</div>
-            <div className="whitespace-pre-wrap text-gray-600">
-              {part.content}
-            </div>
-          </div>
+          <Box key={`thinking-${idx}`} borderRadius="md" borderWidth="1px" borderColor="gray.200" bg="white" px="2" py="1">
+            <Text fontWeight="semibold" color="gray.500" mb="0.5" fontSize="xs">Thinking</Text>
+            <Text whiteSpace="pre-wrap" color="gray.600" fontSize="xs">{part.content}</Text>
+          </Box>
         ))}
         {parts.map((part, idx) => {
           if (part.type === 'tool-call') {
             return (
-              <div
-                key={`tool-call-${part.id}-${idx}`}
-                className="rounded border border-blue-100 bg-white px-2 py-1"
-              >
-                <div className="font-semibold text-blue-700">
-                  Tool: {part.name}
-                  <span className="ml-1 font-normal text-gray-400">
-                    ({formatToolCallState(part.state ?? '')})
-                  </span>
-                </div>
-                <pre className="mt-1 whitespace-pre-wrap wrap-break-word text-gray-600">
+              <Box key={`tool-call-${part.id}-${idx}`} borderRadius="md" borderWidth="1px" borderColor="blue.100" bg="white" px="2" py="1">
+                <Text fontWeight="semibold" color="blue.700" fontSize="xs">
+                  Tool: {part.name}{' '}
+                  <Text as="span" fontWeight="normal" color="gray.400">({formatToolCallState(part.state ?? '')})</Text>
+                </Text>
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" style={{ wordBreak: 'break-word' }} color="gray.600" fontSize="xs">
                   {prettifyJsonString(part.arguments ?? '')}
-                </pre>
-              </div>
+                </Box>
+              </Box>
             );
           }
           if (part.type === 'tool-result') {
             return (
-              <div
-                key={`tool-result-${part.toolCallId}-${idx}`}
-                className="rounded border border-green-100 bg-white px-2 py-1"
-              >
-                <div className="font-semibold text-green-700">
-                  Result
-                  <span className="ml-1 font-normal text-gray-400">
-                    ({formatToolResultState(part.state ?? '')})
-                  </span>
-                </div>
-                <pre className="mt-1 whitespace-pre-wrap wrap-break-word text-gray-600">
+              <Box key={`tool-result-${part.toolCallId}-${idx}`} borderRadius="md" borderWidth="1px" borderColor="green.100" bg="white" px="2" py="1">
+                <Text fontWeight="semibold" color="green.700" fontSize="xs">
+                  Result{' '}
+                  <Text as="span" fontWeight="normal" color="gray.400">({formatToolResultState(part.state ?? '')})</Text>
+                </Text>
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" style={{ wordBreak: 'break-word' }} color="gray.600" fontSize="xs">
                   {prettifyJsonString(part.content ?? '')}
-                </pre>
+                </Box>
                 {part.error && (
-                  <div className="mt-1 text-red-600">Error: {part.error}</div>
+                  <Text mt="1" color="red.600" fontSize="xs">Error: {part.error}</Text>
                 )}
-              </div>
+              </Box>
             );
           }
           return null;
         })}
-      </div>
+      </Box>
     </details>
   );
 }
@@ -359,10 +335,8 @@ export function Chat({
       ),
     );
 
-    if (newImages.length > 0)
-      setPendingImages((prev) => [...prev, ...newImages]);
-    if (newTextFiles.length > 0)
-      setPendingFiles((prev) => [...prev, ...newTextFiles]);
+    if (newImages.length > 0) setPendingImages((prev) => [...prev, ...newImages]);
+    if (newTextFiles.length > 0) setPendingFiles((prev) => [...prev, ...newTextFiles]);
     e.target.value = '';
   };
 
@@ -411,25 +385,22 @@ export function Chat({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 max-w-3xl mx-auto">
-      <nav className="flex items-center gap-3 text-sm">
-        <Link
-          to="/conversations"
-          className="text-gray-500 hover:text-gray-900 transition-colors"
-        >
-          Dashboard
-        </Link>
-        <span className="text-gray-300">/</span>
-        <Link
-          to="/conversations/new"
-          className="text-gray-500 hover:text-gray-900 transition-colors"
-        >
-          New Chat
-        </Link>
-      </nav>
-      <div className="flex items-center gap-2 min-w-0">
+    <Flex flexDir="column" gap="4" p="4" maxW="3xl" mx="auto">
+      {/* Breadcrumb */}
+      <HStack fontSize="sm" gap="2">
+        <Box asChild color="gray.500" _hover={{ color: 'gray.900' }}>
+          <Link to="/conversations">Dashboard</Link>
+        </Box>
+        <Text color="gray.300">/</Text>
+        <Box asChild color="gray.500" _hover={{ color: 'gray.900' }}>
+          <Link to="/conversations/new">New Chat</Link>
+        </Box>
+      </HStack>
+
+      {/* Title */}
+      <Box>
         {editingTitle ? (
-          <input
+          <Input
             ref={titleInputRef}
             type="text"
             value={titleDraft}
@@ -439,38 +410,63 @@ export function Chat({
               if (e.key === 'Enter') commitTitle();
               if (e.key === 'Escape') setEditingTitle(false);
             }}
-            className="text-lg font-semibold border-b border-gray-400 bg-transparent outline-none w-full"
+            fontSize="lg"
+            fontWeight="semibold"
+            variant="flushed"
             autoFocus
           />
         ) : (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="lg"
+            fontWeight="semibold"
             onClick={startEditingTitle}
             disabled={!title}
-            className="text-lg font-semibold text-left truncate hover:text-gray-600 disabled:cursor-default disabled:hover:text-inherit"
+            px="0"
+            _hover={{ color: 'gray.600' }}
             title="Click to edit title"
           >
             {title || 'Chat'}
-          </button>
+          </Button>
         )}
-      </div>
+      </Box>
 
-      {showAgentStatus ? (
-        <div className="rounded-lg border px-3 py-2 text-sm bg-gray-50 text-gray-700">
-          <span className="font-medium">Status:</span> {agentStatusText}
-        </div>
-      ) : null}
+      {/* Status */}
+      {showAgentStatus && (
+        <HStack
+          borderRadius="lg"
+          borderWidth="1px"
+          px="3"
+          py="2"
+          fontSize="sm"
+          bg="gray.50"
+          color="gray.700"
+          gap="2"
+        >
+          <Spinner size="xs" />
+          <Text fontWeight="medium">Status:</Text>
+          <Text>{agentStatusText}</Text>
+        </HStack>
+      )}
 
-      <div className="border rounded-lg p-4 h-[60vh] overflow-y-auto bg-white">
+      {/* Messages */}
+      <Box
+        borderWidth="1px"
+        borderRadius="lg"
+        p="4"
+        h="60vh"
+        overflowY="auto"
+        bg="white"
+      >
         {messages.length === 0 ? (
-          <div className="text-gray-500">Say hi to start.</div>
+          <Text color="gray.500">Say hi to start.</Text>
         ) : (
           messages.map((message) => (
-            <div key={message.id} className="mb-4">
-              <div className="text-sm font-semibold text-gray-700 mb-1">
+            <Box key={message.id} mb="4">
+              <Text fontSize="sm" fontWeight="semibold" color="gray.700" mb="1">
                 {message.role === 'assistant' ? 'Assistant' : 'You'}
-              </div>
-              <div className="text-gray-900">
+              </Text>
+              <Box color="gray.900">
                 {message.parts.map((part, idx) => {
                   if (part.type === 'text') {
                     if (message.role === 'assistant') {
@@ -510,17 +506,14 @@ export function Chat({
                         mimeType?: string;
                       };
                     };
-                    if (
-                      imgPart.source?.type === 'data' &&
-                      imgPart.source.value
-                    ) {
+                    if (imgPart.source?.type === 'data' && imgPart.source.value) {
                       const mimeType = imgPart.source.mimeType ?? 'image/jpeg';
                       return (
                         <img
                           key={idx}
                           src={`data:${mimeType};base64,${imgPart.source.value}`}
                           alt="attached image"
-                          className="max-w-sm max-h-64 rounded border mt-1"
+                          style={{ maxWidth: '24rem', maxHeight: '16rem', borderRadius: '6px', border: '1px solid #e2e8f0', marginTop: '4px' }}
                         />
                       );
                     }
@@ -537,82 +530,112 @@ export function Chat({
                     }
                   />
                 ) : null}
-              </div>
-            </div>
+              </Box>
+            </Box>
           ))
         )}
         <div ref={messagesEndRef} />
-      </div>
+      </Box>
 
-      {error ? (
-        <div className="text-sm text-red-600">
+      {/* Error */}
+      {error && (
+        <Text fontSize="sm" color="red.600">
           {error instanceof Error ? error.message : String(error)}
-        </div>
-      ) : null}
+        </Text>
+      )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+      {/* Input form */}
+      <Box as="form" onSubmit={handleSubmit} display="flex" flexDir="column" gap="2">
         {(pendingImages.length > 0 || pendingFiles.length > 0) && (
-          <div className="flex gap-2 flex-wrap">
+          <HStack gap="2" flexWrap="wrap">
             {pendingImages.map((img, i) => (
-              <div key={`img-${i}`} className="relative">
+              <Box key={`img-${i}`} position="relative">
                 <img
                   src={img.previewUrl}
                   alt="pending"
-                  className="w-16 h-16 object-cover rounded border"
+                  style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' }}
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-white rounded-full text-xs flex items-center justify-center leading-none"
+                  position="absolute"
+                  top="-1.5"
+                  right="-1.5"
+                  w="5"
+                  h="5"
+                  minW="unset"
+                  p="0"
+                  bg="black"
+                  color="white"
+                  borderRadius="full"
+                  fontSize="xs"
+                  lineHeight="none"
                 >
                   ×
-                </button>
-              </div>
+                </Button>
+              </Box>
             ))}
             {pendingFiles.map((file, i) => (
-              <div
+              <HStack
                 key={`file-${i}`}
-                className="relative flex items-center gap-1 px-2 py-1 rounded border bg-gray-50 text-xs text-gray-700 max-w-40"
+                position="relative"
+                px="2"
+                py="1"
+                borderRadius="md"
+                borderWidth="1px"
+                bg="gray.50"
+                fontSize="xs"
+                color="gray.700"
+                maxW="40"
+                gap="1"
               >
-                <span className="truncate">{file.name}</span>
-                <button
+                <Text truncate>{file.name}</Text>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="xs"
                   onClick={() => removeFile(i)}
-                  className="ml-1 text-gray-400 hover:text-black leading-none"
+                  color="gray.400"
+                  _hover={{ color: 'black' }}
+                  ml="1"
+                  minW="unset"
+                  p="0"
                 >
                   ×
-                </button>
-              </div>
+                </Button>
+              </HStack>
             ))}
-          </div>
+          </HStack>
         )}
-        <div className="flex gap-2">
+
+        <HStack gap="2">
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*,.txt,.csv,.md,text/plain,text/csv,text/markdown"
             multiple
-            className="hidden"
+            style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
-            className="px-3 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            px="3"
             title="Attach file"
           >
             📎
-          </button>
-          <input
+          </Button>
+          <Input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border rounded-lg"
             disabled={isLoading}
+            flex="1"
           />
-          <button
+          <Button
             type="submit"
             disabled={
               (!input.trim() &&
@@ -620,12 +643,13 @@ export function Chat({
                 pendingFiles.length === 0) ||
               isLoading
             }
-            className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50"
+            colorPalette="gray"
+            variant="solid"
           >
             Send
-          </button>
-        </div>
-      </form>
-    </div>
+          </Button>
+        </HStack>
+      </Box>
+    </Flex>
   );
 }

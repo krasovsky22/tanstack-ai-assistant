@@ -4,6 +4,17 @@ import { useEffect, useState } from 'react';
 import { conversationsCollection } from '@/collections/conversations';
 import { queryClient } from '@/lib/queryClient';
 import { Badge } from '@/components/Badge';
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Heading,
+  IconButton,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
+import { Trash2 } from 'lucide-react';
 
 export const Route = createFileRoute('/conversations/')({
   component: ConversationsDashboard,
@@ -14,18 +25,15 @@ function ConversationsDashboard() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Conversations</h1>
-        <Link
-          to="/conversations/new"
-          className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800"
-        >
-          New Chat
-        </Link>
-      </div>
+    <Container maxW="2xl" py="6" px="6">
+      <Flex justify="space-between" align="center" mb="6">
+        <Heading size="xl">Conversations</Heading>
+        <Button asChild colorPalette="gray" variant="solid" size="sm">
+          <Link to="/conversations/new">New Chat</Link>
+        </Button>
+      </Flex>
       {mounted ? <ConversationList /> : null}
-    </div>
+    </Container>
   );
 }
 
@@ -41,12 +49,12 @@ function ConversationList() {
 
   if (sorted.length === 0) {
     return (
-      <div className="text-gray-500 text-center py-12">
+      <Text color="gray.500" textAlign="center" py="12">
         No conversations yet.{' '}
-        <Link to="/conversations/new" className="text-blue-600 hover:underline">
-          Start chatting
-        </Link>
-      </div>
+        <Box asChild color="blue.600" _hover={{ textDecoration: 'underline' }}>
+          <Link to="/conversations/new">Start chatting</Link>
+        </Box>
+      </Text>
     );
   }
 
@@ -57,37 +65,55 @@ function ConversationList() {
   }
 
   return (
-    <ul className="space-y-2">
-      {sorted.map((c) => {
-        return (
-          <li key={c.id} className="relative group">
+    <VStack gap="2" align="stretch">
+      {sorted.map((c) => (
+        <Box key={c.id} position="relative" role="group">
+          <Box asChild>
             <Link
               to="/conversations/$id"
               params={{ id: c.id }}
-              className="block p-4 rounded-lg border bg-white hover:bg-gray-50 transition-colors pr-12"
+              style={{ textDecoration: 'none' }}
             >
-              <div className="font-medium text-gray-900 truncate">{c.title}</div>
-              <div className="text-xs text-gray-400 mt-1">
-                {new Date(c.updatedAt).toLocaleString()}
-              </div>
-              {c.source && (
-                <div className="mt-1.5">
-                  <Badge label={c.source} />
-                </div>
-              )}
+              <Box
+                p="4"
+                borderRadius="lg"
+                borderWidth="1px"
+                bg="white"
+                _hover={{ bg: 'gray.50' }}
+                transition="background 0.15s"
+                pr="12"
+              >
+                <Text fontWeight="medium" color="gray.900" truncate>{c.title}</Text>
+                <Text fontSize="xs" color="gray.400" mt="1">
+                  {new Date(c.updatedAt).toLocaleString()}
+                </Text>
+                {c.source && (
+                  <Box mt="1.5">
+                    <Badge label={c.source} />
+                  </Box>
+                )}
+              </Box>
             </Link>
-            <button
-              onClick={(e) => handleDelete(c.id, e)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity rounded"
-              aria-label="Delete conversation"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+          </Box>
+          <IconButton
+            aria-label="Delete conversation"
+            variant="ghost"
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'red.600', bg: 'red.50' }}
+            position="absolute"
+            right="3"
+            top="50%"
+            transform="translateY(-50%)"
+            opacity="0"
+            _groupHover={{ opacity: 1 }}
+            transition="opacity 0.15s"
+            onClick={(e) => handleDelete(c.id, e)}
+          >
+            <Trash2 size={16} />
+          </IconButton>
+        </Box>
+      ))}
+    </VStack>
   );
 }

@@ -83,3 +83,14 @@ When adding new environment variables:
 1. Add the variable to `.env.example` with a descriptive comment
 2. Document it in the "Environment Variables" section above
 3. Mark as "(optional)" or "required" as appropriate
+
+**UI Target**: Desktop/laptop screens only. No mobile or responsive design required.
+
+When adding new UI functionality:
+
+After implementing a new UI feature or modifying existing UI components, proactively invoke the `playwright-qa-tester` agent to write and execute Playwright tests against the running dev server (port 3000). The agent will validate the feature works correctly using real browser interactions. This applies to:
+
+- New pages or route components
+- New UI components with user interactions (forms, modals, buttons)
+- Modified existing UI flows
+- Any feature visible in the browser

@@ -2,6 +2,23 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
 import { Trash2, Upload, FolderEdit, FileText, Search, Eye, X, Tag, Pencil } from 'lucide-react';
+import {
+  Badge,
+  Box,
+  Button,
+  Container,
+  Flex,
+  HStack,
+  Heading,
+  IconButton,
+  Input,
+  NativeSelect,
+  Spinner,
+  Table,
+  Text,
+  Textarea,
+  VStack,
+} from '@chakra-ui/react';
 
 export const Route = createFileRoute('/knowledge-base/')({
   component: KnowledgeBaseDashboard,
@@ -36,21 +53,19 @@ function mimeIcon(mimeType: string): string {
   return '📁';
 }
 
-const BADGE_COLORS = [
-  'bg-blue-100 text-blue-700',
-  'bg-purple-100 text-purple-700',
-  'bg-green-100 text-green-700',
-  'bg-orange-100 text-orange-700',
-  'bg-pink-100 text-pink-700',
+const BADGE_COLORS: Array<[string, string]> = [
+  ['blue', 'blue'],
+  ['purple', 'purple'],
+  ['green', 'green'],
+  ['orange', 'orange'],
+  ['pink', 'pink'],
 ];
 
-function categoryColor(cat: string): string {
+function categoryColorPalette(cat: string): string {
   let hash = 0;
   for (let i = 0; i < cat.length; i++) hash = (hash * 31 + cat.charCodeAt(i)) & 0xffff;
-  return BADGE_COLORS[hash % BADGE_COLORS.length];
+  return BADGE_COLORS[hash % BADGE_COLORS.length][0];
 }
-
-// ─── Tag editor ────────────────────────────────────────────────────────────────
 
 function TagEditor({
   value,
@@ -68,23 +83,34 @@ function TagEditor({
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5 items-center border border-gray-300 rounded-lg px-2 py-1.5 min-h-9 focus-within:ring-2 focus-within:ring-indigo-400 bg-white">
+    <HStack
+      flexWrap="wrap"
+      gap="1.5"
+      borderWidth="1px"
+      borderRadius="lg"
+      px="2"
+      py="1.5"
+      minH="9"
+      _focusWithin={{ ring: '2px', ringColor: 'purple.400' }}
+      bg="white"
+    >
       {value.map((tag) => (
-        <span
-          key={tag}
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${categoryColor(tag)}`}
-        >
+        <Badge key={tag} colorPalette={categoryColorPalette(tag)} variant="subtle" borderRadius="full" fontSize="xs">
           {tag}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="2xs"
             onClick={() => onChange(value.filter((t) => t !== tag))}
-            className="hover:opacity-70 cursor-pointer"
+            ml="0.5"
+            p="0"
+            minW="unset"
           >
             <X size={10} />
-          </button>
-        </span>
+          </Button>
+        </Badge>
       ))}
-      <input
+      <Input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -94,13 +120,19 @@ function TagEditor({
         }}
         onBlur={addTag}
         placeholder={value.length === 0 ? 'Type category, press Enter…' : ''}
-        className="flex-1 min-w-24 text-xs outline-none bg-transparent"
+        border="none"
+        outline="none"
+        flex="1"
+        minW="24"
+        fontSize="xs"
+        bg="transparent"
+        _focus={{ outline: 'none', boxShadow: 'none' }}
+        p="0"
+        h="auto"
       />
-    </div>
+    </HStack>
   );
 }
-
-// ─── Preview modal ─────────────────────────────────────────────────────────────
 
 function PreviewModal({ fileId, onClose }: { fileId: string; onClose: () => void }) {
   const { data, isLoading, error } = useQuery<PreviewData>({
@@ -112,7 +144,6 @@ function PreviewModal({ fileId, onClose }: { fileId: string; onClose: () => void
     },
   });
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
@@ -120,103 +151,113 @@ function PreviewModal({ fileId, onClose }: { fileId: string; onClose: () => void
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    <Box
+      position="fixed"
+      inset="0"
+      bg="blackAlpha.500"
+      zIndex="50"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      p="4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+      <Box
+        bg="white"
+        borderRadius="xl"
+        shadow="2xl"
+        w="full"
+        maxW="3xl"
+        maxH="90vh"
+        display="flex"
+        flexDir="column"
+      >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-4 border-b">
-          <div className="flex-1 min-w-0">
+        <Flex px="6" py="4" borderBottomWidth="1px" align="flex-start" justify="space-between">
+          <Box flex="1" minW="0">
             {isLoading ? (
-              <div className="h-5 w-48 bg-gray-200 rounded animate-pulse" />
+              <Box h="5" w="48" bg="gray.200" borderRadius="md" />
             ) : (
               <>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{data ? mimeIcon(data.mimeType) : ''}</span>
-                  <h2 className="font-semibold text-gray-900 truncate">{data?.originalName}</h2>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
+                <HStack gap="2">
+                  <Text fontSize="lg">{data ? mimeIcon(data.mimeType) : ''}</Text>
+                  <Text fontWeight="semibold" color="gray.900" truncate>{data?.originalName}</Text>
+                </HStack>
+                <HStack flexWrap="wrap" gap="1.5" mt="2">
                   {data?.categories.map((cat) => (
-                    <span
-                      key={cat}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${categoryColor(cat)}`}
-                    >
-                      <Tag size={10} />
-                      {cat}
-                    </span>
+                    <Badge key={cat} colorPalette={categoryColorPalette(cat)} variant="subtle" borderRadius="full" fontSize="xs">
+                      <Tag size={10} style={{ marginRight: '3px' }} />{cat}
+                    </Badge>
                   ))}
-                </div>
+                </HStack>
               </>
             )}
-          </div>
-          <button
+          </Box>
+          <IconButton
+            aria-label="Close"
+            variant="ghost"
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'gray.700', bg: 'gray.100' }}
+            ml="4"
             onClick={onClose}
-            className="ml-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
           >
             <X size={20} />
-          </button>
-        </div>
+          </IconButton>
+        </Flex>
 
         {/* Summary */}
         {(isLoading || data?.summary) && (
-          <div className="px-6 py-3 bg-amber-50 border-b">
+          <Box px="6" py="3" bg="orange.50" borderBottomWidth="1px">
             {isLoading ? (
-              <div className="space-y-1.5">
-                <div className="h-3 w-full bg-amber-200 rounded animate-pulse" />
-                <div className="h-3 w-3/4 bg-amber-200 rounded animate-pulse" />
-              </div>
+              <VStack gap="1.5" align="stretch">
+                <Box h="3" bg="orange.200" borderRadius="sm" />
+                <Box h="3" w="75%" bg="orange.200" borderRadius="sm" />
+              </VStack>
             ) : (
               <>
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Summary</p>
-                <p className="text-sm text-gray-700">{data?.summary}</p>
+                <Text fontSize="xs" fontWeight="semibold" color="orange.700" textTransform="uppercase" letterSpacing="wide" mb="1">Summary</Text>
+                <Text fontSize="sm" color="gray.700">{data?.summary}</Text>
               </>
             )}
-          </div>
+          </Box>
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <Box flex="1" overflowY="auto" px="6" py="4">
           {isLoading ? (
-            <div className="space-y-2">
+            <VStack gap="2" align="stretch">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={`h-3 bg-gray-100 rounded animate-pulse ${i % 3 === 2 ? 'w-2/3' : 'w-full'}`} />
+                <Box key={i} h="3" bg="gray.100" borderRadius="sm" w={i % 3 === 2 ? '66%' : 'full'} />
               ))}
-            </div>
+            </VStack>
           ) : error ? (
-            <p className="text-red-600 text-sm">Failed to load content.</p>
+            <Text color="red.600" fontSize="sm">Failed to load content.</Text>
           ) : (
             <>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              <Text fontSize="xs" fontWeight="semibold" color="gray.400" textTransform="uppercase" letterSpacing="wide" mb="3">
                 Content Preview
-                <span className="ml-2 font-normal normal-case text-gray-400">
+                <Text as="span" fontWeight="normal" textTransform="none" ml="2">
                   {data && `${formatBytes(data.sizeBytes)} · ${new Date(data.createdAt).toLocaleDateString()}`}
-                </span>
-              </p>
-              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                </Text>
+              </Text>
+              <Box as="pre" fontSize="xs" color="gray.700" whiteSpace="pre-wrap" fontFamily="mono" lineHeight="relaxed">
                 {data?.content?.slice(0, 12000)}
                 {(data?.content?.length ?? 0) > 12000 && (
-                  <span className="text-gray-400">\n\n[Content truncated — showing first 12,000 characters]</span>
+                  <Text as="span" color="gray.400">{'\n\n'}[Content truncated — showing first 12,000 characters]</Text>
                 )}
-              </pre>
+              </Box>
             </>
           )}
-        </div>
+        </Box>
 
-        <div className="px-6 py-3 border-t flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+        <Flex px="6" py="3" borderTopWidth="1px" justify="flex-end">
+          <Button variant="subtle" colorPalette="gray" size="sm" onClick={onClose}>Close</Button>
+        </Flex>
+      </Box>
+    </Box>
   );
 }
-
-// ─── Edit modal ────────────────────────────────────────────────────────────────
 
 function EditModal({
   fileId,
@@ -266,61 +307,88 @@ function EditModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    <Box
+      position="fixed"
+      inset="0"
+      bg="blackAlpha.500"
+      zIndex="50"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      p="4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="font-semibold text-gray-900">Edit File Content</h2>
-          <button
+      <Box
+        bg="white"
+        borderRadius="xl"
+        shadow="2xl"
+        w="full"
+        maxW="3xl"
+        maxH="90vh"
+        display="flex"
+        flexDir="column"
+      >
+        <Flex px="6" py="4" borderBottomWidth="1px" align="center" justify="space-between">
+          <Text fontWeight="semibold" color="gray.900">Edit File Content</Text>
+          <IconButton
+            aria-label="Close"
+            variant="ghost"
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'gray.700', bg: 'gray.100' }}
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
           >
             <X size={20} />
-          </button>
-        </div>
+          </IconButton>
+        </Flex>
 
-        <div className="flex-1 overflow-hidden px-6 py-4 flex flex-col min-h-0">
+        <Box flex="1" overflow="hidden" px="6" py="4" display="flex" flexDir="column" minH="0">
           {isLoading ? (
-            <div className="space-y-2 flex-1">
+            <VStack gap="2" flex="1" align="stretch">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={`h-3 bg-gray-100 rounded animate-pulse ${i % 3 === 2 ? 'w-2/3' : 'w-full'}`} />
+                <Box key={i} h="3" bg="gray.100" borderRadius="sm" w={i % 3 === 2 ? '66%' : 'full'} />
               ))}
-            </div>
+            </VStack>
           ) : error ? (
-            <p className="text-red-600 text-sm">{error}</p>
+            <Text color="red.600" fontSize="sm">{error}</Text>
           ) : (
-            <textarea
+            <Textarea
               value={content ?? ''}
               onChange={(e) => setContent(e.target.value)}
-              className="flex-1 w-full text-xs font-mono leading-relaxed border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 min-h-[400px]"
+              flex="1"
+              w="full"
+              fontSize="xs"
+              fontFamily="mono"
+              lineHeight="relaxed"
+              borderWidth="1px"
+              borderColor="gray.300"
+              borderRadius="lg"
+              p="3"
+              resize="none"
               spellCheck={false}
+              _focus={{ outline: 'none', ring: '2px', ringColor: 'purple.400' }}
+              minH="400px"
             />
           )}
-        </div>
+        </Box>
 
-        <div className="px-6 py-3 border-t flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
+        <Flex px="6" py="3" borderTopWidth="1px" justify="flex-end" gap="2">
+          <Button variant="subtle" colorPalette="gray" size="sm" onClick={onClose}>Cancel</Button>
+          <Button
+            colorPalette="purple"
+            size="sm"
+            loading={saving}
+            loadingText="Saving…"
+            disabled={isLoading || content === null}
             onClick={handleSave}
-            disabled={isLoading || saving || content === null}
-            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
           >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-    </div>
+            Save
+          </Button>
+        </Flex>
+      </Box>
+    </Box>
   );
 }
-
-// ─── Dashboard ─────────────────────────────────────────────────────────────────
 
 function KnowledgeBaseDashboard() {
   const queryClient = useQueryClient();
@@ -347,7 +415,6 @@ function KnowledgeBaseDashboard() {
     },
   });
 
-  // Client-side category filter (categories is now an array)
   const filteredFiles = categoryFilter
     ? files.filter((f) => f.categories.includes(categoryFilter))
     : files;
@@ -410,11 +477,10 @@ function KnowledgeBaseDashboard() {
     setRecategorizeValue([...file.categories]);
   }
 
-  // All unique categories across all files
   const allCategories = [...new Set(files.flatMap((f) => f.categories))].sort();
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <Container maxW="5xl" py="6" px="6">
       {previewId && (
         <PreviewModal fileId={previewId} onClose={() => setPreviewId(null)} />
       )}
@@ -426,240 +492,255 @@ function KnowledgeBaseDashboard() {
         />
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Knowledge Base</h1>
-          <p className="text-sm text-gray-500 mt-1">
+      <Flex align="flex-start" justify="space-between" mb="6">
+        <Box>
+          <Heading size="xl">Knowledge Base</Heading>
+          <Text fontSize="sm" color="gray.500" mt="1">
             Upload documents — the AI auto-categorizes them and uses their content when answering questions.
-          </p>
-        </div>
-        <label className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition-colors cursor-pointer">
+          </Text>
+        </Box>
+        <Button
+          colorPalette="gray"
+          variant="solid"
+          size="sm"
+          loading={uploading}
+          loadingText="Analysing…"
+          onClick={() => fileInputRef.current?.click()}
+        >
           <Upload size={16} />
-          {uploading ? 'Analysing…' : 'Upload File'}
+          Upload File
           <input
             ref={fileInputRef}
             type="file"
             accept=".pdf,.txt,.csv,.md,text/plain,text/csv,text/markdown,application/pdf"
-            className="hidden"
+            style={{ display: 'none' }}
             disabled={uploading}
             onChange={handleUpload}
           />
-        </label>
-      </div>
+        </Button>
+      </Flex>
 
       {uploading && (
-        <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-2">
-          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
-          Uploading and analysing document with AI — this may take a moment…
-        </div>
+        <HStack mb="4" px="4" py="3" bg="blue.50" borderWidth="1px" borderColor="blue.200" color="blue.700" borderRadius="lg" fontSize="sm" gap="2">
+          <Spinner size="sm" />
+          <Text>Uploading and analysing document with AI — this may take a moment…</Text>
+        </HStack>
       )}
 
       {uploadError && (
-        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <Box mb="4" px="4" py="3" bg="red.50" borderWidth="1px" borderColor="red.200" color="red.700" borderRadius="lg" fontSize="sm">
           {uploadError}
-        </div>
+        </Box>
       )}
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative flex-1 max-w-xs">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
+      <HStack gap="3" mb="4">
+        <Box position="relative" flex="1" maxW="xs">
+          <Box position="absolute" left="3" top="50%" transform="translateY(-50%)" color="gray.400" pointerEvents="none">
+            <Search size={16} />
+          </Box>
+          <Input
             type="text"
             placeholder="Search by filename…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            pl="9"
+            size="sm"
           />
-        </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-        >
-          <option value="">All categories</option>
-          {allCategories.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        </Box>
+        <NativeSelect.Root size="sm">
+          <NativeSelect.Field
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            bg="white"
+          >
+            <option value="">All categories</option>
+            {allCategories.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
         {(searchQuery || categoryFilter) && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            color="gray.500"
+            _hover={{ color: 'gray.800' }}
             onClick={() => { setSearchQuery(''); setCategoryFilter(''); }}
-            className="text-sm text-gray-500 hover:text-gray-800 underline"
           >
             Clear
-          </button>
+          </Button>
         )}
-      </div>
+      </HStack>
 
       {isLoading ? (
-        <div className="text-center text-gray-400 py-12">Loading…</div>
+        <Flex justify="center" py="12">
+          <Spinner color="gray.400" />
+        </Flex>
       ) : filteredFiles.length === 0 ? (
-        <div className="text-center text-gray-500 py-16">
-          <FileText size={40} className="mx-auto mb-3 text-gray-300" />
-          <p className="font-medium">{files.length === 0 ? 'No documents yet.' : 'No documents match your filter.'}</p>
-          <p className="text-sm mt-1">Upload a PDF, TXT, CSV, or Markdown file to get started.</p>
-        </div>
+        <VStack py="16" gap="3" color="gray.400" textAlign="center">
+          <FileText size={40} />
+          <Text fontWeight="medium" color="gray.500">
+            {files.length === 0 ? 'No documents yet.' : 'No documents match your filter.'}
+          </Text>
+          <Text fontSize="sm">Upload a PDF, TXT, CSV, or Markdown file to get started.</Text>
+        </VStack>
       ) : (
-        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">File</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Summary</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Categories</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Size</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Uploaded</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
+          <Table.Root size="sm">
+            <Table.Header bg="gray.50">
+              <Table.Row>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">File</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Summary</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Categories</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Size</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Uploaded</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600" textAlign="right">Actions</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {filteredFiles.map((file) => (
                 <React.Fragment key={file.id}>
-                  <tr className="hover:bg-gray-50 transition-colors align-top">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span>{mimeIcon(file.mimeType)}</span>
-                        <span
-                          className="font-medium text-gray-900 truncate max-w-[200px]"
-                          title={file.originalName}
-                        >
+                  <Table.Row _hover={{ bg: 'gray.50' }} verticalAlign="top">
+                    <Table.Cell>
+                      <HStack gap="2">
+                        <Text>{mimeIcon(file.mimeType)}</Text>
+                        <Text fontWeight="medium" color="gray.900" truncate maxW="200px" title={file.originalName}>
                           {file.originalName}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-400 font-mono mt-0.5 ml-6">
+                        </Text>
+                      </HStack>
+                      <Text fontSize="xs" color="gray.400" fontFamily="mono" mt="0.5" pl="6">
                         {file.mimeType.split('/').pop()?.toUpperCase()}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 max-w-xs">
-                      <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">
-                        {file.summary ?? <span className="italic text-gray-300">No summary</span>}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
+                      </Text>
+                    </Table.Cell>
+                    <Table.Cell maxW="xs">
+                      <Text fontSize="xs" color="gray.500" lineClamp={3} lineHeight="relaxed">
+                        {file.summary ?? <Text as="span" fontStyle="italic" color="gray.300">No summary</Text>}
+                      </Text>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <HStack flexWrap="wrap" gap="1">
                         {file.categories.map((cat) => (
-                          <span
+                          <Badge
                             key={cat}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 ${categoryColor(cat)}`}
+                            colorPalette={categoryColorPalette(cat)}
+                            variant="subtle"
+                            borderRadius="full"
+                            fontSize="xs"
+                            cursor="pointer"
+                            _hover={{ opacity: 0.8 }}
                             onClick={() => setCategoryFilter(cat === categoryFilter ? '' : cat)}
                             title="Filter by this category"
                           >
-                            <Tag size={9} />
-                            {cat}
-                          </span>
+                            <Tag size={9} style={{ marginRight: '2px' }} />{cat}
+                          </Badge>
                         ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                      </HStack>
+                    </Table.Cell>
+                    <Table.Cell color="gray.500" fontSize="xs" whiteSpace="nowrap">
                       {formatBytes(file.sizeBytes)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                    </Table.Cell>
+                    <Table.Cell color="gray.500" fontSize="xs" whiteSpace="nowrap">
                       {new Date(file.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
+                    </Table.Cell>
+                    <Table.Cell>
+                      <HStack justify="flex-end" gap="1">
+                        <IconButton
+                          aria-label="Preview"
+                          variant="ghost"
+                          size="xs"
+                          color="gray.400"
+                          _hover={{ color: 'sky.600', bg: 'sky.50' }}
                           onClick={() => setPreviewId(file.id)}
-                          title="Preview"
-                          className="p-1.5 text-gray-400 hover:text-sky-600 hover:bg-sky-50 rounded transition-colors cursor-pointer"
                         >
                           <Eye size={15} />
-                        </button>
+                        </IconButton>
                         {!file.mimeType.includes('pdf') && (
-                          <button
+                          <IconButton
+                            aria-label="Edit content"
+                            variant="ghost"
+                            size="xs"
+                            color="gray.400"
+                            _hover={{ color: 'emerald.600', bg: 'emerald.50' }}
                             onClick={() => setEditId(file.id)}
-                            title="Edit content"
-                            className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors cursor-pointer"
                           >
                             <Pencil size={15} />
-                          </button>
+                          </IconButton>
                         )}
-                        <button
+                        <IconButton
+                          aria-label="Edit categories"
+                          variant="ghost"
+                          size="xs"
+                          color="gray.400"
+                          _hover={{ color: 'purple.600', bg: 'purple.50' }}
                           onClick={() => startRecategorize(file)}
-                          title="Edit categories"
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors cursor-pointer"
                         >
                           <FolderEdit size={15} />
-                        </button>
+                        </IconButton>
                         {confirmDelete === file.id ? (
-                          <>
-                            <button
-                              onClick={() => deleteMutation.mutate(file.id)}
-                              className="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => setConfirmDelete(null)}
-                              className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer"
-                            >
-                              Cancel
-                            </button>
-                          </>
+                          <HStack gap="1">
+                            <Button size="xs" colorPalette="red" onClick={() => deleteMutation.mutate(file.id)}>Confirm</Button>
+                            <Button size="xs" variant="subtle" colorPalette="gray" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+                          </HStack>
                         ) : (
-                          <button
+                          <IconButton
+                            aria-label="Delete"
+                            variant="ghost"
+                            size="xs"
+                            color="gray.400"
+                            _hover={{ color: 'red.600', bg: 'red.50' }}
                             onClick={() => setConfirmDelete(file.id)}
-                            title="Delete"
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
                           >
                             <Trash2 size={15} />
-                          </button>
+                          </IconButton>
                         )}
-                      </div>
-                    </td>
-                  </tr>
+                      </HStack>
+                    </Table.Cell>
+                  </Table.Row>
                   {recategorizeId === file.id && (
-                    <tr key={`${file.id}-recategorize`}>
-                      <td colSpan={6} className="px-4 py-3 bg-indigo-50 border-t">
-                        <div className="flex items-start gap-3">
-                          <span className="text-xs text-gray-600 font-medium mt-2 whitespace-nowrap">
+                    <Table.Row key={`${file.id}-recategorize`}>
+                      <Table.Cell colSpan={6} bg="purple.50" borderTopWidth="1px">
+                        <HStack align="flex-start" gap="3">
+                          <Text fontSize="xs" color="gray.600" fontWeight="medium" mt="2" whiteSpace="nowrap">
                             Edit categories:
-                          </span>
-                          <div className="flex-1">
-                            <TagEditor
-                              value={recategorizeValue}
-                              onChange={setRecategorizeValue}
-                            />
-                            <p className="text-xs text-gray-400 mt-1">Type a category and press Enter or comma to add</p>
-                          </div>
-                          <div className="flex gap-2 mt-1">
-                            <button
-                              onClick={() =>
-                                recategorizeMutation.mutate({
-                                  id: file.id,
-                                  categories: recategorizeValue,
-                                })
-                              }
+                          </Text>
+                          <Box flex="1">
+                            <TagEditor value={recategorizeValue} onChange={setRecategorizeValue} />
+                            <Text fontSize="xs" color="gray.400" mt="1">Type a category and press Enter or comma to add</Text>
+                          </Box>
+                          <HStack gap="2" mt="1">
+                            <Button
+                              size="xs"
+                              colorPalette="purple"
                               disabled={recategorizeValue.length === 0 || recategorizeMutation.isPending}
-                              className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
+                              onClick={() => recategorizeMutation.mutate({ id: file.id, categories: recategorizeValue })}
                             >
                               Save
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="subtle"
+                              colorPalette="gray"
                               onClick={() => { setRecategorizeId(null); setRecategorizeValue([]); }}
-                              className="text-xs px-2 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer"
                             >
                               Cancel
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+                            </Button>
+                          </HStack>
+                        </HStack>
+                      </Table.Cell>
+                    </Table.Row>
                   )}
                 </React.Fragment>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </Table.Body>
+          </Table.Root>
+        </Box>
       )}
 
-      <p className="text-xs text-gray-400 mt-4">
+      <Text fontSize="xs" color="gray.400" mt="4">
         Supported formats: PDF, TXT, CSV, Markdown · Categories and summaries are generated by AI on upload · Click a category badge to filter
-      </p>
-    </div>
+      </Text>
+    </Container>
   );
 }

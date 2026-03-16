@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useState } from 'react';
+import {
+  Box,
+  Badge,
+  Container,
+  Flex,
+  HStack,
+  Heading,
+  Table,
+  Text,
+} from '@chakra-ui/react';
 
 const getCronjobLogs = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
@@ -53,40 +63,41 @@ function LogRow({ log }: { log: Log }) {
   const truncated = content && content.length > 120 ? content.slice(0, 120) + '…' : content;
 
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
-      <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+    <Table.Row _hover={{ bg: 'gray.50' }}>
+      <Table.Cell color="gray.500" fontSize="xs" whiteSpace="nowrap" suppressHydrationWarning>
         {new Date(log.ranAt).toLocaleString()}
-      </td>
-      <td className="px-4 py-3">
-        <span
-          className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-            log.status === 'success'
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
-          }`}
+      </Table.Cell>
+      <Table.Cell>
+        <Badge
+          colorPalette={log.status === 'success' ? 'green' : 'red'}
+          variant="subtle"
+          borderRadius="full"
+          size="sm"
         >
           {log.status}
-        </span>
-      </td>
-      <td className="px-4 py-3 text-xs text-gray-500">
+        </Badge>
+      </Table.Cell>
+      <Table.Cell color="gray.500" fontSize="xs">
         {log.durationMs != null ? `${log.durationMs}ms` : '—'}
-      </td>
-      <td className="px-4 py-3 text-xs text-gray-700 max-w-sm">
+      </Table.Cell>
+      <Table.Cell fontSize="xs" color="gray.700" maxW="sm">
         {content ? (
-          <button
+          <Box
+            as="button"
+            textAlign="left"
             onClick={() => setExpanded((v) => !v)}
-            className="text-left hover:text-gray-900 transition-colors"
+            _hover={{ color: 'gray.900' }}
           >
-            <span className="whitespace-pre-wrap">{expanded ? content : truncated}</span>
+            <Text as="span" whiteSpace="pre-wrap">{expanded ? content : truncated}</Text>
             {content.length > 120 && (
-              <span className="ml-1 text-blue-500">{expanded ? 'less' : 'more'}</span>
+              <Text as="span" ml="1" color="blue.500">{expanded ? 'less' : 'more'}</Text>
             )}
-          </button>
+          </Box>
         ) : (
-          <span className="text-gray-400">—</span>
+          <Text color="gray.400">—</Text>
         )}
-      </td>
-    </tr>
+      </Table.Cell>
+    </Table.Row>
   );
 }
 
@@ -94,37 +105,37 @@ function CronjobLogsPage() {
   const { job, logs } = Route.useLoaderData();
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/cronjobs" className="text-sm text-gray-500 hover:text-gray-700">
-          ← Automation
-        </Link>
-        <h1 className="text-2xl font-bold">Logs — {job.name}</h1>
-      </div>
+    <Container maxW="5xl" py="6" px="6">
+      <HStack gap="3" mb="6">
+        <Box asChild color="gray.500" fontSize="sm" _hover={{ color: 'gray.700' }}>
+          <Link to="/cronjobs">← Automation</Link>
+        </Box>
+        <Heading size="xl">Logs — {job.name}</Heading>
+      </HStack>
 
       {logs.length === 0 ? (
-        <div className="text-center text-gray-500 py-12">
-          No logs yet. This job hasn't run yet.
-        </div>
+        <Flex justify="center" py="12">
+          <Text color="gray.500">No logs yet. This job hasn't run yet.</Text>
+        </Flex>
       ) : (
-        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Ran At</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Duration</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Result / Error</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
+          <Table.Root size="sm">
+            <Table.Header bg="gray.50">
+              <Table.Row>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600" whiteSpace="nowrap">Ran At</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Status</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Duration</Table.ColumnHeader>
+                <Table.ColumnHeader fontWeight="medium" color="gray.600">Result / Error</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {logs.map((log) => (
                 <LogRow key={log.id} log={log as Log} />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </Table.Body>
+          </Table.Root>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }

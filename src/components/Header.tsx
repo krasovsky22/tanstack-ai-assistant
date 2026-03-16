@@ -1,7 +1,16 @@
 import { Link } from '@tanstack/react-router';
-
 import { useState } from 'react';
-import { useDisabledSections } from '@/lib/sections';
+import { useDisabledSections, type Section } from '@/lib/sections';
+import {
+  Box,
+  CloseButton,
+  Drawer,
+  Flex,
+  HStack,
+  IconButton,
+  Portal,
+  Text,
+} from '@chakra-ui/react';
 import {
   Briefcase,
   BookOpen,
@@ -11,177 +20,148 @@ import {
   Menu,
   MessageSquare,
   Search,
-  X,
 } from 'lucide-react';
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { data: sectionsData } = useDisabledSections();
   const disabled = new Set(sectionsData?.disabled ?? []);
-  const enabled = (key: string) => !disabled.has(key);
+  const enabled = (key: Section) => !disabled.has(key);
 
   return (
     <>
-      <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+      <Flex
+        as="header"
+        px="4"
+        py="3"
+        align="center"
+        bg="gray.800"
+        color="white"
+        shadow="lg"
+        gap="3"
+      >
+        <IconButton
           aria-label="Open menu"
+          variant="ghost"
+          color="white"
+          _hover={{ bg: 'gray.700' }}
+          onClick={() => setOpen(true)}
         >
-          <Menu size={24} />
-        </button>
-        <h1 className="ml-4 text-xl font-semibold">
+          <Menu size={22} />
+        </IconButton>
+        <Box asChild>
           <Link to="/">
             <img
               src="/tanstack-word-logo-white.svg"
               alt="TanStack Logo"
-              className="h-10"
+              style={{ height: '2.5rem' }}
             />
           </Link>
-        </h1>
-      </header>
+        </Box>
+      </Flex>
 
-      <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-gray-900 text-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+      <Drawer.Root
+        open={open}
+        onOpenChange={(e) => setOpen(e.open)}
+        placement="start"
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold">Navigation</h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="Close menu"
-          >
-            <X size={24} />
-          </button>
-        </div>
+        <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content bg="gray.900" color="white" maxW="xs">
+              <Drawer.Header borderBottomWidth="1px" borderColor="gray.700">
+                <Drawer.Title color="white">Navigation</Drawer.Title>
+                <Drawer.CloseTrigger asChild pos="initial">
+                  <CloseButton color="white" _hover={{ bg: 'gray.800' }} />
+                </Drawer.CloseTrigger>
+              </Drawer.Header>
 
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <Link
-            to="/"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Home size={20} />
-            <span className="font-medium">Home</span>
-          </Link>
+              <Drawer.Body as="nav" px="3" py="4" display="flex" flexDirection="column" gap="1">
+                <NavLink to="/" icon={<Home size={20} />} label="Home" onClick={() => setOpen(false)} exact />
 
-          {/* Demo Links Start */}
+                {enabled('ai') && (
+                  <NavLink to="/conversations" icon={<MessageSquare size={20} />} label="AI" onClick={() => setOpen(false)} />
+                )}
 
-          {enabled('ai') && (
-            <Link
-              to="/conversations"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-              }}
-            >
-              <MessageSquare size={20} />
-              <span className="font-medium">AI</span>
-            </Link>
-          )}
+                {enabled('jobs') && (
+                  <>
+                    <HStack px="3" py="2" color="gray.400" gap="3" mt="1">
+                      <Briefcase size={20} />
+                      <Text fontWeight="medium" fontSize="sm">Job Search</Text>
+                    </HStack>
+                    <NavLink to="/jobs" icon={<Home size={18} />} label="Dashboard" onClick={() => setOpen(false)} pl="10" exact />
+                    <NavLink to="/jobs/extract-from-url" icon={<Search size={18} />} label="Extract From Url" onClick={() => setOpen(false)} pl="10" />
+                  </>
+                )}
 
-          {enabled('jobs') && (
-            <>
-              <div className="flex items-center gap-3 p-3 rounded-lg mb-1">
-                <Briefcase size={20} />
-                <span className="font-medium text-gray-400">Job Search</span>
-              </div>
+                {enabled('mail') && (
+                  <NavLink to="/mail" icon={<Mail size={20} />} label="Mail" onClick={() => setOpen(false)} />
+                )}
 
-              <Link
-                to="/jobs"
-                onClick={() => setIsOpen(false)}
-                activeOptions={{ exact: true }}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
-                activeProps={{
-                  className:
-                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
-                }}
-              >
-                <Home size={18} />
-                <span className="font-medium">Dashboard</span>
-              </Link>
+                {enabled('knowledge-base') && (
+                  <NavLink to="/knowledge-base" icon={<BookOpen size={20} />} label="Knowledge Base" onClick={() => setOpen(false)} />
+                )}
 
-              <Link
-                to="/jobs/extract-from-url"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
-                activeProps={{
-                  className:
-                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
-                }}
-              >
-                <Search size={18} />
-                <span className="font-medium">Extract From Url</span>
-              </Link>
-            </>
-          )}
-
-          {enabled('mail') && (
-            <Link
-              to="/mail"
-              onClick={() => setIsOpen(false)}
-              activeOptions={{ exact: true }}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2 mt-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2 mt-2',
-              }}
-            >
-              <Mail size={20} />
-              <span className="font-medium">Mail</span>
-            </Link>
-          )}
-
-          {enabled('knowledge-base') && (
-            <Link
-              to="/knowledge-base"
-              onClick={() => setIsOpen(false)}
-              activeOptions={{ exact: true }}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2 mt-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2 mt-2',
-              }}
-            >
-              <BookOpen size={20} />
-              <span className="font-medium">Knowledge Base</span>
-            </Link>
-          )}
-
-          {enabled('cronjobs') && (
-            <>
-              <div className="flex items-center gap-3 p-3 rounded-lg mb-1 mt-2">
-                <Clock size={20} />
-                <span className="font-medium text-gray-400">Automation</span>
-              </div>
-
-              <Link
-                to="/cronjobs"
-                onClick={() => setIsOpen(false)}
-                activeOptions={{ exact: true }}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors ml-6 mb-2"
-                activeProps={{
-                  className:
-                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors ml-6 mb-2',
-                }}
-              >
-                <Home size={18} />
-                <span className="font-medium">Dashboard</span>
-              </Link>
-            </>
-          )}
-
-          {/* Demo Links End */}
-        </nav>
-      </aside>
+                {enabled('cronjobs') && (
+                  <>
+                    <HStack px="3" py="2" color="gray.400" gap="3" mt="1">
+                      <Clock size={20} />
+                      <Text fontWeight="medium" fontSize="sm">Automation</Text>
+                    </HStack>
+                    <NavLink to="/cronjobs" icon={<Home size={18} />} label="Dashboard" onClick={() => setOpen(false)} pl="10" exact />
+                  </>
+                )}
+              </Drawer.Body>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root>
     </>
+  );
+}
+
+function NavLink({
+  to,
+  icon,
+  label,
+  onClick,
+  pl,
+  exact,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  pl?: string;
+  exact?: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      activeOptions={exact ? { exact: true } : undefined}
+      style={{ textDecoration: 'none' }}
+      activeProps={{
+        style: {},
+        className: 'nav-link-active',
+      }}
+      inactiveProps={{
+        className: 'nav-link-inactive',
+      }}
+    >
+      <HStack
+        px="3"
+        py="2.5"
+        pl={pl ?? '3'}
+        borderRadius="lg"
+        gap="3"
+        cursor="pointer"
+        transition="background 0.15s"
+        className="nav-link-inner"
+      >
+        {icon}
+        <Text fontWeight="medium" fontSize="sm">{label}</Text>
+      </HStack>
+    </Link>
   );
 }

@@ -1,6 +1,18 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Box,
+  Button,
+  Card,
+  Container,
+  Grid,
+  HStack,
+  Heading,
+  Spinner,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
+import {
   MessageSquare,
   Briefcase,
   Mail,
@@ -20,17 +32,16 @@ type KbFile = { id: string; categories: string[] };
 
 function StatValue({ value, label }: { value: number; label: string }) {
   return (
-    <div className="text-center">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-xs text-gray-500 mt-0.5">{label}</div>
-    </div>
+    <VStack gap="0" align="center">
+      <Text fontSize="2xl" fontWeight="bold" color="gray.900">{value}</Text>
+      <Text fontSize="xs" color="gray.500">{label}</Text>
+    </VStack>
   );
 }
 
 function SectionCard({
   icon,
-  iconBg,
-  iconColor,
+  iconColorPalette,
   title,
   description,
   href,
@@ -38,8 +49,7 @@ function SectionCard({
   action,
 }: {
   icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
+  iconColorPalette: string;
   title: string;
   description: string;
   href: string;
@@ -47,30 +57,34 @@ function SectionCard({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className={`p-3 rounded-lg ${iconBg}`}>
-          <span className={iconColor}>{icon}</span>
-        </div>
-        {action}
-      </div>
+    <Card.Root shadow="sm" _hover={{ shadow: 'md' }} transition="box-shadow 0.2s">
+      <Card.Body gap="4" display="flex" flexDirection="column">
+        <HStack justify="space-between" align="flex-start">
+          <Box p="3" borderRadius="lg" bg={`${iconColorPalette}.50`} color={`${iconColorPalette}.600`}>
+            {icon}
+          </Box>
+          {action}
+        </HStack>
 
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-500 mt-1">{description}</p>
-      </div>
+        <Box>
+          <Heading size="md" color="gray.900">{title}</Heading>
+          <Text fontSize="sm" color="gray.500" mt="1">{description}</Text>
+        </Box>
 
-      <div className="flex items-center gap-6 py-2 border-t border-gray-100">
-        {stats}
-      </div>
+        <HStack gap="6" py="2" borderTopWidth="1px" borderColor="gray.100">
+          {stats}
+        </HStack>
 
-      <Link
-        to={href}
-        className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-      >
-        Go to {title} <ArrowRight size={14} />
-      </Link>
-    </div>
+        <Box asChild>
+          <Link to={href} style={{ textDecoration: 'none' }}>
+            <HStack gap="1.5" color="gray.700" _hover={{ color: 'gray.900' }} fontSize="sm" fontWeight="medium">
+              <Text>Go to {title}</Text>
+              <ArrowRight size={14} />
+            </HStack>
+          </Link>
+        </Box>
+      </Card.Body>
+    </Card.Root>
   );
 }
 
@@ -89,22 +103,20 @@ function AiCard() {
   return (
     <SectionCard
       icon={<MessageSquare size={22} />}
-      iconBg="bg-cyan-50"
-      iconColor="text-cyan-600"
+      iconColorPalette="cyan"
       title="AI"
       description="Persistent chat conversations powered by GPT-5.2 with tool-calling."
       href="/conversations"
       action={
-        <Link
-          to="/conversations"
-          className="flex items-center gap-1 text-xs px-3 py-1.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
-        >
-          <Plus size={12} /> New Chat
-        </Link>
+        <Button asChild size="xs" colorPalette="cyan">
+          <Link to="/conversations">
+            <Plus size={12} /> New Chat
+          </Link>
+        </Button>
       }
       stats={
         isLoading ? (
-          <span className="text-sm text-gray-400">Loading...</span>
+          <Spinner size="sm" color="gray.400" />
         ) : (
           <>
             <StatValue value={total} label="Total" />
@@ -127,38 +139,32 @@ function JobsCard() {
 
   const newJobs = jobs.filter((j) => j.status === 'new').length;
   const applied = jobs.filter((j) => j.status === 'applied').length;
-  const interviews = jobs.filter(
-    (j) => j.status === 'scheduled_for_interview',
-  ).length;
+  const interviews = jobs.filter((j) => j.status === 'scheduled_for_interview').length;
   const offers = jobs.filter((j) => j.status === 'offer_received').length;
 
   return (
     <SectionCard
       icon={<Briefcase size={22} />}
-      iconBg="bg-indigo-50"
-      iconColor="text-indigo-600"
+      iconColorPalette="purple"
       title="Job Search"
       description="Track applications, generate AI-tailored resumes, and manage your pipeline."
       href="/jobs"
       action={
-        <Link
-          to="/jobs/new"
-          className="flex items-center gap-1 text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          <Plus size={12} /> Add Job
-        </Link>
+        <Button asChild size="xs" colorPalette="purple">
+          <Link to="/jobs/new">
+            <Plus size={12} /> Add Job
+          </Link>
+        </Button>
       }
       stats={
         isLoading ? (
-          <span className="text-sm text-gray-400">Loading...</span>
+          <Spinner size="sm" color="gray.400" />
         ) : (
           <>
             <StatValue value={jobs.length} label="Total" />
             <StatValue value={newJobs} label="New" />
             <StatValue value={applied} label="Applied" />
-            {interviews > 0 && (
-              <StatValue value={interviews} label="Interviews" />
-            )}
+            {interviews > 0 && <StatValue value={interviews} label="Interviews" />}
             {offers > 0 && <StatValue value={offers} label="Offers" />}
           </>
         )
@@ -180,14 +186,13 @@ function MailCard() {
   return (
     <SectionCard
       icon={<Mail size={22} />}
-      iconBg="bg-amber-50"
-      iconColor="text-amber-600"
+      iconColorPalette="orange"
       title="Mail"
       description="Emails ingested and linked to job applications automatically."
       href="/mail"
       stats={
         isLoading ? (
-          <span className="text-sm text-gray-400">Loading...</span>
+          <Spinner size="sm" color="gray.400" />
         ) : (
           <StatValue value={emails.length} label="Emails" />
         )
@@ -210,22 +215,20 @@ function AutomationCard() {
   return (
     <SectionCard
       icon={<Clock size={22} />}
-      iconBg="bg-green-50"
-      iconColor="text-green-600"
+      iconColorPalette="green"
       title="Automation"
       description="Scheduled AI tasks that run on a cron schedule and log results."
       href="/cronjobs"
       action={
-        <Link
-          to="/cronjobs/new"
-          className="flex items-center gap-1 text-xs px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-        >
-          <Plus size={12} /> New Job
-        </Link>
+        <Button asChild size="xs" colorPalette="green">
+          <Link to="/cronjobs/new">
+            <Plus size={12} /> New Job
+          </Link>
+        </Button>
       }
       stats={
         isLoading ? (
-          <span className="text-sm text-gray-400">Loading...</span>
+          <Spinner size="sm" color="gray.400" />
         ) : (
           <>
             <StatValue value={cronjobs.length} label="Total" />
@@ -253,22 +256,20 @@ function KnowledgeBaseCard() {
   return (
     <SectionCard
       icon={<BookOpen size={22} />}
-      iconBg="bg-violet-50"
-      iconColor="text-violet-600"
+      iconColorPalette="violet"
       title="Knowledge Base"
       description="Documents uploaded for AI context. Searched automatically before every response."
       href="/knowledge-base"
       action={
-        <Link
-          to="/knowledge-base"
-          className="flex items-center gap-1 text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
-        >
-          <Plus size={12} /> Upload
-        </Link>
+        <Button asChild size="xs" colorPalette="purple" variant="subtle">
+          <Link to="/knowledge-base">
+            <Plus size={12} /> Upload
+          </Link>
+        </Button>
       }
       stats={
         isLoading ? (
-          <span className="text-sm text-gray-400">Loading...</span>
+          <Spinner size="sm" color="gray.400" />
         ) : (
           <>
             <StatValue value={files.length} label="Documents" />
@@ -282,23 +283,21 @@ function KnowledgeBaseCard() {
 
 function Dashboard() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">
-            Overview of your AI assistant workspace.
-          </p>
-        </div>
+    <Box minH="100vh" bg="gray.50">
+      <Container maxW="5xl" py="10" px="6">
+        <Box mb="8">
+          <Heading size="2xl" color="gray.900">Dashboard</Heading>
+          <Text color="gray.500" mt="1">Overview of your AI assistant workspace.</Text>
+        </Box>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <Grid templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)' }} gap="6">
           <AiCard />
           <JobsCard />
           <MailCard />
           <AutomationCard />
           <KnowledgeBaseCard />
-        </div>
-      </div>
-    </div>
+        </Grid>
+      </Container>
+    </Box>
   );
 }

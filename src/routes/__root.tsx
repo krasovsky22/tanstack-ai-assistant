@@ -4,6 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools';
 import { aiDevtoolsPlugin } from '@tanstack/react-ai-devtools';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
+import { Provider } from '@/components/ui/provider';
 
 import Header from '../components/Header';
 
@@ -72,6 +73,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <Provider>
         <QueryClientProvider client={queryClient}>
           <Header />
           {children}
@@ -91,6 +93,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             ]}
           />
         </QueryClientProvider>
+        </Provider>
         <Scripts />
       </body>
     </html>

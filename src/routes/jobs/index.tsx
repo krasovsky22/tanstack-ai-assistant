@@ -3,6 +3,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, X, FileText, Mail } from 'lucide-react';
 import { JOB_STATUSES } from '@/lib/job-constants';
+import {
+  Badge,
+  Box,
+  Button,
+  Container,
+  Flex,
+  HStack,
+  Heading,
+  IconButton,
+  Input,
+  NativeSelect,
+  Spinner,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 
 export const Route = createFileRoute('/jobs/')({
   component: JobsDashboard,
@@ -38,42 +53,31 @@ const STATUS_LABELS: Record<string, string> = {
   'generated-from-email': 'From Email',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-gray-100 text-gray-700',
-  processed: 'bg-teal-100 text-teal-700',
-  resume_generated: 'bg-indigo-100 text-indigo-700',
-  applied: 'bg-blue-100 text-blue-700',
-  answered: 'bg-purple-100 text-purple-700',
-  scheduled_for_interview: 'bg-amber-100 text-amber-700',
-  offer_received: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
-  withdrawn: 'bg-slate-100 text-slate-600',
-  'generated-from-email': 'bg-orange-100 text-orange-700',
+const STATUS_COLOR_PALETTES: Record<string, string> = {
+  new: 'gray',
+  processed: 'teal',
+  resume_generated: 'purple',
+  applied: 'blue',
+  answered: 'violet',
+  scheduled_for_interview: 'orange',
+  offer_received: 'green',
+  rejected: 'red',
+  withdrawn: 'gray',
+  'generated-from-email': 'orange',
 };
 
 function StatusBadge({ status }: { status: string }) {
   return (
-    <span
-      className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-700'}`}
+    <Badge
+      colorPalette={STATUS_COLOR_PALETTES[status] ?? 'gray'}
+      variant="subtle"
+      borderRadius="full"
+      px="2.5"
+      py="1"
+      fontSize="xs"
     >
       {STATUS_LABELS[status] ?? status}
-    </span>
-  );
-}
-
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin"
-      width={13}
-      height={13}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-    >
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-    </svg>
+    </Badge>
   );
 }
 
@@ -85,37 +89,47 @@ function PdfModal({ url, title, onClose }: { url: string; title: string; onClose
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+    <Box
+      position="fixed"
+      inset="0"
+      zIndex="50"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bg="blackAlpha.600"
       onClick={onClose}
     >
-      <div
-        className="relative bg-white rounded-lg shadow-2xl flex flex-col"
+      <Box
+        position="relative"
+        bg="white"
+        borderRadius="lg"
+        shadow="2xl"
+        display="flex"
+        flexDir="column"
         style={{ width: '85vw', height: '90vh' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
-          <span className="font-semibold text-gray-800 truncate">{title} — Resume</span>
-          <div className="flex items-center gap-3">
-            <a
-              href={url}
-              download
-              className="text-xs text-indigo-600 hover:underline"
+        <Flex px="4" py="3" borderBottomWidth="1px" align="center" justify="space-between" flexShrink="0">
+          <Text fontWeight="semibold" color="gray.800" truncate>{title} — Resume</Text>
+          <HStack gap="3">
+            <Box asChild fontSize="xs" color="indigo.600" _hover={{ textDecoration: 'underline' }}>
+              <a href={url} download>Download PDF</a>
+            </Box>
+            <IconButton
+              aria-label="Close"
+              variant="ghost"
+              size="sm"
+              color="gray.500"
+              _hover={{ color: 'gray.900' }}
+              onClick={onClose}
             >
-              Download PDF
-            </a>
-            <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900 rounded">
               <X size={18} />
-            </button>
-          </div>
-        </div>
-        <iframe
-          src={url}
-          className="flex-1 w-full rounded-b-lg"
-          title="Resume PDF"
-        />
-      </div>
-    </div>
+            </IconButton>
+          </HStack>
+        </Flex>
+        <iframe src={url} style={{ flex: 1, width: '100%', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px' }} title="Resume PDF" />
+      </Box>
+    </Box>
   );
 }
 
@@ -138,7 +152,6 @@ function JobCard({
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
 
-  // Pitfall 5 mitigation: staleTime 60s + initialData prevents N+1 request storm on page load
   const { data: emailCountData } = useQuery({
     queryKey: ['email-count', job.id],
     queryFn: async () => {
@@ -151,165 +164,160 @@ function JobCard({
   const emailCount = emailCountData?.count ?? 0;
 
   return (
-    <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+    <Box borderWidth="1px" borderRadius="lg" bg="white" shadow="sm" overflow="hidden">
+      <Box p="4">
+        <Flex align="flex-start" justify="space-between" gap="3">
+          <Box flex="1" minW="0">
+            <HStack gap="2" flexWrap="wrap">
               {job.title && (
-                <h3 className="font-semibold text-gray-900 truncate">
-                  {job.title}
-                </h3>
+                <Text fontWeight="semibold" color="gray.900" truncate>{job.title}</Text>
               )}
               <StatusBadge status={job.status} />
               {emailCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                <HStack gap="1" fontSize="xs" color="gray.500">
                   <Mail size={12} />
-                  {emailCount}
-                </span>
+                  <Text>{emailCount}</Text>
+                </HStack>
               )}
-            </div>
+            </HStack>
             {job.company && (
-              <p className="text-sm text-gray-600 mt-0.5">{job.company}</p>
+              <Text fontSize="sm" color="gray.600" mt="0.5">{job.company}</Text>
             )}
-            <p className="text-xs text-gray-400 mt-1">
-              {job.source && <span>Source: {job.source} &middot; </span>}
-              {new Date(job.createdAt).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </p>
+            <Text fontSize="xs" color="gray.400" mt="1">
+              {job.source && <span>Source: {job.source} · </span>}
+              {new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </Text>
             {job.link && (
-              <a
-                href={job.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline mt-0.5 inline-block"
-              >
-                View posting ↗
-              </a>
+              <Box asChild fontSize="xs" color="blue.600" _hover={{ textDecoration: 'underline' }} mt="0.5" display="inline-block">
+                <a href={job.link} target="_blank" rel="noopener noreferrer">View posting ↗</a>
+              </Box>
             )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              to="/jobs/$id"
-              params={{ id: job.id }}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+          </Box>
+          <HStack gap="2" flexShrink="0">
+            <IconButton
               aria-label="Edit job"
+              variant="ghost"
+              size="sm"
+              color="gray.400"
+              _hover={{ color: 'blue.600', bg: 'blue.50' }}
+              asChild
             >
-              <Pencil size={16} />
-            </Link>
+              <Link to="/jobs/$id" params={{ id: job.id }}>
+                <Pencil size={16} />
+              </Link>
+            </IconButton>
             {confirmDelete ? (
-              <>
-                <button
-                  onClick={() => onDelete(job.id)}
-                  className="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  Confirm
-                </button>
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-              </>
+              <HStack gap="1">
+                <Button size="xs" colorPalette="red" onClick={() => onDelete(job.id)}>Confirm</Button>
+                <Button size="xs" variant="subtle" colorPalette="gray" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+              </HStack>
             ) : (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              <IconButton
                 aria-label="Delete job"
+                variant="ghost"
+                size="sm"
+                color="gray.400"
+                _hover={{ color: 'red.600', bg: 'red.50' }}
+                onClick={() => setConfirmDelete(true)}
               >
                 <Trash2 size={16} />
-              </button>
+              </IconButton>
             )}
-          </div>
-        </div>
+          </HStack>
+        </Flex>
 
-        <div className="mt-3 flex items-center gap-3 flex-wrap">
-          <label className="text-xs text-gray-500 font-medium">Status:</label>
-          <select
-            value={job.status}
-            onChange={(e) => onStatusChange(job.id, e.target.value)}
-            className="text-xs border rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {JOB_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </div>
+        <HStack mt="3" gap="3" flexWrap="wrap" align="center">
+          <Text fontSize="xs" color="gray.500" fontWeight="medium">Status:</Text>
+          <NativeSelect.Root size="xs">
+            <NativeSelect.Field
+              value={job.status}
+              onChange={(e) => onStatusChange(job.id, e.target.value)}
+              bg="white"
+              color="gray.700"
+            >
+              {JOB_STATUSES.map((s) => (
+                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </HStack>
 
         {job.notes && (
-          <p className="mt-2 text-sm text-gray-600 italic">
+          <Text mt="2" fontSize="sm" color="gray.600" fontStyle="italic">
             Note: {job.notes}
-          </p>
+          </Text>
         )}
 
         {job.status === 'new' && (
-          <button
+          <Button
+            mt="3"
+            size="xs"
+            variant="outline"
+            colorPalette="teal"
+            loading={isProcessing}
+            loadingText="Processing..."
             onClick={async () => {
               setIsProcessing(true);
               try { await onProcess(job.id); } finally { setIsProcessing(false); }
             }}
-            disabled={isProcessing}
-            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 border border-teal-600 text-teal-700 rounded-lg text-xs hover:bg-teal-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
-            {isProcessing ? <Spinner /> : <Zap size={13} />}
-            {isProcessing ? 'Processing...' : 'Process'}
-          </button>
+            <Zap size={13} />
+            Process
+          </Button>
         )}
 
         {job.status === 'processed' && (
-          <button
+          <Button
+            mt="3"
+            size="xs"
+            variant="outline"
+            colorPalette="purple"
+            loading={isGenerating}
+            loadingText="Generating..."
             onClick={async () => {
               setIsGenerating(true);
               try { await onGenerateResume(job.id); } finally { setIsGenerating(false); }
             }}
-            disabled={isGenerating}
-            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 border border-indigo-600 text-indigo-700 rounded-lg text-xs hover:bg-indigo-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
-            {isGenerating ? <Spinner /> : <Zap size={13} />}
-            {isGenerating ? 'Generating...' : 'Generate Resume'}
-          </button>
+            <Zap size={13} />
+            Generate Resume
+          </Button>
         )}
 
         {job.matchScore != null && (
-          <div className="mt-3 flex items-center gap-3 flex-wrap">
-            <span
-              className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                job.matchScore >= 75
-                  ? 'bg-green-100 text-green-700'
-                  : job.matchScore >= 50
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-red-100 text-red-700'
-              }`}
+          <HStack mt="3" gap="3" flexWrap="wrap">
+            <Badge
+              colorPalette={job.matchScore >= 75 ? 'green' : job.matchScore >= 50 ? 'orange' : 'red'}
+              variant="subtle"
+              borderRadius="full"
+              px="2.5"
+              py="1"
+              fontSize="xs"
+              fontWeight="semibold"
             >
               Match: {job.matchScore}%
-            </span>
+            </Badge>
             {job.resumePdfPath && (
-              <button
+              <Button
+                size="xs"
+                variant="ghost"
+                color="purple.600"
+                _hover={{ textDecoration: 'underline' }}
                 onClick={() => setShowPdf(true)}
-                className="flex items-center gap-1 text-xs text-indigo-600 hover:underline"
               >
                 <FileText size={12} />
                 View Resume
-              </button>
+              </Button>
             )}
             {job.coverLetterPath && (
-              <a
-                href={job.coverLetterPath}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-indigo-600 hover:underline"
-              >
-                Cover Letter ↗
-              </a>
+              <Box asChild fontSize="xs" color="purple.600" _hover={{ textDecoration: 'underline' }}>
+                <a href={job.coverLetterPath} target="_blank" rel="noopener noreferrer">Cover Letter ↗</a>
+              </Box>
             )}
-          </div>
+          </HStack>
         )}
+
         {showPdf && job.resumePdfPath && (
           <PdfModal
             url={job.resumePdfPath}
@@ -317,25 +325,33 @@ function JobCard({
             onClose={() => setShowPdf(false)}
           />
         )}
-      </div>
+      </Box>
 
-      <div className="border-t">
-        <button
+      <Box borderTopWidth="1px">
+        <Button
+          w="full"
+          variant="ghost"
+          size="sm"
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-2 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+          justifyContent="space-between"
+          color="gray.500"
+          _hover={{ bg: 'gray.50' }}
+          borderRadius="0"
+          px="4"
+          py="2"
         >
-          <span>Job Description</span>
+          <Text fontSize="xs">Job Description</Text>
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
+        </Button>
         {expanded && (
-          <div className="px-4 pb-4">
-            <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+          <Box px="4" pb="4">
+            <Box as="pre" fontSize="sm" color="gray.700" whiteSpace="pre-wrap" fontFamily="inherit" lineHeight="relaxed">
               {job.description}
-            </pre>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -344,9 +360,7 @@ function JobsDashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [searchTimer, setSearchTimer] = useState<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -402,9 +416,7 @@ function JobsDashboard() {
 
   const generateResumeMutation = useMutation({
     mutationFn: async (id?: string) => {
-      const url = id
-        ? `/api/jobs/generate-resume?id=${id}`
-        : '/api/jobs/generate-resume';
+      const url = id ? `/api/jobs/generate-resume?id=${id}` : '/api/jobs/generate-resume';
       const res = await fetch(url, { method: 'POST' });
       if (res.status === 404) throw new Error('No processed jobs to generate resume for');
       if (!res.ok) {
@@ -417,103 +429,110 @@ function JobsDashboard() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Job Search</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => processMutation.mutate(undefined)}
-            disabled={processMutation.isPending}
+    <Container maxW="3xl" py="6" px="6">
+      <Flex align="center" justify="space-between" mb="6">
+        <Heading size="xl">Job Search</Heading>
+        <HStack gap="2">
+          <Button
+            size="sm"
+            variant="outline"
+            colorPalette="teal"
+            loading={processMutation.isPending}
+            loadingText="Processing..."
             title={processMutation.isError ? processMutation.error?.message : 'Process one new job with AI'}
-            className="flex items-center gap-2 px-4 py-2 border border-teal-600 text-teal-700 rounded-lg text-sm hover:bg-teal-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            onClick={() => processMutation.mutate(undefined)}
           >
             <Zap size={16} />
-            {processMutation.isPending ? 'Processing...' : 'Process'}
-          </button>
-          <button
-            onClick={() => generateResumeMutation.mutate(undefined)}
-            disabled={generateResumeMutation.isPending}
+            Process
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            colorPalette="purple"
+            loading={generateResumeMutation.isPending}
+            loadingText="Generating..."
             title={generateResumeMutation.isError ? generateResumeMutation.error?.message : 'Generate tailored resume for next processed job'}
-            className="flex items-center gap-2 px-4 py-2 border border-indigo-600 text-indigo-700 rounded-lg text-sm hover:bg-indigo-50 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            onClick={() => generateResumeMutation.mutate(undefined)}
           >
             <Zap size={16} />
-            {generateResumeMutation.isPending ? 'Generating...' : 'Generate Resume'}
-          </button>
-          <Link
-            to="/jobs/new"
-            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition-colors"
-          >
-            <Plus size={16} />
-            Add Job
-          </Link>
-        </div>
-      </div>
+            Generate Resume
+          </Button>
+          <Button asChild size="sm" colorPalette="gray" variant="solid">
+            <Link to="/jobs/new">
+              <Plus size={16} />
+              Add Job
+            </Link>
+          </Button>
+        </HStack>
+      </Flex>
+
       {processMutation.isError && (
-        <p className="text-sm text-red-600 mb-4">{processMutation.error?.message}</p>
+        <Text fontSize="sm" color="red.600" mb="4">{processMutation.error?.message}</Text>
       )}
       {processMutation.isSuccess && (
-        <p className="text-sm text-teal-600 mb-4">Job processed successfully.</p>
+        <Text fontSize="sm" color="teal.600" mb="4">Job processed successfully.</Text>
       )}
       {generateResumeMutation.isError && (
-        <p className="text-sm text-red-600 mb-4">{generateResumeMutation.error?.message}</p>
+        <Text fontSize="sm" color="red.600" mb="4">{generateResumeMutation.error?.message}</Text>
       )}
       {generateResumeMutation.isSuccess && (
-        <p className="text-sm text-indigo-600 mb-4">Resume generated successfully.</p>
+        <Text fontSize="sm" color="purple.600" mb="4">Resume generated successfully.</Text>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <input
-          type="text"
+      <HStack gap="3" mb="6" flexDir={{ base: 'column', sm: 'row' }} align={{ base: 'stretch', sm: 'center' }}>
+        <Input
           placeholder="Search by title, company, or source..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          size="sm"
+          flex="1"
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">All statuses</option>
-          {JOB_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
-      </div>
+        <NativeSelect.Root size="sm" minW="40">
+          <NativeSelect.Field
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            bg="white"
+          >
+            <option value="all">All statuses</option>
+            {JOB_STATUSES.map((s) => (
+              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+      </HStack>
 
       {jobs.length > 0 && (
-        <p className="text-sm text-gray-500 mb-4">
+        <Text fontSize="sm" color="gray.500" mb="4">
           {jobs.length} job{jobs.length !== 1 ? 's' : ''} found
-        </p>
+        </Text>
       )}
 
       {isLoading ? (
-        <div className="text-center text-gray-400 py-12">Loading...</div>
+        <Flex justify="center" py="12">
+          <Spinner color="gray.400" />
+        </Flex>
       ) : jobs.length === 0 ? (
-        <div className="text-center text-gray-500 py-12">
+        <Text textAlign="center" color="gray.500" py="12">
           No jobs found.{' '}
-          <Link to="/jobs/new" className="text-blue-600 hover:underline">
-            Add your first job
-          </Link>
-        </div>
+          <Box asChild color="blue.600" _hover={{ textDecoration: 'underline' }}>
+            <Link to="/jobs/new">Add your first job</Link>
+          </Box>
+        </Text>
       ) : (
-        <div className="space-y-3">
+        <VStack gap="3" align="stretch">
           {jobs.map((job) => (
             <JobCard
               key={job.id}
               job={job}
               onDelete={(id) => deleteMutation.mutate(id)}
-              onStatusChange={(id, status) =>
-                statusMutation.mutate({ id, status })
-              }
+              onStatusChange={(id, status) => statusMutation.mutate({ id, status })}
               onProcess={(id) => processMutation.mutateAsync(id)}
               onGenerateResume={(id) => generateResumeMutation.mutateAsync(id)}
             />
           ))}
-        </div>
+        </VStack>
       )}
-    </div>
+    </Container>
   );
 }

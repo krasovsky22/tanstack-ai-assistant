@@ -3,6 +3,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Mail, RefreshCw, ExternalLink, Trash2 } from 'lucide-react';
 import AsyncButton from '@/components/AsyncButton';
+import {
+  Badge,
+  Box,
+  Button,
+  Container,
+  Flex,
+  HStack,
+  Heading,
+  Spinner,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 
 export const Route = createFileRoute('/mail/')({
   component: MailDashboard,
@@ -29,77 +41,59 @@ type IngestResult = {
   created: number;
 };
 
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin"
-      width={14}
-      height={14}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-    >
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-    </svg>
-  );
-}
-
 function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) => Promise<void> }) {
   const [expanded, setExpanded] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
 
   const receivedDate = new Date(email.receivedAt);
-  const dateStr = receivedDate.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-  const timeStr = receivedDate.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const dateStr = receivedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const timeStr = receivedDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors">
-        <button
+    <Box borderWidth="1px" borderColor="gray.200" borderRadius="lg" overflow="hidden">
+      <HStack align="flex-start" gap="3" p="4" _hover={{ bg: 'gray.50' }} transition="background 0.15s">
+        <Button
+          variant="ghost"
+          flex="1"
+          minW="0"
+          h="auto"
+          p="0"
+          justifyContent="flex-start"
+          textAlign="left"
           onClick={() => setExpanded((e) => !e)}
-          className="flex items-start gap-3 flex-1 min-w-0 text-left"
         >
-          <Mail size={16} className="mt-0.5 text-gray-400 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <span className="font-medium text-gray-900 truncate">{email.subject || '(no subject)'}</span>
-              <span className="text-xs text-gray-400 shrink-0">
-                {dateStr} {timeStr}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className="text-sm text-gray-500 truncate">{email.sender}</span>
-              {email.jobTitle && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 truncate">
-                    {email.jobTitle}
-                    {email.jobCompany ? ` @ ${email.jobCompany}` : ''}
-                  </span>
-                </>
-              )}
-              {!email.jobId && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                    unmatched
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="shrink-0 text-gray-400 mt-0.5">
-            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
-        </button>
+          <HStack align="flex-start" gap="3" flex="1" minW="0">
+            <Box color="gray.400" mt="0.5" flexShrink="0">
+              <Mail size={16} />
+            </Box>
+            <Box flex="1" minW="0">
+              <HStack justify="space-between" gap="2" flexWrap="wrap">
+                <Text fontWeight="medium" color="gray.900" truncate>{email.subject || '(no subject)'}</Text>
+                <Text fontSize="xs" color="gray.400" flexShrink="0">{dateStr} {timeStr}</Text>
+              </HStack>
+              <HStack gap="2" mt="0.5" flexWrap="wrap">
+                <Text fontSize="sm" color="gray.500" truncate>{email.sender}</Text>
+                {email.jobTitle && (
+                  <>
+                    <Text color="gray.300">·</Text>
+                    <Badge colorPalette="orange" variant="subtle" borderRadius="full" fontSize="xs" truncate>
+                      {email.jobTitle}{email.jobCompany ? ` @ ${email.jobCompany}` : ''}
+                    </Badge>
+                  </>
+                )}
+                {!email.jobId && (
+                  <>
+                    <Text color="gray.300">·</Text>
+                    <Badge colorPalette="gray" variant="subtle" borderRadius="full" fontSize="xs">unmatched</Badge>
+                  </>
+                )}
+              </HStack>
+            </Box>
+            <Box color="gray.400" mt="0.5" flexShrink="0">
+              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </Box>
+          </HStack>
+        </Button>
 
         <AsyncButton
           onClick={() => onDelete(email.id)}
@@ -109,41 +103,56 @@ function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) =>
         >
           <Trash2 size={14} />
         </AsyncButton>
-      </div>
+      </HStack>
 
       {expanded && (
-        <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-3">
+        <Box borderTopWidth="1px" borderColor="gray.100" p="4" bg="gray.50" spaceY="3">
           {email.jobId && (
-            <a
-              href={`/jobs/${email.jobId}`}
-              className="inline-flex items-center gap-1.5 text-xs text-cyan-600 hover:text-cyan-800 font-medium"
-            >
-              <ExternalLink size={12} />
-              View job
-            </a>
+            <Box asChild display="inline-flex" alignItems="center" gap="1.5" fontSize="xs" color="cyan.600" _hover={{ color: 'cyan.800' }} fontWeight="medium">
+              <a href={`/jobs/${email.jobId}`}>
+                <ExternalLink size={12} />
+                View job
+              </a>
+            </Box>
           )}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              AI Summary
-            </p>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+          <Box>
+            <Text fontSize="xs" fontWeight="semibold" color="gray.500" textTransform="uppercase" letterSpacing="wide" mb="1">AI Summary</Text>
+            <Text fontSize="sm" color="gray.700" lineHeight="relaxed" whiteSpace="pre-wrap">
               {email.emailLlmSummarized || 'No summary available.'}
-            </p>
-          </div>
-          <button
+            </Text>
+          </Box>
+          <Button
+            variant="ghost"
+            size="xs"
+            color="gray.400"
+            _hover={{ color: 'gray.600' }}
+            textDecoration="underline"
             onClick={() => setShowRaw((r) => !r)}
-            className="text-xs text-gray-400 hover:text-gray-600 underline"
           >
             {showRaw ? 'Hide full email' : 'Show full email'}
-          </button>
+          </Button>
           {showRaw && (
-            <pre className="text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto">
+            <Box
+              as="pre"
+              fontSize="xs"
+              color="gray.600"
+              bg="white"
+              borderWidth="1px"
+              borderColor="gray.200"
+              borderRadius="md"
+              p="3"
+              overflowX="auto"
+              whiteSpace="pre-wrap"
+              wordBreak="break-words"
+              maxH="64"
+              overflowY="auto"
+            >
               {email.emailContent}
-            </pre>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -178,14 +187,14 @@ function MailDashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mail Inbox</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+    <Container maxW="4xl" py="6" px="6">
+      <Flex justify="space-between" align="flex-start" mb="6">
+        <Box>
+          <Heading size="xl" color="gray.900">Mail Inbox</Heading>
+          <Text fontSize="sm" color="gray.500" mt="0.5">
             {isLoading ? 'Loading...' : `${emails.length} email${emails.length === 1 ? '' : 's'} ingested`}
-          </p>
-        </div>
+          </Text>
+        </Box>
         <AsyncButton
           onClick={handleIngest}
           className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-60 transition-colors font-medium text-sm"
@@ -193,42 +202,42 @@ function MailDashboard() {
           <RefreshCw size={14} />
           Fetch from Yahoo
         </AsyncButton>
-      </div>
+      </Flex>
 
       {ingestResult && (
-        <div className="mb-4 flex items-center gap-6 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
-          <span>✓ Fetch complete</span>
-          <span>Fetched: <strong>{ingestResult.fetched}</strong></span>
-          <span>Job-related: <strong>{ingestResult.jobRelated}</strong></span>
-          <span>Matched: <strong>{ingestResult.matched}</strong></span>
-          <span>New: <strong>{ingestResult.created}</strong></span>
-        </div>
+        <HStack mb="4" p="3" bg="green.50" borderWidth="1px" borderColor="green.200" borderRadius="lg" fontSize="sm" color="green.800" gap="6">
+          <Text>✓ Fetch complete</Text>
+          <Text>Fetched: <Text as="strong">{ingestResult.fetched}</Text></Text>
+          <Text>Job-related: <Text as="strong">{ingestResult.jobRelated}</Text></Text>
+          <Text>Matched: <Text as="strong">{ingestResult.matched}</Text></Text>
+          <Text>New: <Text as="strong">{ingestResult.created}</Text></Text>
+        </HStack>
       )}
 
       {ingestError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <Box mb="4" p="3" bg="red.50" borderWidth="1px" borderColor="red.200" borderRadius="lg" fontSize="sm" color="red.700">
           Failed to fetch emails. Check your Yahoo credentials in .env.
-        </div>
+        </Box>
       )}
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16 text-gray-400">
-          <Spinner />
-          <span className="ml-2 text-sm">Loading emails...</span>
-        </div>
+        <Flex align="center" justify="center" py="16" gap="2" color="gray.400">
+          <Spinner size="sm" />
+          <Text fontSize="sm">Loading emails...</Text>
+        </Flex>
       ) : emails.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <Mail size={40} className="mx-auto mb-3 opacity-30" />
-          <p className="font-medium">No emails yet</p>
-          <p className="text-sm mt-1">Click "Fetch from Yahoo" to pull your inbox.</p>
-        </div>
+        <VStack py="16" gap="3" color="gray.400" textAlign="center">
+          <Mail size={40} style={{ opacity: 0.3 }} />
+          <Text fontWeight="medium">No emails yet</Text>
+          <Text fontSize="sm">Click "Fetch from Yahoo" to pull your inbox.</Text>
+        </VStack>
       ) : (
-        <div className="space-y-2">
+        <VStack gap="2" align="stretch">
           {emails.map((email) => (
             <EmailRow key={email.id} email={email} onDelete={handleDelete} />
           ))}
-        </div>
+        </VStack>
       )}
-    </div>
+    </Container>
   );
 }
