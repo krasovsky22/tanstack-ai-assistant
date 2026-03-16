@@ -5,17 +5,28 @@ import { aiDevtoolsPlugin } from '@tanstack/react-ai-devtools';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Provider } from '@/components/ui/provider';
+import { Box, Flex } from '@chakra-ui/react';
 
-import Header from '../components/Header';
+import IconRail from '@/components/IconRail';
+import ChatSidebar from '@/components/ChatSidebar';
 
 import appCss from '../styles.css?url';
 
 function NotFound() {
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h2>404 - Page Not Found</h2>
-      <p>The page you're looking for doesn't exist.</p>
-    </div>
+    <Flex
+      minH="100vh"
+      align="center"
+      justify="center"
+      direction="column"
+      gap="2"
+      bg="#F0F0F0"
+    >
+      <Box fontSize="2xl" fontWeight="bold" color="#1A1A1A">
+        404 - Page Not Found
+      </Box>
+      <Box color="#6B7280">The page you're looking for doesn't exist.</Box>
+    </Flex>
   );
 }
 
@@ -31,7 +42,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Orin AI',
       },
     ],
     links: [
@@ -43,6 +54,23 @@ export const Route = createRootRoute({
   }),
   shellComponent: RootDocument,
 });
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Flex minH="100vh" bg="#F0F0F0">
+      <IconRail />
+      <ChatSidebar />
+      <Box
+        flex="1"
+        ml="340px"
+        minH="100vh"
+        overflowY="auto"
+      >
+        {children}
+      </Box>
+    </Flex>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -74,25 +102,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <Provider>
-        <QueryClientProvider client={queryClient}>
-          <Header />
-          {children}
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            eventBusConfig={{
-              connectToServerBus: true,
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              aiDevtoolsPlugin(),
-            ]}
-          />
-        </QueryClientProvider>
+          <QueryClientProvider client={queryClient}>
+            <AppLayout>{children}</AppLayout>
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              eventBusConfig={{
+                connectToServerBus: true,
+              }}
+              plugins={[
+                {
+                  name: 'Tanstack Router',
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                aiDevtoolsPlugin(),
+              ]}
+            />
+          </QueryClientProvider>
         </Provider>
         <Scripts />
       </body>

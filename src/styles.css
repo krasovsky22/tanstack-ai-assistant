@@ -14,14 +14,3 @@ code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
-
-/* Sidebar nav links */
-.nav-link-active .nav-link-inner {
-  background-color: var(--chakra-colors-cyan-600);
-}
-.nav-link-active .nav-link-inner:hover {
-  background-color: var(--chakra-colors-cyan-700);
-}
-.nav-link-inactive .nav-link-inner:hover {
-  background-color: var(--chakra-colors-gray-800);
-}
