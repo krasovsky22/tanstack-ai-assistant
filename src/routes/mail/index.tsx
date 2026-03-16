@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { toaster } from '@/components/ui/toaster';
 import { ChevronDown, ChevronUp, Mail, RefreshCw, ExternalLink, Trash2 } from 'lucide-react';
-import AsyncButton from '@/components/AsyncButton';
 import {
   Badge,
   Box,
@@ -11,6 +11,7 @@ import {
   Flex,
   HStack,
   Heading,
+  IconButton,
   Spinner,
   Text,
   VStack,
@@ -44,6 +45,7 @@ type IngestResult = {
 function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) => Promise<void> }) {
   const [expanded, setExpanded] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const receivedDate = new Date(email.receivedAt);
   const dateStr = receivedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -95,14 +97,21 @@ function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) =>
           </HStack>
         </Button>
 
-        <AsyncButton
-          onClick={() => onDelete(email.id)}
-          spinnerSize={13}
-          className="flex items-center justify-center w-7 h-7 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors shrink-0"
-          title="Delete email"
+        <IconButton
+          aria-label="Delete email"
+          variant="ghost"
+          size="sm"
+          color="gray.400"
+          _hover={{ color: 'red.500', bg: 'red.50' }}
+          flexShrink="0"
+          loading={isDeleting}
+          onClick={async () => {
+            setIsDeleting(true);
+            try { await onDelete(email.id); } finally { setIsDeleting(false); }
+          }}
         >
           <Trash2 size={14} />
-        </AsyncButton>
+        </IconButton>
       </HStack>
 
       {expanded && (
@@ -158,8 +167,7 @@ function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) =>
 
 function MailDashboard() {
   const queryClient = useQueryClient();
-  const [ingestResult, setIngestResult] = useState<IngestResult | null>(null);
-  const [ingestError, setIngestError] = useState(false);
+  const [isIngesting, setIsIngesting] = useState(false);
 
   const { data: emails = [], isLoading } = useQuery<Email[]>({
     queryKey: ['mail-all'],
@@ -167,17 +175,30 @@ function MailDashboard() {
   });
 
   async function handleIngest() {
-    setIngestResult(null);
-    setIngestError(false);
-    const res = await fetch('/api/mail/ingest', { method: 'POST' });
-    if (!res.ok) {
-      setIngestError(true);
-      throw new Error('Ingest failed');
+    setIsIngesting(true);
+    try {
+      const res = await fetch('/api/mail/ingest', { method: 'POST' });
+      if (!res.ok) {
+        toaster.create({
+          type: 'error',
+          title: 'Failed to fetch emails',
+          description: 'Check your Yahoo credentials in .env.',
+          duration: 6000,
+        });
+        return;
+      }
+      const data: IngestResult = await res.json();
+      queryClient.invalidateQueries({ queryKey: ['mail-all'] });
+      queryClient.invalidateQueries({ queryKey: ['email-count'] });
+      toaster.create({
+        type: 'success',
+        title: 'Fetch complete',
+        description: `Fetched ${data.fetched} · Job-related ${data.jobRelated} · Matched ${data.matched} · New ${data.created}`,
+        duration: 5000,
+      });
+    } finally {
+      setIsIngesting(false);
     }
-    const data: IngestResult = await res.json();
-    setIngestResult(data);
-    queryClient.invalidateQueries({ queryKey: ['mail-all'] });
-    queryClient.invalidateQueries({ queryKey: ['email-count'] });
   }
 
   async function handleDelete(id: string) {
@@ -195,30 +216,16 @@ function MailDashboard() {
             {isLoading ? 'Loading...' : `${emails.length} email${emails.length === 1 ? '' : 's'} ingested`}
           </Text>
         </Box>
-        <AsyncButton
+        <Button
+          colorPalette="cyan"
+          loading={isIngesting}
+          loadingText="Fetching..."
           onClick={handleIngest}
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-60 transition-colors font-medium text-sm"
         >
           <RefreshCw size={14} />
           Fetch from Yahoo
-        </AsyncButton>
+        </Button>
       </Flex>
-
-      {ingestResult && (
-        <HStack mb="4" p="3" bg="green.50" borderWidth="1px" borderColor="green.200" borderRadius="lg" fontSize="sm" color="green.800" gap="6">
-          <Text>✓ Fetch complete</Text>
-          <Text>Fetched: <Text as="strong">{ingestResult.fetched}</Text></Text>
-          <Text>Job-related: <Text as="strong">{ingestResult.jobRelated}</Text></Text>
-          <Text>Matched: <Text as="strong">{ingestResult.matched}</Text></Text>
-          <Text>New: <Text as="strong">{ingestResult.created}</Text></Text>
-        </HStack>
-      )}
-
-      {ingestError && (
-        <Box mb="4" p="3" bg="red.50" borderWidth="1px" borderColor="red.200" borderRadius="lg" fontSize="sm" color="red.700">
-          Failed to fetch emails. Check your Yahoo credentials in .env.
-        </Box>
-      )}
 
       {isLoading ? (
         <Flex align="center" justify="center" py="16" gap="2" color="gray.400">

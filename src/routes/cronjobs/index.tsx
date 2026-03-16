@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { Plus, Pencil, Trash2, Play, Square, List, Zap } from 'lucide-react';
+import { Plus, Pencil, Trash2, Play, Square, List, Zap, Clock } from 'lucide-react';
 import {
   Box,
   Button,
@@ -10,9 +10,11 @@ import {
   HStack,
   Heading,
   IconButton,
+  Skeleton,
   Spinner,
   Table,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 
 export const Route = createFileRoute('/cronjobs/')({
@@ -99,16 +101,20 @@ function CronjobsDashboard() {
       </Flex>
 
       {isLoading ? (
-        <Flex justify="center" py="12">
-          <Spinner color="gray.400" />
-        </Flex>
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height="48px" borderRadius="md" />
+          ))}
+        </VStack>
       ) : jobs.length === 0 ? (
-        <Text textAlign="center" color="gray.500" py="12">
-          No cron jobs yet.{' '}
-          <Box asChild color="blue.600" _hover={{ textDecoration: 'underline' }}>
+        <VStack gap={4} py={16} alignItems="center" textAlign="center">
+          <Clock size={40} color="var(--chakra-colors-text-muted)" />
+          <Heading size="md" color="text.primary">No automation jobs yet</Heading>
+          <Text color="text.secondary" fontSize="sm">Schedule recurring AI tasks with cron expressions.</Text>
+          <Button asChild colorPalette="gray" variant="solid" size="sm">
             <Link to="/cronjobs/new">Create your first job</Link>
-          </Box>
-        </Text>
+          </Button>
+        </VStack>
       ) : (
         <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
           <Table.Root size="sm">
@@ -124,7 +130,7 @@ function CronjobsDashboard() {
             <Table.Body>
               {jobs.map((job) => (
                 <React.Fragment key={job.id}>
-                  <Table.Row _hover={{ bg: 'gray.50' }}>
+                  <Table.Row _hover={{ bg: 'gray.50' }} transition="all 0.15s ease">
                     <Table.Cell fontWeight="medium" color="gray.900">{job.name}</Table.Cell>
                     <Table.Cell fontFamily="mono" color="gray.600" fontSize="xs">{job.cronExpression}</Table.Cell>
                     <Table.Cell>

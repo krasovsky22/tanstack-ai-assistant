@@ -5,12 +5,16 @@ import { aiDevtoolsPlugin } from '@tanstack/react-ai-devtools';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Provider } from '@/components/ui/provider';
+import { Toaster } from '@/components/ui/toaster';
 import { Box, Flex } from '@chakra-ui/react';
 
 import IconRail from '@/components/IconRail';
 import ChatSidebar from '@/components/ChatSidebar';
 
 import appCss from '../styles.css?url';
+
+// IconRail (60px) + ChatSidebar (280px) = 340px total left offset for main content
+const SIDEBAR_TOTAL_WIDTH = '340px';
 
 function NotFound() {
   return (
@@ -20,12 +24,12 @@ function NotFound() {
       justify="center"
       direction="column"
       gap="2"
-      bg="#F0F0F0"
+      bg="bg.page"
     >
-      <Box fontSize="2xl" fontWeight="bold" color="#1A1A1A">
+      <Box fontSize="2xl" fontWeight="bold" color="text.primary">
         404 - Page Not Found
       </Box>
-      <Box color="#6B7280">The page you're looking for doesn't exist.</Box>
+      <Box color="text.secondary">The page you're looking for doesn't exist.</Box>
     </Flex>
   );
 }
@@ -57,12 +61,12 @@ export const Route = createRootRoute({
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Flex minH="100vh" bg="#F0F0F0">
+    <Flex minH="100vh" bg="bg.page">
       <IconRail />
       <ChatSidebar />
       <Box
         flex="1"
-        ml="340px"
+        ml={SIDEBAR_TOTAL_WIDTH}
         minH="100vh"
         overflowY="auto"
       >
@@ -104,6 +108,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Provider>
           <QueryClientProvider client={queryClient}>
             <AppLayout>{children}</AppLayout>
+            <Toaster />
             <TanStackDevtools
               config={{
                 position: 'bottom-right',

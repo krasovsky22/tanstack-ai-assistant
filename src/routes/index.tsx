@@ -1,23 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState, useRef } from 'react';
 import {
   Box,
-  Button,
   Flex,
   Grid,
   HStack,
-  IconButton,
-  Input,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import {
-  Mic,
-  Paperclip,
-  Wrench,
-  ArrowRight,
-  ChevronDown,
-} from 'lucide-react';
+import { ChatInput } from '@/components/ChatInput';
 
 export const Route = createFileRoute('/')({ component: HomePage });
 
@@ -76,25 +66,25 @@ function CodeSnippetPreview({ type }: { type: 'generator' | 'explain' | 'debug' 
         borderRadius="8px"
         overflow="hidden"
         border="1px solid"
-        borderColor="#E5E7EB"
+        borderColor="border.default"
         mb="3"
         h="120px"
       >
-        <HStack px="3" py="2" bg="#3D7A28" gap="2">
+        <HStack px="3" py="2" bg="brand.600" gap="2">
           <Box w="8px" h="8px" borderRadius="full" bg="rgba(255,255,255,0.4)" />
           <Text fontSize="xs" color="white" fontWeight="medium">
             Create auth API with JWT
           </Text>
         </HStack>
-        <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="#374151">
-          <Text color="#6B7280">function</Text>
-          <Text color="#1A1A1A">
+        <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="text.subtle">
+          <Text color="text.secondary">function</Text>
+          <Text color="text.primary">
             {' '}auth() {'{'}
           </Text>
-          <Text pl="4" color="#6B7280">
+          <Text pl="4" color="text.secondary">
             ...
           </Text>
-          <Text color="#1A1A1A">{'}'}</Text>
+          <Text color="text.primary">{'}'}</Text>
         </Box>
       </Box>
     );
@@ -106,32 +96,32 @@ function CodeSnippetPreview({ type }: { type: 'generator' | 'explain' | 'debug' 
         borderRadius="8px"
         overflow="hidden"
         border="1px solid"
-        borderColor="#E5E7EB"
+        borderColor="border.default"
         mb="3"
         h="120px"
         position="relative"
       >
-        <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="#374151" h="full">
+        <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="text.subtle" h="full">
           <Text>
-            <Text as="span" color="#6B7280">while </Text>
+            <Text as="span" color="text.secondary">while </Text>
             <Text as="span">(i {'<='} 5) {'{'}</Text>
           </Text>
-          <Text pl="4" color="#6B7280">...</Text>
+          <Text pl="4" color="text.secondary">...</Text>
           <Text>{'}'}</Text>
           <Box
             position="absolute"
             right="8px"
             top="50%"
             transform="translateY(-50%)"
-            bg="white"
+            bg="bg.surface"
             borderRadius="6px"
             border="1px solid"
-            borderColor="#E5E7EB"
+            borderColor="border.default"
             px="2"
             py="1"
             shadow="sm"
           >
-            <Text fontSize="xs" color="#374151" fontWeight="medium">
+            <Text fontSize="xs" color="text.subtle" fontWeight="medium">
               Prevents infinite loop
             </Text>
           </Box>
@@ -145,23 +135,23 @@ function CodeSnippetPreview({ type }: { type: 'generator' | 'explain' | 'debug' 
       borderRadius="8px"
       overflow="hidden"
       border="1px solid"
-      borderColor="#E5E7EB"
+      borderColor="border.default"
       mb="3"
       h="120px"
     >
-      <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="#374151">
+      <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="text.subtle">
         <Text>
-          <Text as="span" color="#6B7280">const </Text>
+          <Text as="span" color="text.secondary">const </Text>
           <Text as="span">res = fetch("/api");</Text>
         </Text>
         <Text>
-          <Text as="span" color="#6B7280">const </Text>
+          <Text as="span" color="text.secondary">const </Text>
           <Text as="span">data = res.json();</Text>
         </Text>
         <Text>
-          <Text as="span" color="#6B7280">console</Text>
+          <Text as="span" color="text.secondary">console</Text>
           <Text as="span">.log(</Text>
-          <Text as="span" color="#3D7A28" style={{ textDecoration: 'underline' }}>data.name</Text>
+          <Text as="span" color="brand.600" style={{ textDecoration: 'underline' }}>data.name</Text>
           <Text as="span">);</Text>
         </Text>
       </Box>
@@ -181,10 +171,10 @@ function FeatureCard({ type, title, description, prompt }: FeatureCardProps) {
 
   return (
     <Box
-      bg="white"
+      bg="bg.surface"
       borderRadius="16px"
       border="1px solid"
-      borderColor="#E5E7EB"
+      borderColor="border.default"
       p="4"
       cursor="pointer"
       _hover={{ shadow: 'md', borderColor: '#D1FAE5', transform: 'translateY(-2px)' }}
@@ -194,200 +184,31 @@ function FeatureCard({ type, title, description, prompt }: FeatureCardProps) {
       }
     >
       <CodeSnippetPreview type={type} />
-      <Text fontWeight="bold" color="#1A1A1A" fontSize="md" mb="1">
+      <Text fontWeight="bold" color="text.primary" fontSize="md" mb="1">
         {title}
       </Text>
-      <Text fontSize="sm" color="#6B7280" lineHeight="1.5">
+      <Text fontSize="sm" color="text.secondary" lineHeight="1.5">
         {description}
       </Text>
     </Box>
   );
 }
 
-function VersionDropdown() {
-  return (
-    <Button
-      variant="outline"
-      borderRadius="full"
-      borderColor="#E5E7EB"
-      bg="white"
-      color="#1A1A1A"
-      _hover={{ bg: '#F9FAFB', borderColor: '#D1D5DB' }}
-      size="sm"
-      gap="1.5"
-      px="4"
-    >
-      Orin v5.0
-      <ChevronDown size={14} />
-    </Button>
-  );
-}
-
-function ChatInput() {
-  const [inputValue, setInputValue] = useState('');
-  const [deepLearning, setDeepLearning] = useState(false);
+function HomePageChatInput() {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = () => {
-    if (!inputValue.trim()) return;
+  const handleSubmit = (value: string) => {
     navigate({
       to: '/conversations/new',
-      search: { q: inputValue.trim() },
+      search: { q: value },
     } as never);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
-
   return (
-    <Box
-      bg="white"
-      borderRadius="16px"
-      border="2px solid"
-      borderColor="#6BBF45"
-      p="3"
-      shadow="0 4px 24px rgba(61,122,40,0.08)"
-    >
-      <HStack gap="2" mb="3">
-        <Box
-          color="brand.500"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          flexShrink={0}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2L13.5 8.5L20 7L15 12L20 17L13.5 15.5L12 22L10.5 15.5L4 17L9 12L4 7L10.5 8.5L12 2Z"
-              fill="currentColor"
-            />
-          </svg>
-        </Box>
-        <Input
-          flex="1"
-          border="none"
-          outline="none"
-          _focus={{ boxShadow: 'none', outline: 'none' }}
-          _focusVisible={{ boxShadow: 'none', outline: 'none' }}
-          placeholder="Ask AI anything or make something..."
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          fontSize="sm"
-          color="#1A1A1A"
-          _placeholder={{ color: '#9CA3AF' }}
-          bg="transparent"
-        />
-      </HStack>
-
-      <HStack justify="space-between" align="center">
-        <HStack gap="2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            style={{ display: 'none' }}
-            multiple
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            color="#6B7280"
-            _hover={{ bg: '#F5F5F5', color: '#374151' }}
-            borderRadius="8px"
-            gap="1.5"
-            fontSize="xs"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Paperclip size={14} />
-            Attach File
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="#6B7280"
-            _hover={{ bg: '#F5F5F5', color: '#374151' }}
-            borderRadius="8px"
-            gap="1.5"
-            fontSize="xs"
-          >
-            <Wrench size={14} />
-            Tools
-          </Button>
-
-          <HStack gap="2" align="center">
-            <Box
-              as="button"
-              role="switch"
-              aria-checked={deepLearning}
-              onClick={() => setDeepLearning(!deepLearning)}
-              w="36px"
-              h="20px"
-              borderRadius="full"
-              bg={deepLearning ? '#3D7A28' : '#D1D5DB'}
-              position="relative"
-              transition="background 0.2s"
-              cursor="pointer"
-            >
-              <Box
-                position="absolute"
-                top="2px"
-                left={deepLearning ? '18px' : '2px'}
-                w="16px"
-                h="16px"
-                borderRadius="full"
-                bg="white"
-                shadow="sm"
-                transition="left 0.2s"
-              />
-            </Box>
-            <Text fontSize="xs" color="#6B7280">
-              Deep Learning
-            </Text>
-            <Box
-              px="1.5"
-              py="0.5"
-              bg="#3D7A28"
-              borderRadius="4px"
-              fontSize="10px"
-              fontWeight="bold"
-              color="white"
-            >
-              Pro
-            </Box>
-          </HStack>
-        </HStack>
-
-        <HStack gap="2">
-          <IconButton
-            aria-label="Voice input"
-            variant="ghost"
-            size="sm"
-            color="#6B7280"
-            _hover={{ bg: '#F5F5F5', color: '#374151' }}
-            borderRadius="8px"
-          >
-            <Mic size={16} />
-          </IconButton>
-          <IconButton
-            aria-label="Send message"
-            size="sm"
-            bg="#3D7A28"
-            color="white"
-            _hover={{ bg: '#2e5c1e' }}
-            borderRadius="8px"
-            onClick={handleSubmit}
-            disabled={!inputValue.trim()}
-          >
-            <ArrowRight size={16} />
-          </IconButton>
-        </HStack>
-      </HStack>
-    </Box>
+    <ChatInput
+      onSubmit={handleSubmit}
+      placeholder="Ask AI anything or make something..."
+    />
   );
 }
 
@@ -396,16 +217,12 @@ function HomePage() {
     <Flex
       direction="column"
       minH="100vh"
-      bg="#F0F0F0"
+      bg="bg.page"
       p="6"
       gap="4"
     >
-      <Flex justify="flex-start" mb="2">
-        <VersionDropdown />
-      </Flex>
-
       <Box
-        bg="white"
+        bg="bg.surface"
         borderRadius="20px"
         p="8"
         flex="1"
@@ -421,7 +238,7 @@ function HomePage() {
           <Text
             fontSize="4xl"
             fontWeight="extrabold"
-            color="#1A1A1A"
+            color="text.primary"
             textAlign="center"
             lineHeight="1.1"
           >
@@ -440,7 +257,7 @@ function HomePage() {
       </Box>
 
       <Box
-        bg="white"
+        bg="bg.surface"
         borderRadius="20px"
         p="6"
       >
@@ -465,7 +282,7 @@ function HomePage() {
           />
         </Grid>
 
-        <ChatInput />
+        <HomePageChatInput />
       </Box>
     </Flex>
   );

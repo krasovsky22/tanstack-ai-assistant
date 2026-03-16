@@ -5,13 +5,12 @@ import {
   BookOpen,
   Clock,
   MessageSquare,
-  Search,
-  Settings,
-  Sun,
-  HelpCircle,
   Database,
 } from 'lucide-react';
 import { useDisabledSections, type Section } from '@/lib/sections';
+
+// Must stay in sync with ChatSidebar left offset and __root.tsx ml offset
+export const ICON_RAIL_WIDTH = '60px';
 
 interface RailIconProps {
   icon: React.ReactNode;
@@ -22,54 +21,62 @@ interface RailIconProps {
 }
 
 function RailIcon({ icon, label, to, isActive, onClick }: RailIconProps) {
-  const sharedStyles = {
+  const baseProps = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '40px',
-    height: '40px',
+    w: '40px',
+    h: '40px',
     borderRadius: '10px',
     cursor: 'pointer',
-    background: isActive ? '#5A9E3A' : 'transparent',
-    color: isActive ? 'white' : '#9CA3AF',
-    textDecoration: 'none',
+    bg: isActive ? 'brand.600' : 'transparent',
+    color: isActive ? 'white' : 'text.muted',
     border: 'none',
     outline: 'none',
     transition: 'all 0.15s',
-    flexShrink: 0 as const,
-  };
+    flexShrink: 0,
+    _hover: {
+      bg: isActive ? 'brand.700' : 'whiteAlpha.200',
+      color: isActive ? 'white' : 'text.secondary',
+    },
+    _active: {
+      bg: isActive ? 'brand.800' : 'whiteAlpha.300',
+    },
+  } as const;
 
   if (to) {
     return (
-      <Link to={to} title={label} style={sharedStyles}>
+      <Box as={Link} to={to} title={label} textDecoration="none" {...baseProps}>
         {icon}
-      </Link>
+      </Box>
     );
   }
 
   return (
-    <button type="button" title={label} onClick={onClick} style={sharedStyles}>
+    <Box as="button" type="button" title={label} onClick={onClick} {...baseProps}>
       {icon}
-    </button>
+    </Box>
   );
 }
 
 function AppIcon() {
   return (
-    <Link
+    <Box
+      as={Link}
       to="/"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '40px',
-        height: '40px',
-        borderRadius: '10px',
-        background: '#5A9E3A',
-        color: 'white',
-        flexShrink: 0,
-        textDecoration: 'none',
-      }}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      w="40px"
+      h="40px"
+      borderRadius="10px"
+      bg="brand.600"
+      color="white"
+      flexShrink={0}
+      textDecoration="none"
+      _hover={{ bg: 'brand.700' }}
+      _active={{ bg: 'brand.800' }}
+      transition="all 0.15s"
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
         <path
@@ -77,7 +84,7 @@ function AppIcon() {
           fill="currentColor"
         />
       </svg>
-    </Link>
+    </Box>
   );
 }
 
@@ -99,11 +106,11 @@ export default function IconRail() {
     <Flex
       direction="column"
       align="center"
-      w="60px"
+      w={ICON_RAIL_WIDTH}
       minH="100vh"
-      bg="white"
+      bg="bg.surface"
       borderRight="1px solid"
-      borderColor="#E5E7EB"
+      borderColor="border.default"
       py="4"
       gap="2"
       flexShrink={0}
@@ -115,13 +122,9 @@ export default function IconRail() {
     >
       <AppIcon />
 
-      <Box mt="2" mb="1">
-        <RailIcon icon={<Search size={18} />} label="Search" />
-      </Box>
+      <Separator borderColor="border.default" w="32px" my="1" />
 
-      <Separator borderColor="#E5E7EB" w="32px" />
-
-      <Flex direction="column" gap="1" mt="1" flex="1">
+      <Flex direction="column" gap="1" flex="1">
         {enabled('ai') && (
           <RailIcon
             icon={<MessageSquare size={18} />}
@@ -166,12 +169,6 @@ export default function IconRail() {
             isActive={isMailActive}
           />
         )}
-      </Flex>
-
-      <Flex direction="column" gap="1" mb="1">
-        <RailIcon icon={<Sun size={18} />} label="Toggle theme" />
-        <RailIcon icon={<Settings size={18} />} label="Settings" />
-        <RailIcon icon={<HelpCircle size={18} />} label="Help" />
       </Flex>
     </Flex>
   );

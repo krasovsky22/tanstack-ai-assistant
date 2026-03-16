@@ -3,18 +3,19 @@ import { useLiveQuery } from '@tanstack/react-db';
 import { useEffect, useState } from 'react';
 import { conversationsCollection } from '@/collections/conversations';
 import { queryClient } from '@/lib/queryClient';
-import { Badge } from '@/components/Badge';
 import {
+  Badge,
   Box,
   Button,
   Container,
   Flex,
   Heading,
   IconButton,
+  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { Trash2 } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 
 export const Route = createFileRoute('/conversations/')({
   component: ConversationsDashboard,
@@ -32,8 +33,18 @@ function ConversationsDashboard() {
           <Link to="/conversations/new">New Chat</Link>
         </Button>
       </Flex>
-      {mounted ? <ConversationList /> : null}
+      {mounted ? <ConversationList /> : <ConversationListSkeleton />}
     </Container>
+  );
+}
+
+function ConversationListSkeleton() {
+  return (
+    <VStack gap="2" align="stretch">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} height="72px" borderRadius="lg" />
+      ))}
+    </VStack>
   );
 }
 
@@ -49,12 +60,14 @@ function ConversationList() {
 
   if (sorted.length === 0) {
     return (
-      <Text color="gray.500" textAlign="center" py="12">
-        No conversations yet.{' '}
-        <Box asChild color="blue.600" _hover={{ textDecoration: 'underline' }}>
-          <Link to="/conversations/new">Start chatting</Link>
-        </Box>
-      </Text>
+      <VStack gap={4} py={16} alignItems="center" textAlign="center">
+        <MessageSquare size={40} color="var(--chakra-colors-text-muted)" />
+        <Heading size="md" color="text.primary">No conversations yet</Heading>
+        <Text color="text.secondary" fontSize="sm">Start a conversation with the AI assistant.</Text>
+        <Button asChild colorPalette="gray" variant="solid" size="sm">
+          <Link to="/conversations/new">Start a conversation</Link>
+        </Button>
+      </VStack>
     );
   }
 
@@ -79,8 +92,8 @@ function ConversationList() {
                 borderRadius="lg"
                 borderWidth="1px"
                 bg="white"
-                _hover={{ bg: 'gray.50' }}
-                transition="background 0.15s"
+                _hover={{ bg: 'gray.50', borderColor: 'border.default' }}
+                transition="all 0.15s ease"
                 pr="12"
               >
                 <Text fontWeight="medium" color="gray.900" truncate>{c.title}</Text>
@@ -89,7 +102,18 @@ function ConversationList() {
                 </Text>
                 {c.source && (
                   <Box mt="1.5">
-                    <Badge label={c.source} />
+                    <Badge
+                      colorPalette="blue"
+                      variant="subtle"
+                      borderRadius="full"
+                      px="2"
+                      py="0.5"
+                      fontSize="xs"
+                      fontWeight="medium"
+                      textTransform="capitalize"
+                    >
+                      {c.source}
+                    </Badge>
                   </Box>
                 )}
               </Box>

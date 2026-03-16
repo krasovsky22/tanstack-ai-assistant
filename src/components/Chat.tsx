@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { marked } from 'marked';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { generateUUID } from '@/lib/uuid';
 import { Code } from './Code';
+import { ChatInput } from './ChatInput';
 import {
   Badge,
   Box,
   Button,
+  Code as ChakraCode,
   Flex,
+  Heading,
   HStack,
   Input,
+  Link as ChakraLink,
   Spinner,
   Text,
 } from '@chakra-ui/react';
@@ -24,38 +29,6 @@ interface PendingImage {
 interface PendingFile {
   name: string;
   content: string;
-}
-
-type MarkdownSegment =
-  | { type: 'text'; content: string }
-  | { type: 'code'; language: string; content: string };
-
-function splitMarkdownCodeBlocks(text: string): MarkdownSegment[] {
-  const segments: MarkdownSegment[] = [];
-  const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = codeBlockRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      segments.push({
-        type: 'text',
-        content: text.slice(lastIndex, match.index),
-      });
-    }
-    segments.push({
-      type: 'code',
-      language: match[1] || 'text',
-      content: match[2].replace(/\n$/, ''),
-    });
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    segments.push({ type: 'text', content: text.slice(lastIndex) });
-  }
-
-  return segments;
 }
 
 function prettifyJsonString(input: string) {
@@ -97,6 +70,55 @@ type MessagePart = {
   error?: string;
 };
 
+const markdownComponents = {
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <Text mb={2} lineHeight="1.6">{children}</Text>
+  ),
+  h1: ({ children }: { children?: React.ReactNode }) => (
+    <Heading as="h1" size="xl" mt={4} mb={2}>{children}</Heading>
+  ),
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <Heading as="h2" size="lg" mt={4} mb={2}>{children}</Heading>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <Heading as="h3" size="md" mt={3} mb={2}>{children}</Heading>
+  ),
+  code: ({ inline, children }: { inline?: boolean; children?: React.ReactNode }) => {
+    if (inline) {
+      return <ChakraCode px={1} py={0.5} borderRadius="sm" fontSize="sm">{children}</ChakraCode>;
+    }
+    return <>{children}</>;
+  },
+  pre: ({ children }: { children?: React.ReactNode }) => (
+    <Box
+      as="pre"
+      bg="gray.100"
+      p={3}
+      borderRadius="md"
+      overflowX="auto"
+      fontSize="sm"
+      mb={2}
+      fontFamily="mono"
+    >
+      {children}
+    </Box>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <Box as="ul" pl={4} mb={2}>{children}</Box>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <Box as="ol" pl={4} mb={2}>{children}</Box>
+  ),
+  li: ({ children }: { children?: React.ReactNode }) => (
+    <Box as="li" mb={1}>{children}</Box>
+  ),
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <ChakraLink color="brand.600" href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </ChakraLink>
+  ),
+};
+
 function AssistantMeta({
   parts,
   isStreaming,
@@ -116,23 +138,40 @@ function AssistantMeta({
   const uniqueTools = [...new Set(toolNames)];
 
   return (
-    <details
-      style={{ marginTop: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '11px', color: '#374151' }}
+    <Box
+      as="details"
+      mt="2"
+      borderRadius="6px"
+      border="1px solid"
+      borderColor="border.default"
+      bg="bg.surface"
+      fontSize="11px"
+      color="text.primary"
       open={isStreaming}
     >
-      <summary style={{ cursor: 'pointer', padding: '6px 8px', fontWeight: 600, color: '#6b7280', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span>How this was generated</span>
+      <Box
+        as="summary"
+        cursor="pointer"
+        px="2"
+        py="1.5"
+        fontWeight="semibold"
+        color="text.muted"
+        display="flex"
+        alignItems="center"
+        gap="2"
+      >
+        <Text as="span">How this was generated</Text>
         {uniqueTools.length > 0 && (
-          <span style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+          <HStack gap="1" flexWrap="wrap">
             {uniqueTools.map((name) => (
               <Badge key={name} colorPalette="blue" size="sm" variant="subtle">{name}</Badge>
             ))}
-          </span>
+          </HStack>
         )}
         {isStreaming && (
-          <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#9ca3af' }}>running…</span>
+          <Text as="span" ml="auto" fontSize="10px" color="text.subtle">running…</Text>
         )}
-      </summary>
+      </Box>
       <Box px="2" pb="2" spaceY="2" mt="1">
         {thinkingParts.map((part, idx) => (
           <Box key={`thinking-${idx}`} borderRadius="md" borderWidth="1px" borderColor="gray.200" bg="white" px="2" py="1">
@@ -148,7 +187,7 @@ function AssistantMeta({
                   Tool: {part.name}{' '}
                   <Text as="span" fontWeight="normal" color="gray.400">({formatToolCallState(part.state ?? '')})</Text>
                 </Text>
-                <Box as="pre" mt="1" whiteSpace="pre-wrap" style={{ wordBreak: 'break-word' }} color="gray.600" fontSize="xs">
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="gray.600" fontSize="xs">
                   {prettifyJsonString(part.arguments ?? '')}
                 </Box>
               </Box>
@@ -161,7 +200,7 @@ function AssistantMeta({
                   Result{' '}
                   <Text as="span" fontWeight="normal" color="gray.400">({formatToolResultState(part.state ?? '')})</Text>
                 </Text>
-                <Box as="pre" mt="1" whiteSpace="pre-wrap" style={{ wordBreak: 'break-word' }} color="gray.600" fontSize="xs">
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="gray.600" fontSize="xs">
                   {prettifyJsonString(part.content ?? '')}
                 </Box>
                 {part.error && (
@@ -173,7 +212,7 @@ function AssistantMeta({
           return null;
         })}
       </Box>
-    </details>
+    </Box>
   );
 }
 
@@ -204,7 +243,6 @@ export function Chat({
   initialMessages,
   initialTitle,
 }: ChatProps) {
-  const [input, setInput] = useState('');
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [title, setTitle] = useState(initialTitle ?? '');
@@ -351,15 +389,13 @@ export function Chat({
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleChatInputSubmit = (value: string) => {
     const hasAttachments = pendingImages.length > 0 || pendingFiles.length > 0;
-    if ((!input.trim() && !hasAttachments) || isLoading) return;
 
     if (hasAttachments) {
       const content: Array<Record<string, unknown>> = [];
-      if (input.trim()) {
-        content.push({ type: 'text', content: input.trim() });
+      if (value) {
+        content.push({ type: 'text', content: value });
       }
       for (const file of pendingFiles) {
         content.push({
@@ -379,181 +415,237 @@ export function Chat({
       setPendingImages([]);
       setPendingFiles([]);
     } else {
-      sendMessage(input);
+      sendMessage(value);
     }
-    setInput('');
   };
 
   return (
-    <Flex flexDir="column" gap="4" p="4" maxW="3xl" mx="auto">
-      {/* Breadcrumb */}
-      <HStack fontSize="sm" gap="2">
-        <Box asChild color="gray.500" _hover={{ color: 'gray.900' }}>
-          <Link to="/conversations">Dashboard</Link>
-        </Box>
-        <Text color="gray.300">/</Text>
-        <Box asChild color="gray.500" _hover={{ color: 'gray.900' }}>
-          <Link to="/conversations/new">New Chat</Link>
-        </Box>
-      </HStack>
+    <Flex flexDir="column" h="100%" minH="0">
+      {/* Header bar */}
+      <Box
+        px="6"
+        py="4"
+        borderBottom="1px solid"
+        borderColor="border.default"
+        bg="bg.surface"
+        flexShrink={0}
+      >
+        <HStack justify="space-between" align="center">
+          {/* Breadcrumb */}
+          <HStack fontSize="sm" gap="2">
+            <Box asChild color="text.muted" _hover={{ color: 'text.primary' }}>
+              <Link to="/conversations">Dashboard</Link>
+            </Box>
+            <Text color="text.subtle">/</Text>
+            <Box asChild color="text.muted" _hover={{ color: 'text.primary' }}>
+              <Link to="/conversations/new">New Chat</Link>
+            </Box>
+          </HStack>
 
-      {/* Title */}
-      <Box>
-        {editingTitle ? (
-          <Input
-            ref={titleInputRef}
-            type="text"
-            value={titleDraft}
-            onChange={(e) => setTitleDraft(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commitTitle();
-              if (e.key === 'Escape') setEditingTitle(false);
-            }}
-            fontSize="lg"
-            fontWeight="semibold"
-            variant="flushed"
-            autoFocus
-          />
-        ) : (
-          <Button
-            variant="ghost"
-            size="lg"
-            fontWeight="semibold"
-            onClick={startEditingTitle}
-            disabled={!title}
-            px="0"
-            _hover={{ color: 'gray.600' }}
-            title="Click to edit title"
+          {/* Title */}
+          <Box>
+            {editingTitle ? (
+              <Input
+                ref={titleInputRef}
+                type="text"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitTitle();
+                  if (e.key === 'Escape') setEditingTitle(false);
+                }}
+                fontSize="sm"
+                fontWeight="semibold"
+                variant="flushed"
+                autoFocus
+                size="sm"
+              />
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                fontWeight="semibold"
+                onClick={startEditingTitle}
+                disabled={!title}
+                px="2"
+                color="text.primary"
+                _hover={{ color: 'text.secondary' }}
+                title="Click to edit title"
+              >
+                {title || 'Chat'}
+              </Button>
+            )}
+          </Box>
+        </HStack>
+
+        {/* Agent status */}
+        {showAgentStatus && (
+          <HStack
+            mt="2"
+            borderRadius="lg"
+            borderWidth="1px"
+            borderColor="border.default"
+            px="3"
+            py="2"
+            fontSize="sm"
+            bg="bg.page"
+            color="text.secondary"
+            gap="2"
           >
-            {title || 'Chat'}
-          </Button>
+            <Spinner size="xs" />
+            <Text fontWeight="medium">Status:</Text>
+            <Text>{agentStatusText}</Text>
+          </HStack>
         )}
       </Box>
 
-      {/* Status */}
-      {showAgentStatus && (
-        <HStack
-          borderRadius="lg"
-          borderWidth="1px"
-          px="3"
-          py="2"
-          fontSize="sm"
-          bg="gray.50"
-          color="gray.700"
-          gap="2"
-        >
-          <Spinner size="xs" />
-          <Text fontWeight="medium">Status:</Text>
-          <Text>{agentStatusText}</Text>
-        </HStack>
-      )}
-
-      {/* Messages */}
-      <Box
-        borderWidth="1px"
-        borderRadius="lg"
-        p="4"
-        h="60vh"
-        overflowY="auto"
-        bg="white"
-      >
+      {/* Messages area */}
+      <Box flex="1" overflowY="auto" px="6" py="4" minH="0">
         {messages.length === 0 ? (
-          <Text color="gray.500">Say hi to start.</Text>
+          <Flex h="full" align="center" justify="center">
+            <Text color="text.subtle">Say hi to start a conversation.</Text>
+          </Flex>
         ) : (
-          messages.map((message) => (
-            <Box key={message.id} mb="4">
-              <Text fontSize="sm" fontWeight="semibold" color="gray.700" mb="1">
-                {message.role === 'assistant' ? 'Assistant' : 'You'}
-              </Text>
-              <Box color="gray.900">
-                {message.parts.map((part, idx) => {
-                  if (part.type === 'text') {
-                    if (message.role === 'assistant') {
-                      const segments = splitMarkdownCodeBlocks(part.content);
+          messages.map((message) => {
+            const isUser = message.role === 'user';
+            return (
+              <Flex
+                key={message.id}
+                mb="4"
+                justifyContent={isUser ? 'flex-end' : 'flex-start'}
+              >
+                <Box
+                  bg={isUser ? 'brand.600' : 'bg.surface'}
+                  color={isUser ? 'white' : 'text.primary'}
+                  border={isUser ? 'none' : '1px solid'}
+                  borderColor="border.default"
+                  borderRadius={isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}
+                  px={4}
+                  py={3}
+                  maxW={isUser ? '70%' : '85%'}
+                >
+                  {message.parts.map((part, idx) => {
+                    if (part.type === 'text') {
+                      if (isUser) {
+                        return (
+                          <Text key={idx} fontSize="sm" whiteSpace="pre-wrap">
+                            {part.content}
+                          </Text>
+                        );
+                      }
+                      // Assistant text — check for fenced code blocks first
+                      const hasFencedCode = /```[\s\S]*?```/.test(part.content);
+                      if (hasFencedCode) {
+                        const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
+                        const segments: Array<{ type: 'text' | 'code'; content: string; language?: string }> = [];
+                        let lastIndex = 0;
+                        let match: RegExpExecArray | null;
+                        const regex = new RegExp(codeBlockRegex.source, 'g');
+                        while ((match = regex.exec(part.content)) !== null) {
+                          if (match.index > lastIndex) {
+                            segments.push({ type: 'text', content: part.content.slice(lastIndex, match.index) });
+                          }
+                          segments.push({ type: 'code', content: match[2].replace(/\n$/, ''), language: match[1] || 'text' });
+                          lastIndex = match.index + match[0].length;
+                        }
+                        if (lastIndex < part.content.length) {
+                          segments.push({ type: 'text', content: part.content.slice(lastIndex) });
+                        }
+                        return (
+                          <Box key={idx}>
+                            {segments.map((seg, segIdx) =>
+                              seg.type === 'code' ? (
+                                <Code key={segIdx} code={seg.content} language={seg.language ?? 'text'} />
+                              ) : (
+                                <ReactMarkdown key={segIdx} remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                  {seg.content}
+                                </ReactMarkdown>
+                              )
+                            )}
+                          </Box>
+                        );
+                      }
                       return (
-                        <div key={idx}>
-                          {segments.map((seg, segIdx) =>
-                            seg.type === 'code' ? (
-                              <Code
-                                key={segIdx}
-                                code={seg.content}
-                                language={seg.language}
-                              />
-                            ) : (
-                              <div
-                                key={segIdx}
-                                className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5"
-                                dangerouslySetInnerHTML={{
-                                  __html: marked.parse(seg.content, {
-                                    async: false,
-                                  }) as string,
-                                }}
-                              />
-                            ),
-                          )}
-                        </div>
+                        <ReactMarkdown key={idx} remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                          {part.content}
+                        </ReactMarkdown>
                       );
                     }
-                    return <div key={idx}>{part.content}</div>;
-                  }
-                  if (part.type === 'image') {
-                    const imgPart = part as {
-                      type: 'image';
-                      source?: {
-                        type: string;
-                        value?: string;
-                        mimeType?: string;
+                    if (part.type === 'image') {
+                      const imgPart = part as {
+                        type: 'image';
+                        source?: {
+                          type: string;
+                          value?: string;
+                          mimeType?: string;
+                        };
                       };
-                    };
-                    if (imgPart.source?.type === 'data' && imgPart.source.value) {
-                      const mimeType = imgPart.source.mimeType ?? 'image/jpeg';
-                      return (
-                        <img
-                          key={idx}
-                          src={`data:${mimeType};base64,${imgPart.source.value}`}
-                          alt="attached image"
-                          style={{ maxWidth: '24rem', maxHeight: '16rem', borderRadius: '6px', border: '1px solid #e2e8f0', marginTop: '4px' }}
-                        />
-                      );
+                      if (imgPart.source?.type === 'data' && imgPart.source.value) {
+                        const mimeType = imgPart.source.mimeType ?? 'image/jpeg';
+                        return (
+                          <Box
+                            key={idx}
+                            as="img"
+                            src={`data:${mimeType};base64,${imgPart.source.value}`}
+                            alt="attached image"
+                            maxW="24rem"
+                            maxH="16rem"
+                            borderRadius="6px"
+                            border="1px solid"
+                            borderColor="border.default"
+                            mt="1"
+                            display="block"
+                          />
+                        );
+                      }
                     }
-                  }
-                  return null;
-                })}
+                    return null;
+                  })}
 
-                {message.role === 'assistant' ? (
-                  <AssistantMeta
-                    parts={message.parts}
-                    isStreaming={
-                      showAgentStatus &&
-                      message.id === latestAssistantMessage?.id
-                    }
-                  />
-                ) : null}
-              </Box>
-            </Box>
-          ))
+                  {message.role === 'assistant' && (
+                    <AssistantMeta
+                      parts={message.parts}
+                      isStreaming={
+                        showAgentStatus &&
+                        message.id === latestAssistantMessage?.id
+                      }
+                    />
+                  )}
+                </Box>
+              </Flex>
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </Box>
 
       {/* Error */}
       {error && (
-        <Text fontSize="sm" color="red.600">
-          {error instanceof Error ? error.message : String(error)}
-        </Text>
+        <Box px="6" pb="2" flexShrink={0}>
+          <Text fontSize="sm" color="red.600">
+            {error instanceof Error ? error.message : String(error)}
+          </Text>
+        </Box>
       )}
 
-      {/* Input form */}
-      <Box as="form" onSubmit={handleSubmit} display="flex" flexDir="column" gap="2">
-        {(pendingImages.length > 0 || pendingFiles.length > 0) && (
+      {/* Pending attachments preview */}
+      {(pendingImages.length > 0 || pendingFiles.length > 0) && (
+        <Box px="6" pb="2" flexShrink={0}>
           <HStack gap="2" flexWrap="wrap">
             {pendingImages.map((img, i) => (
               <Box key={`img-${i}`} position="relative">
-                <img
+                <Box
+                  as="img"
                   src={img.previewUrl}
                   alt="pending"
-                  style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' }}
+                  w="16"
+                  h="16"
+                  objectFit="cover"
+                  borderRadius="6px"
+                  border="1px solid"
+                  borderColor="border.default"
+                  display="block"
                 />
                 <Button
                   type="button"
@@ -578,14 +670,14 @@ export function Chat({
             {pendingFiles.map((file, i) => (
               <HStack
                 key={`file-${i}`}
-                position="relative"
                 px="2"
                 py="1"
                 borderRadius="md"
                 borderWidth="1px"
-                bg="gray.50"
+                bg="bg.surface"
+                borderColor="border.default"
                 fontSize="xs"
-                color="gray.700"
+                color="text.secondary"
                 maxW="40"
                 gap="1"
               >
@@ -595,8 +687,8 @@ export function Chat({
                   variant="ghost"
                   size="xs"
                   onClick={() => removeFile(i)}
-                  color="gray.400"
-                  _hover={{ color: 'black' }}
+                  color="text.muted"
+                  _hover={{ color: 'text.primary' }}
                   ml="1"
                   minW="unset"
                   p="0"
@@ -606,49 +698,25 @@ export function Chat({
               </HStack>
             ))}
           </HStack>
-        )}
+        </Box>
+      )}
 
-        <HStack gap="2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,.txt,.csv,.md,text/plain,text/csv,text/markdown"
-            multiple
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-            px="3"
-            title="Attach file"
-          >
-            📎
-          </Button>
-          <Input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
-            disabled={isLoading}
-            flex="1"
-          />
-          <Button
-            type="submit"
-            disabled={
-              (!input.trim() &&
-                pendingImages.length === 0 &&
-                pendingFiles.length === 0) ||
-              isLoading
-            }
-            colorPalette="gray"
-            variant="solid"
-          >
-            Send
-          </Button>
-        </HStack>
+      {/* Input area */}
+      <Box px="6" pb="6" pt="2" flexShrink={0}>
+        <Box
+          as="input"
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.txt,.csv,.md,text/plain,text/csv,text/markdown"
+          multiple
+          display="none"
+          onChange={handleFileChange}
+        />
+        <ChatInput
+          onSubmit={handleChatInputSubmit}
+          isLoading={isLoading}
+          placeholder="Type a message..."
+        />
       </Box>
     </Flex>
   );

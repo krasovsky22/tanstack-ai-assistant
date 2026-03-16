@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { type UIMessage } from '@tanstack/ai-react';
+import { Box } from '@chakra-ui/react';
 import { Chat } from '@/components/Chat';
 
 const getConversationData = createServerFn({ method: 'GET' })
@@ -33,12 +34,12 @@ function ConversationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <Box h="100vh" bg="bg.page" display="flex" flexDirection="column">
       <Chat
         conversationId={data.conversation.id}
         initialMessages={data.messages}
         initialTitle={data.conversation.title}
       />
-    </div>
+    </Box>
   );
 }

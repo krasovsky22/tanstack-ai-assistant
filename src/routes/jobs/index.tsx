@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
-import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, X, FileText, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { toaster } from '@/components/ui/toaster';
+import { Trash2, ChevronDown, ChevronUp, Plus, Pencil, Zap, FileText, Mail } from 'lucide-react';
 import { JOB_STATUSES } from '@/lib/job-constants';
+import { AppModal } from '@/components/AppModal';
 import {
   Badge,
   Box,
@@ -14,7 +16,7 @@ import {
   IconButton,
   Input,
   NativeSelect,
-  Spinner,
+  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -82,54 +84,22 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function PdfModal({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   return (
-    <Box
-      position="fixed"
-      inset="0"
-      zIndex="50"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="blackAlpha.600"
-      onClick={onClose}
+    <AppModal
+      isOpen
+      onClose={onClose}
+      title={`${title} — Resume`}
+      size="full"
+      footer={
+        <Box asChild fontSize="xs" color="indigo.600" _hover={{ textDecoration: 'underline' }}>
+          <a href={url} download>Download PDF</a>
+        </Box>
+      }
     >
-      <Box
-        position="relative"
-        bg="white"
-        borderRadius="lg"
-        shadow="2xl"
-        display="flex"
-        flexDir="column"
-        style={{ width: '85vw', height: '90vh' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Flex px="4" py="3" borderBottomWidth="1px" align="center" justify="space-between" flexShrink="0">
-          <Text fontWeight="semibold" color="gray.800" truncate>{title} — Resume</Text>
-          <HStack gap="3">
-            <Box asChild fontSize="xs" color="indigo.600" _hover={{ textDecoration: 'underline' }}>
-              <a href={url} download>Download PDF</a>
-            </Box>
-            <IconButton
-              aria-label="Close"
-              variant="ghost"
-              size="sm"
-              color="gray.500"
-              _hover={{ color: 'gray.900' }}
-              onClick={onClose}
-            >
-              <X size={18} />
-            </IconButton>
-          </HStack>
-        </Flex>
-        <iframe src={url} style={{ flex: 1, width: '100%', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px' }} title="Resume PDF" />
+      <Box h="80vh">
+        <iframe src={url} style={{ width: '100%', height: '100%' }} title="Resume PDF" />
       </Box>
-    </Box>
+    </AppModal>
   );
 }
 
@@ -164,7 +134,7 @@ function JobCard({
   const emailCount = emailCountData?.count ?? 0;
 
   return (
-    <Box borderWidth="1px" borderRadius="lg" bg="white" shadow="sm" overflow="hidden">
+    <Box borderWidth="1px" borderRadius="lg" bg="white" shadow="sm" overflow="hidden" transition="all 0.15s ease" _hover={{ shadow: 'md' }}>
       <Box p="4">
         <Flex align="flex-start" justify="space-between" gap="3">
           <Box flex="1" minW="0">
@@ -411,7 +381,13 @@ function JobsDashboard() {
       }
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['jobs'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      toaster.create({ type: 'success', title: 'Job processed successfully', duration: 4000 });
+    },
+    onError: (error: Error) => {
+      toaster.create({ type: 'error', title: 'Failed to process job', description: error.message, duration: 6000 });
+    },
   });
 
   const generateResumeMutation = useMutation({
@@ -425,7 +401,13 @@ function JobsDashboard() {
       }
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['jobs'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      toaster.create({ type: 'success', title: 'Resume generated', duration: 4000 });
+    },
+    onError: (error: Error) => {
+      toaster.create({ type: 'error', title: 'Failed to generate resume', description: error.message, duration: 6000 });
+    },
   });
 
   return (
@@ -439,7 +421,7 @@ function JobsDashboard() {
             colorPalette="teal"
             loading={processMutation.isPending}
             loadingText="Processing..."
-            title={processMutation.isError ? processMutation.error?.message : 'Process one new job with AI'}
+            title="Process one new job with AI"
             onClick={() => processMutation.mutate(undefined)}
           >
             <Zap size={16} />
@@ -451,7 +433,7 @@ function JobsDashboard() {
             colorPalette="purple"
             loading={generateResumeMutation.isPending}
             loadingText="Generating..."
-            title={generateResumeMutation.isError ? generateResumeMutation.error?.message : 'Generate tailored resume for next processed job'}
+            title="Generate tailored resume for next processed job"
             onClick={() => generateResumeMutation.mutate(undefined)}
           >
             <Zap size={16} />
@@ -465,19 +447,6 @@ function JobsDashboard() {
           </Button>
         </HStack>
       </Flex>
-
-      {processMutation.isError && (
-        <Text fontSize="sm" color="red.600" mb="4">{processMutation.error?.message}</Text>
-      )}
-      {processMutation.isSuccess && (
-        <Text fontSize="sm" color="teal.600" mb="4">Job processed successfully.</Text>
-      )}
-      {generateResumeMutation.isError && (
-        <Text fontSize="sm" color="red.600" mb="4">{generateResumeMutation.error?.message}</Text>
-      )}
-      {generateResumeMutation.isSuccess && (
-        <Text fontSize="sm" color="purple.600" mb="4">Resume generated successfully.</Text>
-      )}
 
       <HStack gap="3" mb="6" flexDir={{ base: 'column', sm: 'row' }} align={{ base: 'stretch', sm: 'center' }}>
         <Input
@@ -509,16 +478,25 @@ function JobsDashboard() {
       )}
 
       {isLoading ? (
-        <Flex justify="center" py="12">
-          <Spinner color="gray.400" />
-        </Flex>
+        <VStack gap="3" align="stretch">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height="120px" borderRadius="lg" />
+          ))}
+        </VStack>
       ) : jobs.length === 0 ? (
-        <Text textAlign="center" color="gray.500" py="12">
-          No jobs found.{' '}
-          <Box asChild color="blue.600" _hover={{ textDecoration: 'underline' }}>
-            <Link to="/jobs/new">Add your first job</Link>
-          </Box>
-        </Text>
+        <VStack gap={4} py={16} alignItems="center" textAlign="center">
+          <Heading size="md" color="text.primary">No jobs found</Heading>
+          <Text color="text.secondary" fontSize="sm">
+            {debouncedSearch || statusFilter !== 'all'
+              ? 'Try adjusting your search or filter.'
+              : 'Track job applications and let AI process them for you.'}
+          </Text>
+          {!debouncedSearch && statusFilter === 'all' && (
+            <Button asChild size="sm" colorPalette="gray" variant="solid">
+              <Link to="/jobs/new">Add your first job</Link>
+            </Button>
+          )}
+        </VStack>
       ) : (
         <VStack gap="3" align="stretch">
           {jobs.map((job) => (

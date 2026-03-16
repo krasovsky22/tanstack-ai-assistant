@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import { Trash2, Upload, FolderEdit, FileText, Search, Eye, X, Tag, Pencil } from 'lucide-react';
+import { Trash2, Upload, FolderEdit, FileText, Search, Eye, X, Tag, Pencil, File, FileCode, Image, Database } from 'lucide-react';
+import { AppModal } from '@/components/AppModal';
 import {
   Badge,
   Box,
@@ -13,6 +14,7 @@ import {
   IconButton,
   Input,
   NativeSelect,
+  Skeleton,
   Spinner,
   Table,
   Text,
@@ -46,11 +48,12 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function mimeIcon(mimeType: string): string {
-  if (mimeType === 'application/pdf') return '📄';
-  if (mimeType === 'text/csv') return '📊';
-  if (mimeType.startsWith('text/')) return '📝';
-  return '📁';
+function MimeIcon({ mimeType }: { mimeType: string }) {
+  if (mimeType === 'application/pdf') return <FileText size={16} />;
+  if (mimeType === 'text/csv') return <Database size={16} />;
+  if (mimeType.startsWith('text/')) return <FileCode size={16} />;
+  if (mimeType.startsWith('image/')) return <Image size={16} />;
+  return <File size={16} />;
 }
 
 const BADGE_COLORS: Array<[string, string]> = [
@@ -144,118 +147,77 @@ function PreviewModal({ fileId, onClose }: { fileId: string; onClose: () => void
     },
   });
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  const modalTitle = isLoading
+    ? 'Loading…'
+    : data
+    ? data.originalName
+    : 'Preview';
 
   return (
-    <Box
-      position="fixed"
-      inset="0"
-      bg="blackAlpha.500"
-      zIndex="50"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      p="4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    <AppModal
+      isOpen
+      onClose={onClose}
+      title={modalTitle}
+      size="xl"
+      footer={
+        <Button variant="subtle" colorPalette="gray" size="sm" onClick={onClose}>Close</Button>
+      }
     >
-      <Box
-        bg="white"
-        borderRadius="xl"
-        shadow="2xl"
-        w="full"
-        maxW="3xl"
-        maxH="90vh"
-        display="flex"
-        flexDir="column"
-      >
-        {/* Header */}
-        <Flex px="6" py="4" borderBottomWidth="1px" align="flex-start" justify="space-between">
-          <Box flex="1" minW="0">
-            {isLoading ? (
-              <Box h="5" w="48" bg="gray.200" borderRadius="md" />
-            ) : (
-              <>
-                <HStack gap="2">
-                  <Text fontSize="lg">{data ? mimeIcon(data.mimeType) : ''}</Text>
-                  <Text fontWeight="semibold" color="gray.900" truncate>{data?.originalName}</Text>
-                </HStack>
-                <HStack flexWrap="wrap" gap="1.5" mt="2">
-                  {data?.categories.map((cat) => (
-                    <Badge key={cat} colorPalette={categoryColorPalette(cat)} variant="subtle" borderRadius="full" fontSize="xs">
-                      <Tag size={10} style={{ marginRight: '3px' }} />{cat}
-                    </Badge>
-                  ))}
-                </HStack>
-              </>
-            )}
-          </Box>
-          <IconButton
-            aria-label="Close"
-            variant="ghost"
-            size="sm"
-            color="gray.400"
-            _hover={{ color: 'gray.700', bg: 'gray.100' }}
-            ml="4"
-            onClick={onClose}
-          >
-            <X size={20} />
-          </IconButton>
-        </Flex>
+      {isLoading ? (
+        <Box h="5" w="48" bg="gray.200" borderRadius="md" />
+      ) : (
+        <HStack flexWrap="wrap" gap="1.5" mb="4">
+          {data?.categories.map((cat) => (
+            <Badge key={cat} colorPalette={categoryColorPalette(cat)} variant="subtle" borderRadius="full" fontSize="xs">
+              <Tag size={10} style={{ marginRight: '3px' }} />{cat}
+            </Badge>
+          ))}
+        </HStack>
+      )}
 
-        {/* Summary */}
-        {(isLoading || data?.summary) && (
-          <Box px="6" py="3" bg="orange.50" borderBottomWidth="1px">
-            {isLoading ? (
-              <VStack gap="1.5" align="stretch">
-                <Box h="3" bg="orange.200" borderRadius="sm" />
-                <Box h="3" w="75%" bg="orange.200" borderRadius="sm" />
-              </VStack>
-            ) : (
-              <>
-                <Text fontSize="xs" fontWeight="semibold" color="orange.700" textTransform="uppercase" letterSpacing="wide" mb="1">Summary</Text>
-                <Text fontSize="sm" color="gray.700">{data?.summary}</Text>
-              </>
-            )}
-          </Box>
-        )}
-
-        {/* Content */}
-        <Box flex="1" overflowY="auto" px="6" py="4">
+      {(isLoading || data?.summary) && (
+        <Box px="4" py="3" bg="orange.50" borderWidth="1px" borderColor="orange.100" borderRadius="lg" mb="4">
           {isLoading ? (
-            <VStack gap="2" align="stretch">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Box key={i} h="3" bg="gray.100" borderRadius="sm" w={i % 3 === 2 ? '66%' : 'full'} />
-              ))}
+            <VStack gap="1.5" align="stretch">
+              <Box h="3" bg="orange.200" borderRadius="sm" />
+              <Box h="3" w="75%" bg="orange.200" borderRadius="sm" />
             </VStack>
-          ) : error ? (
-            <Text color="red.600" fontSize="sm">Failed to load content.</Text>
           ) : (
             <>
-              <Text fontSize="xs" fontWeight="semibold" color="gray.400" textTransform="uppercase" letterSpacing="wide" mb="3">
-                Content Preview
-                <Text as="span" fontWeight="normal" textTransform="none" ml="2">
-                  {data && `${formatBytes(data.sizeBytes)} · ${new Date(data.createdAt).toLocaleDateString()}`}
-                </Text>
-              </Text>
-              <Box as="pre" fontSize="xs" color="gray.700" whiteSpace="pre-wrap" fontFamily="mono" lineHeight="relaxed">
-                {data?.content?.slice(0, 12000)}
-                {(data?.content?.length ?? 0) > 12000 && (
-                  <Text as="span" color="gray.400">{'\n\n'}[Content truncated — showing first 12,000 characters]</Text>
-                )}
-              </Box>
+              <Text fontSize="xs" fontWeight="semibold" color="orange.700" textTransform="uppercase" letterSpacing="wide" mb="1">Summary</Text>
+              <Text fontSize="sm" color="gray.700">{data?.summary}</Text>
             </>
           )}
         </Box>
+      )}
 
-        <Flex px="6" py="3" borderTopWidth="1px" justify="flex-end">
-          <Button variant="subtle" colorPalette="gray" size="sm" onClick={onClose}>Close</Button>
-        </Flex>
+      <Box overflowY="auto" maxH="50vh">
+        {isLoading ? (
+          <VStack gap="2" align="stretch">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Box key={i} h="3" bg="gray.100" borderRadius="sm" w={i % 3 === 2 ? '66%' : 'full'} />
+            ))}
+          </VStack>
+        ) : error ? (
+          <Text color="red.600" fontSize="sm">Failed to load content.</Text>
+        ) : (
+          <>
+            <Text fontSize="xs" fontWeight="semibold" color="gray.400" textTransform="uppercase" letterSpacing="wide" mb="3">
+              Content Preview
+              <Text as="span" fontWeight="normal" textTransform="none" ml="2">
+                {data && `${formatBytes(data.sizeBytes)} · ${new Date(data.createdAt).toLocaleDateString()}`}
+              </Text>
+            </Text>
+            <Box as="pre" fontSize="xs" color="gray.700" whiteSpace="pre-wrap" fontFamily="mono" lineHeight="relaxed">
+              {data?.content?.slice(0, 12000)}
+              {(data?.content?.length ?? 0) > 12000 && (
+                <Text as="span" color="gray.400">{'\n\n'}[Content truncated — showing first 12,000 characters]</Text>
+              )}
+            </Box>
+          </>
+        )}
       </Box>
-    </Box>
+    </AppModal>
   );
 }
 
@@ -280,12 +242,6 @@ function EditModal({
       .catch(() => { setError('Failed to load content'); setIsLoading(false); });
   }, [fileId]);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
   async function handleSave() {
     if (content === null) return;
     setSaving(true);
@@ -307,72 +263,13 @@ function EditModal({
   }
 
   return (
-    <Box
-      position="fixed"
-      inset="0"
-      bg="blackAlpha.500"
-      zIndex="50"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      p="4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <Box
-        bg="white"
-        borderRadius="xl"
-        shadow="2xl"
-        w="full"
-        maxW="3xl"
-        maxH="90vh"
-        display="flex"
-        flexDir="column"
-      >
-        <Flex px="6" py="4" borderBottomWidth="1px" align="center" justify="space-between">
-          <Text fontWeight="semibold" color="gray.900">Edit File Content</Text>
-          <IconButton
-            aria-label="Close"
-            variant="ghost"
-            size="sm"
-            color="gray.400"
-            _hover={{ color: 'gray.700', bg: 'gray.100' }}
-            onClick={onClose}
-          >
-            <X size={20} />
-          </IconButton>
-        </Flex>
-
-        <Box flex="1" overflow="hidden" px="6" py="4" display="flex" flexDir="column" minH="0">
-          {isLoading ? (
-            <VStack gap="2" flex="1" align="stretch">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Box key={i} h="3" bg="gray.100" borderRadius="sm" w={i % 3 === 2 ? '66%' : 'full'} />
-              ))}
-            </VStack>
-          ) : error ? (
-            <Text color="red.600" fontSize="sm">{error}</Text>
-          ) : (
-            <Textarea
-              value={content ?? ''}
-              onChange={(e) => setContent(e.target.value)}
-              flex="1"
-              w="full"
-              fontSize="xs"
-              fontFamily="mono"
-              lineHeight="relaxed"
-              borderWidth="1px"
-              borderColor="gray.300"
-              borderRadius="lg"
-              p="3"
-              resize="none"
-              spellCheck={false}
-              _focus={{ outline: 'none', ring: '2px', ringColor: 'purple.400' }}
-              minH="400px"
-            />
-          )}
-        </Box>
-
-        <Flex px="6" py="3" borderTopWidth="1px" justify="flex-end" gap="2">
+    <AppModal
+      isOpen
+      onClose={onClose}
+      title="Edit File Content"
+      size="xl"
+      footer={
+        <HStack gap="2">
           <Button variant="subtle" colorPalette="gray" size="sm" onClick={onClose}>Cancel</Button>
           <Button
             colorPalette="purple"
@@ -384,9 +281,36 @@ function EditModal({
           >
             Save
           </Button>
-        </Flex>
-      </Box>
-    </Box>
+        </HStack>
+      }
+    >
+      {isLoading ? (
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Box key={i} h="3" bg="gray.100" borderRadius="sm" w={i % 3 === 2 ? '66%' : 'full'} />
+          ))}
+        </VStack>
+      ) : error ? (
+        <Text color="red.600" fontSize="sm">{error}</Text>
+      ) : (
+        <Textarea
+          value={content ?? ''}
+          onChange={(e) => setContent(e.target.value)}
+          w="full"
+          fontSize="xs"
+          fontFamily="mono"
+          lineHeight="relaxed"
+          borderWidth="1px"
+          borderColor="gray.300"
+          borderRadius="lg"
+          p="3"
+          resize="none"
+          spellCheck={false}
+          _focus={{ outline: 'none', ring: '2px', ringColor: 'purple.400' }}
+          minH="400px"
+        />
+      )}
+    </AppModal>
   );
 }
 
@@ -575,16 +499,33 @@ function KnowledgeBaseDashboard() {
       </HStack>
 
       {isLoading ? (
-        <Flex justify="center" py="12">
-          <Spinner color="gray.400" />
-        </Flex>
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} height="52px" borderRadius="md" />
+          ))}
+        </VStack>
       ) : filteredFiles.length === 0 ? (
-        <VStack py="16" gap="3" color="gray.400" textAlign="center">
-          <FileText size={40} />
-          <Text fontWeight="medium" color="gray.500">
-            {files.length === 0 ? 'No documents yet.' : 'No documents match your filter.'}
+        <VStack gap={4} py={16} alignItems="center" textAlign="center">
+          <FileText size={40} color="var(--chakra-colors-text-muted)" />
+          <Heading size="md" color="text.primary">
+            {files.length === 0 ? 'No documents yet' : 'No documents match your filter'}
+          </Heading>
+          <Text color="text.secondary" fontSize="sm">
+            {files.length === 0
+              ? 'Upload a PDF, TXT, CSV, or Markdown file to get started.'
+              : 'Try adjusting your search or category filter.'}
           </Text>
-          <Text fontSize="sm">Upload a PDF, TXT, CSV, or Markdown file to get started.</Text>
+          {files.length === 0 && (
+            <Button
+              colorPalette="gray"
+              variant="solid"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload size={16} />
+              Upload File
+            </Button>
+          )}
         </VStack>
       ) : (
         <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
@@ -602,10 +543,12 @@ function KnowledgeBaseDashboard() {
             <Table.Body>
               {filteredFiles.map((file) => (
                 <React.Fragment key={file.id}>
-                  <Table.Row _hover={{ bg: 'gray.50' }} verticalAlign="top">
+                  <Table.Row _hover={{ bg: 'gray.50' }} verticalAlign="top" transition="all 0.15s ease">
                     <Table.Cell>
                       <HStack gap="2">
-                        <Text>{mimeIcon(file.mimeType)}</Text>
+                        <Box color="text.muted" flexShrink="0">
+                          <MimeIcon mimeType={file.mimeType} />
+                        </Box>
                         <Text fontWeight="medium" color="gray.900" truncate maxW="200px" title={file.originalName}>
                           {file.originalName}
                         </Text>

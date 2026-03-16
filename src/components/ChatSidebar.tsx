@@ -10,7 +10,6 @@ import {
   IconButton,
   Text,
   VStack,
-  Progress,
 } from '@chakra-ui/react';
 import { ChevronDown, ChevronRight, PanelLeft, Plus } from 'lucide-react';
 
@@ -132,61 +131,6 @@ function ConversationListMounted() {
   );
 }
 
-function UsageSummary() {
-  const credits = 8;
-  const maxCredits = 10;
-  const percentage = (credits / maxCredits) * 100;
-
-  return (
-    <Box
-      mx="3"
-      mb="3"
-      p="3"
-      borderRadius="12px"
-      border="1px solid"
-      borderColor="#E5E7EB"
-      bg="white"
-    >
-      <Text fontSize="sm" fontWeight="semibold" color="#1A1A1A" mb="2">
-        Usage Summary
-      </Text>
-      <HStack justify="space-between" mb="1.5">
-        <HStack gap="1" align="baseline">
-          <Text fontSize="2xl" fontWeight="bold" color="#1A1A1A" lineHeight="1">
-            {credits}
-          </Text>
-          <Text fontSize="xs" color="#6B7280">
-            /{maxCredits}
-          </Text>
-        </HStack>
-        <Text fontSize="xs" color="#6B7280">
-          Credits Left
-        </Text>
-      </HStack>
-      <Progress.Root value={percentage} size="sm" mb="2" colorPalette="green">
-        <Progress.Track borderRadius="full" bg="#E5E7EB">
-          <Progress.Range borderRadius="full" bg="brand.600" />
-        </Progress.Track>
-      </Progress.Root>
-      <Text fontSize="xs" color="#6B7280" mb="2">
-        Upgrade your plan to get more AI credits.
-      </Text>
-      <Button
-        size="sm"
-        w="full"
-        bg="#3D7A28"
-        color="white"
-        borderRadius="8px"
-        _hover={{ bg: '#2e5c1e' }}
-        fontSize="xs"
-        fontWeight="semibold"
-      >
-        Upgrade Now
-      </Button>
-    </Box>
-  );
-}
-
 interface ChatSidebarProps {
   onToggle?: () => void;
 }
@@ -250,8 +194,6 @@ export default function ChatSidebar({ onToggle }: ChatSidebarProps) {
       <Box flex="1" overflowY="auto" px="1">
         {mounted ? <ConversationListMounted /> : null}
       </Box>
-
-      <UsageSummary />
     </Flex>
   );
 }

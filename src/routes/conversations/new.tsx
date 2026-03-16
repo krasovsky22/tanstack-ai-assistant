@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { Box } from '@chakra-ui/react';
 import { Chat } from '@/components/Chat';
 
 export const Route = createFileRoute('/conversations/new')({
@@ -7,8 +8,8 @@ export const Route = createFileRoute('/conversations/new')({
 
 function NewConversation() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <Box h="100vh" bg="bg.page" display="flex" flexDirection="column">
       <Chat />
-    </div>
+    </Box>
   );
 }
