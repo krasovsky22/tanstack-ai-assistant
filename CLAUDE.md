@@ -86,6 +86,8 @@ When adding new environment variables:
 
 **UI Target**: Desktop/laptop screens only. No mobile or responsive design required.
 
+**UI Components**: Always use Chakra UI components when writing UI code. Prefer Chakra UI primitives (`Box`, `Stack`, `Button`, `Input`, `Text`, `Heading`, `Flex`, `Grid`, etc.) over raw HTML elements or custom CSS. Use Chakra's theming system for colors, spacing, and typography. Only reach for plain HTML or custom styles when Chakra UI has no suitable component.
+
 When adding new UI functionality:
 
 After implementing a new UI feature or modifying existing UI components, proactively invoke the `playwright-qa-tester` agent to write and execute Playwright tests against the running dev server (port 3000). The agent will validate the feature works correctly using real browser interactions. This applies to:
