@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
+import { HeadContent, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { aiDevtoolsPlugin } from '@tanstack/react-ai-devtools';
@@ -7,14 +7,17 @@ import { queryClient } from '@/lib/queryClient';
 import { Provider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Box, Flex } from '@chakra-ui/react';
+import { useState } from 'react';
 
 import IconRail from '@/components/IconRail';
 import ChatSidebar from '@/components/ChatSidebar';
 
 import appCss from '../styles.css?url';
 
-// IconRail (60px) + ChatSidebar (280px) = 340px total left offset for main content
-const SIDEBAR_TOTAL_WIDTH = '340px';
+// IconRail (60px) + ChatSidebar open (280px) = 340px
+// IconRail (60px) + ChatSidebar collapsed (48px) = 108px
+const SIDEBAR_OPEN_WIDTH = '340px';
+const SIDEBAR_COLLAPSED_WIDTH = '108px';
 
 function NotFound() {
   return (
@@ -60,15 +63,28 @@ export const Route = createRootRoute({
 });
 
 function AppLayout({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const showSidebar = pathname.startsWith('/conversations');
+
+  const mainMargin = showSidebar
+    ? isSidebarOpen
+      ? SIDEBAR_OPEN_WIDTH
+      : SIDEBAR_COLLAPSED_WIDTH
+    : '60px';
+
   return (
     <Flex minH="100vh" bg="bg.page">
       <IconRail />
-      <ChatSidebar />
+      {showSidebar && (
+        <ChatSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen((v) => !v)} />
+      )}
       <Box
         flex="1"
-        ml={SIDEBAR_TOTAL_WIDTH}
+        ml={mainMargin}
         minH="100vh"
         overflowY="auto"
+        transition="margin-left 0.2s"
       >
         {children}
       </Box>
@@ -111,7 +127,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <Toaster />
             <TanStackDevtools
               config={{
-                position: 'bottom-right',
+                position: 'bottom-left',
               }}
               eventBusConfig={{
                 connectToServerBus: true,

@@ -1,26 +1,43 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
   HStack,
   IconButton,
-  Input,
+  Textarea,
 } from '@chakra-ui/react';
-import { ArrowUp, Paperclip, Wrench } from 'lucide-react';
+import { ArrowUp, Paperclip, Sparkles, Wrench } from 'lucide-react';
+import { ToolsModal } from './ToolsModal';
 
 interface ChatInputProps {
   onSubmit: (value: string) => void;
+  onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isLoading?: boolean;
   placeholder?: string;
+  fillValue?: string;
+  onFillConsumed?: () => void;
 }
 
 export function ChatInput({
   onSubmit,
+  onFileChange,
   isLoading = false,
   placeholder = 'Ask AI anything or make something...',
+  fillValue,
+  onFillConsumed,
 }: ChatInputProps) {
   const [inputValue, setInputValue] = useState('');
+  const [toolsOpen, setToolsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (fillValue !== undefined && fillValue !== '') {
+      setInputValue(fillValue);
+      onFillConsumed?.();
+      textareaRef.current?.focus();
+    }
+  }, [fillValue, onFillConsumed]);
 
   const handleSubmit = () => {
     if (!inputValue.trim() || isLoading) return;
@@ -39,12 +56,16 @@ export function ChatInput({
 
   return (
     <Box
-      bg="white"
+      bg="bg.surface"
       borderRadius="16px"
-      border="2px solid"
-      borderColor="brand.600"
+      border="1px solid"
+      borderColor="border.default"
       p="3"
-      shadow="0 4px 24px rgba(61,122,40,0.08)"
+      _focusWithin={{
+        border: '2px solid',
+        borderColor: 'brand.600',
+        shadow: '0 4px 24px rgba(61,122,40,0.08)',
+      }}
     >
       <HStack gap="2" mb="3">
         <Box
@@ -54,14 +75,10 @@ export function ChatInput({
           justifyContent="center"
           flexShrink={0}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2L13.5 8.5L20 7L15 12L20 17L13.5 15.5L12 22L10.5 15.5L4 17L9 12L4 7L10.5 8.5L12 2Z"
-              fill="currentColor"
-            />
-          </svg>
+          <Sparkles size={18} aria-hidden="true" />
         </Box>
-        <Input
+        <Textarea
+          ref={textareaRef}
           flex="1"
           border="none"
           outline="none"
@@ -76,6 +93,11 @@ export function ChatInput({
           _placeholder={{ color: 'text.subtle' }}
           bg="transparent"
           disabled={isLoading}
+          resize="none"
+          minH="40px"
+          maxH="200px"
+          rows={1}
+          overflowY="auto"
         />
       </HStack>
 
@@ -86,6 +108,8 @@ export function ChatInput({
             type="file"
             style={{ display: 'none' }}
             multiple
+            accept="image/*,.txt,.csv,.md,text/plain,text/csv,text/markdown"
+            onChange={onFileChange}
           />
           <Button
             variant="ghost"
@@ -109,11 +133,13 @@ export function ChatInput({
             borderRadius="8px"
             gap="1.5"
             fontSize="xs"
+            onClick={() => setToolsOpen(true)}
             disabled={isLoading}
           >
             <Wrench size={14} />
             Tools
           </Button>
+          <ToolsModal open={toolsOpen} onClose={() => setToolsOpen(false)} />
         </HStack>
 
         <IconButton

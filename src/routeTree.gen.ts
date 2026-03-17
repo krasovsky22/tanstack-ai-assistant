@@ -27,6 +27,7 @@ import { Route as CronjobsNewRouteImport } from './routes/cronjobs/new'
 import { Route as CronjobsIdRouteImport } from './routes/cronjobs/$id'
 import { Route as ConversationsNewRouteImport } from './routes/conversations/new'
 import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
+import { Route as ApiToolsRouteImport } from './routes/api/tools'
 import { Route as ApiSectionsRouteImport } from './routes/api/sections'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -145,6 +146,11 @@ const ConversationsIdRoute = ConversationsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ConversationsRoute,
+} as any)
+const ApiToolsRoute = ApiToolsRouteImport.update({
+  id: '/api/tools',
+  path: '/api/tools',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSectionsRoute = ApiSectionsRouteImport.update({
   id: '/api/sections',
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
+  '/api/tools': typeof ApiToolsRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/conversations/new': typeof ConversationsNewRoute
   '/cronjobs/$id': typeof CronjobsIdRouteWithChildren
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
+  '/api/tools': typeof ApiToolsRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/conversations/new': typeof ConversationsNewRoute
   '/cronjobs/new': typeof CronjobsNewRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
+  '/api/tools': typeof ApiToolsRoute
   '/conversations/$id': typeof ConversationsIdRoute
   '/conversations/new': typeof ConversationsNewRoute
   '/cronjobs/$id': typeof CronjobsIdRouteWithChildren
@@ -438,6 +447,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
+    | '/api/tools'
     | '/conversations/$id'
     | '/conversations/new'
     | '/cronjobs/$id'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
+    | '/api/tools'
     | '/conversations/$id'
     | '/conversations/new'
     | '/cronjobs/new'
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
+    | '/api/tools'
     | '/conversations/$id'
     | '/conversations/new'
     | '/cronjobs/$id'
@@ -577,6 +589,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiChatSyncRoute: typeof ApiChatSyncRoute
   ApiSectionsRoute: typeof ApiSectionsRoute
+  ApiToolsRoute: typeof ApiToolsRoute
   ApiConversationsIdRoute: typeof ApiConversationsIdRoute
   ApiCronjobsIdRoute: typeof ApiCronjobsIdRouteWithChildren
   ApiFilesFilenameRoute: typeof ApiFilesFilenameRoute
@@ -727,6 +740,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/conversations/$id'
       preLoaderRoute: typeof ConversationsIdRouteImport
       parentRoute: typeof ConversationsRoute
+    }
+    '/api/tools': {
+      id: '/api/tools'
+      path: '/api/tools'
+      fullPath: '/api/tools'
+      preLoaderRoute: typeof ApiToolsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/sections': {
       id: '/api/sections'
@@ -1035,6 +1055,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiChatSyncRoute: ApiChatSyncRoute,
   ApiSectionsRoute: ApiSectionsRoute,
+  ApiToolsRoute: ApiToolsRoute,
   ApiConversationsIdRoute: ApiConversationsIdRoute,
   ApiCronjobsIdRoute: ApiCronjobsIdRouteWithChildren,
   ApiFilesFilenameRoute: ApiFilesFilenameRoute,

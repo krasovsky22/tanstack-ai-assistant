@@ -28,6 +28,76 @@
   - A hydration warning ("Hydration failed because the server rendered...") appears in the console when navigating client-side to the logs page; this is a React SSR mismatch, likely from the date `toLocaleString()` call producing different output on server vs client. Not a blocking failure but worth developer investigation
   - Console also logs a non-critical WebSocket error for TanStack DevTools (`ws://localhost:42069`) — expected when browser runs in Docker and cannot reach the devtools server on the host
 
+## Conversations Dashboard
+- **ID**: conversations-dashboard
+- **Coverage**: `/conversations` — list page, conversation cards, hover states, delete button visibility/color, sidebar open/collapsed, group section collapse/expand
+- **Steps**:
+  1. Navigate to `http://<host-ip>:3000/conversations` (server must run with `HOST=0.0.0.0 pnpm dev`; host IP currently `192.168.68.107`)
+  2. Wait 2s for `useLiveQuery` hydration
+  3. Take full-page screenshot — confirm IconRail (60px left), ChatSidebar (280px, "All Chats" heading, "New Chat" button), main content "Conversations" heading, "New Chat" button top-right
+  4. Snapshot page — verify conversation cards render with title, timestamp, and (where applicable) source badge
+  5. Evaluate `window.getComputedStyle` on first `[aria-label="Delete conversation"]` — assert `opacity: 0`, `position: absolute`
+  6. Force `opacity: 1` on first delete button via `browser_evaluate`, take screenshot — confirm gray Trash2 icon appears at top-right of card
+  7. Hover over delete button — take screenshot — confirm red icon and red.50 background (assert via evaluate: `color: rgb(220,38,38)`, `background: rgb(254,242,242)`)
+  8. Click "Toggle sidebar" button — take screenshot — confirm sidebar collapses to 48px with only a single PanelLeft icon remaining
+  9. Click "Open sidebar" button — confirm sidebar re-expands to 280px with "All Chats" heading visible
+  10. Click the "Today" group header chevron — confirm items collapse (group children removed from snapshot)
+  11. Click again — confirm items expand
+  12. Check console: assert no errors beyond the known WebSocket DevTools noise
+  13. Check network: assert `/api/conversations` returns 200
+- **Last Run**: 2026-03-17
+- **Status**: passing
+- **Notes**:
+  - Delete button uses CSS `_groupHover` (opacity transition); Playwright synthetic hover does not trigger it — use `browser_evaluate` to force visibility for screenshot capture
+  - 11 conversations present in DB at time of test run, grouped into "Today" (4) and "Last 30 days" (7)
+  - No source badges visible in current data (all `c.source` values are null)
+  - Console: 1 error (WebSocket DevTools, non-blocking), 2 warnings (Vite crypto externalization, non-blocking)
+  - All API calls returned 200
+
+## Conversations New Chat
+- **ID**: conversations-new-chat
+- **Coverage**: `/conversations/new` — empty state, suggestion chips, ChatInput states, ToolsModal open/expand/close
+- **Steps**:
+  1. Navigate to `http://<host-ip>:3000/conversations/new`
+  2. Take full-page screenshot — confirm breadcrumb "Dashboard / New Chat", 4 suggestion chips, ChatInput box, no agent-status banner
+  3. Snapshot — assert: `textbox "Type a message..."` present, `button "Send message" [disabled]` present, `button "Attach File"` present, `button "Tools"` present
+  4. Evaluate send button: assert `disabled=true`, `backgroundColor: rgb(228,228,231)` (gray.200)
+  5. Click "What can you do?" suggestion chip
+  6. Confirm textarea value becomes "What can you do?" in snapshot
+  7. Take screenshot — confirm text appears in ChatInput, suggestion chip shows `[active]`
+  8. Evaluate send button: assert `disabled=false`, `backgroundColor: rgb(61,122,40)` (brand.600 green)
+  9. Click "Tools" button
+  10. Confirm `dialog "Available Tools"` appears in snapshot with subtitle "53 tools across 11 groups"
+  11. Take screenshot — confirm modal header, group list (JIRA 22, CRONJOBS 4, JOBS 9, ...)
+  12. Click "Cronjobs" group trigger — confirm 4 tool cards expand (list_cronjobs, create_cronjob, update_cronjob, delete_cronjob) with descriptions
+  13. Take screenshot of expanded group
+  14. Click "Close" button — confirm dialog is removed from snapshot
+  15. Check console: assert no new errors introduced by ToolsModal interaction
+  16. Check network: assert `/api/tools` returns 200
+- **Last Run**: 2026-03-17
+- **Status**: passing
+- **Notes**:
+  - ToolsModal fetches `/api/tools` on open; 53 tools loaded across 11 groups at time of test
+  - Suggestion chips fill textarea but do NOT auto-submit — by design (see UX improvement suggestion U-2 in QA report)
+  - Send button disabled state: `backgroundColor: rgb(228,228,231)`, enabled state: `rgb(61,122,40)`
+  - All console messages are the same known-non-blocking noise as the dashboard page
+
+## Chat Sidebar Toggle
+- **ID**: chat-sidebar-toggle
+- **Coverage**: ChatSidebar open/collapse/expand, group section collapse/expand — tested from `/conversations`
+- **Steps**:
+  1. Navigate to `http://<host-ip>:3000/conversations`
+  2. Confirm sidebar is open (280px): "All Chats" heading visible, "New Chat" button visible, conversation groups visible
+  3. Click `button "Toggle sidebar"` — confirm snapshot shows `button "Open sidebar"` only (collapsed 48px state)
+  4. Take screenshot — confirm main content area expands leftward, sidebar is minimal icon strip
+  5. Click `button "Open sidebar"` — confirm sidebar re-expands, "All Chats" heading returns
+  6. Click a group header (e.g. "Today") — confirm items in that group disappear from snapshot (collapsed)
+  7. Click same header again — confirm items return (expanded)
+- **Last Run**: 2026-03-17
+- **Status**: passing
+- **Notes**:
+  - The `transition: margin-left 0.2s` on the main content area fires on collapse/expand but the sidebar panel itself has no `transition: width` — there is a visual mismatch (main slides, sidebar snaps). See visual polish improvement V-3 in QA report.
+
 ## Cronjob List Page
 - **ID**: cronjob-list
 - **Coverage**: `/cronjobs` — lists all cronjobs with name, schedule, status badge, last run, and action buttons

@@ -5,7 +5,7 @@ import {
   BookOpen,
   Clock,
   MessageSquare,
-  Database,
+  Mail,
 } from 'lucide-react';
 import { useDisabledSections, type Section } from '@/lib/sections';
 
@@ -163,7 +163,7 @@ export default function IconRail() {
 
         {enabled('mail') && (
           <RailIcon
-            icon={<Database size={18} />}
+            icon={<Mail size={18} />}
             label="Mail"
             to="/mail"
             isActive={isMailActive}

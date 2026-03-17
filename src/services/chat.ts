@@ -7,7 +7,7 @@ export async function buildChatOptions(
   conversationId?: string,
 ) {
   const {
-    getDockerMcpToolDefinitions,
+    getZapierMcpToolDefinitions,
     getCronjobTools,
     getNewsApiTools,
     getUiBackendApiTools,
@@ -15,7 +15,7 @@ export async function buildChatOptions(
     getCmdTools,
     getMemoryTools,
     getKnowledgeBaseTools,
-    getJiraTools,
+    // getJiraTools,
   } = await import('@/tools');
   const disabledTools = new Set(
     (process.env.DISABLE_TOOLS ?? '')
@@ -25,13 +25,13 @@ export async function buildChatOptions(
   );
   const enabled = (key: string) => !disabledTools.has(key);
 
-  const [mcpTools, cronjobTools, newsApiTools] = await Promise.all([
-    enabled('mcp') ? getDockerMcpToolDefinitions() : Promise.resolve([]),
+  const [zapierTools, cronjobTools, newsApiTools] = await Promise.all([
+    enabled('zapier') ? getZapierMcpToolDefinitions() : Promise.resolve([]),
     Promise.resolve(enabled('cronjob') ? getCronjobTools() : []),
     Promise.resolve(enabled('news') ? getNewsApiTools() : []),
   ]);
   const tools = [
-    ...mcpTools,
+    ...zapierTools,
     ...cronjobTools,
     ...newsApiTools,
     ...(enabled('ui') ? getUiBackendApiTools() : []),
@@ -39,7 +39,7 @@ export async function buildChatOptions(
     ...(enabled('cmd') ? getCmdTools() : []),
     ...(enabled('memory') ? getMemoryTools() : []),
     ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
-    ...(enabled('jira') ? getJiraTools() : []),
+    // ...(enabled('jira') ? getJiraTools() : []),
   ];
   return {
     adapter: openaiText('gpt-5.2'),

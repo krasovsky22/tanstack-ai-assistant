@@ -1,5 +1,5 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { toolDefinition } from '@tanstack/ai';
 import { z, type ZodTypeAny } from 'zod';
 
@@ -8,9 +8,16 @@ let mcpClient: Client | null = null;
 async function getMcpClient(): Promise<Client> {
   if (mcpClient) return mcpClient;
 
-  const transport = new StdioClientTransport({
-    command: 'docker',
-    args: ['mcp', 'gateway', 'run'],
+  const url = process.env.ZAPIER_MCP_URL;
+  const token = process.env.ZAPIER_MCP_TOKEN;
+
+  if (!url) throw new Error('ZAPIER_MCP_URL is not set');
+  if (!token) throw new Error('ZAPIER_MCP_TOKEN is not set');
+
+  const transport = new StreamableHTTPClientTransport(new URL(url), {
+    requestInit: {
+      headers: { Authorization: `Bearer ${token}` },
+    },
   });
 
   mcpClient = new Client({ name: 'tanstack-ai-assistant', version: '1.0.0' });
@@ -58,7 +65,7 @@ function jsonSchemaToZod(
         break;
       }
       default:
-        zodType = z.unknown();
+        zodType = z.string();
     }
   }
 
@@ -69,7 +76,7 @@ function jsonSchemaToZod(
   return isRequired ? zodType : zodType.optional();
 }
 
-export async function getDockerMcpToolDefinitions() {
+export async function getZapierMcpToolDefinitions() {
   try {
     const client = await getMcpClient();
     const { tools } = await client.listTools();
@@ -89,12 +96,12 @@ export async function getDockerMcpToolDefinitions() {
           name: tool.name,
           arguments: input as Record<string, unknown>,
         });
-        console.log('[MCP] Tool call result:', result);
+        console.log('[Zapier MCP] Tool call result:', result);
         return result;
       });
     });
   } catch (error) {
-    console.warn('[Docker MCP] Not available, skipping tools:', (error as Error).message);
+    console.warn('[Zapier MCP] Not available, skipping tools:', (error as Error).message);
     return [];
   }
 }

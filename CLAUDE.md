@@ -43,7 +43,7 @@ Package manager is **pnpm**.
 **Tools system**: `src/tools/`
 
 - `crontool.ts` — 4 LLM-callable tools: `list_cronjobs`, `create_cronjob`, `update_cronjob`, `delete_cronjob`
-- `mcp.ts` — connects to Docker MCP Gateway via stdio, dynamically loads tools as Zod-validated tools
+- `zapier-mcp.ts` — connects to Zapier MCP server via streamable HTTP, dynamically loads tools as Zod-validated tools
 - `index.ts` — exports tool factory functions; both are registered in `buildChatOptions()`
 
 **Workers**: `workers/`
@@ -75,6 +75,8 @@ Package manager is **pnpm**.
 - `OPEN_WEATHER_API` — for the legacy weather tool
 - `NEWS_API_TOKEN` — (optional) required to use the News API tool
 - `DISABLE_SECTIONS` — (optional) comma-separated UI sections to hide/disable. Valid keys: `ai`, `jobs`, `mail`, `knowledge-base`, `cronjobs`
+- `ZAPIER_MCP_URL` — Zapier MCP server URL (required when mcp tool group is enabled)
+- `ZAPIER_MCP_TOKEN` — Zapier MCP bearer token (required when mcp tool group is enabled)
 
 ## Workflow Rules
 

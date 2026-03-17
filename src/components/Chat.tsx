@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
+import { ChevronRight, Pencil } from 'lucide-react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -18,6 +19,8 @@ import {
   Link as ChakraLink,
   Spinner,
   Text,
+  VStack,
+  Wrap,
 } from '@chakra-ui/react';
 
 interface PendingImage {
@@ -248,7 +251,7 @@ export function Chat({
   const [title, setTitle] = useState(initialTitle ?? '');
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [suggestedPrompt, setSuggestedPrompt] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -260,7 +263,7 @@ export function Chat({
     [],
   );
 
-  const { messages, sendMessage, isLoading, error, status } = useChat({
+  const { messages, sendMessage, isLoading, error, status, stop } = useChat({
     connection: fetchHttpStream('/api/chat'),
     initialMessages,
     body: { conversationId },
@@ -436,10 +439,8 @@ export function Chat({
             <Box asChild color="text.muted" _hover={{ color: 'text.primary' }}>
               <Link to="/conversations">Dashboard</Link>
             </Box>
-            <Text color="text.subtle">/</Text>
-            <Box asChild color="text.muted" _hover={{ color: 'text.primary' }}>
-              <Link to="/conversations/new">New Chat</Link>
-            </Box>
+            <ChevronRight size={12} color="var(--chakra-colors-text-subtle)" />
+            <Text color="text.primary" fontWeight="medium">New Chat</Text>
           </HStack>
 
           {/* Title */}
@@ -467,13 +468,24 @@ export function Chat({
                 size="sm"
                 fontWeight="semibold"
                 onClick={startEditingTitle}
-                disabled={!title}
                 px="2"
                 color="text.primary"
                 _hover={{ color: 'text.secondary' }}
                 title="Click to edit title"
+                gap="1.5"
+                role="group"
               >
-                {title || 'Chat'}
+                {title || 'New Chat'}
+                <Box
+                  as="span"
+                  opacity={0.35}
+                  _groupHover={{ opacity: 1 }}
+                  transition="opacity 0.15s"
+                  display="flex"
+                  alignItems="center"
+                >
+                  <Pencil size={14} />
+                </Box>
               </Button>
             )}
           </Box>
@@ -495,7 +507,20 @@ export function Chat({
           >
             <Spinner size="xs" />
             <Text fontWeight="medium">Status:</Text>
-            <Text>{agentStatusText}</Text>
+            <Text flex="1">{agentStatusText}</Text>
+            {(status === 'streaming' || status === 'submitted') && (
+              <Button
+                size="xs"
+                variant="ghost"
+                color="text.muted"
+                _hover={{ bg: 'bg.surface', color: 'text.primary' }}
+                borderRadius="6px"
+                onClick={() => stop()}
+                fontSize="xs"
+              >
+                Stop generating
+              </Button>
+            )}
           </HStack>
         )}
       </Box>
@@ -504,7 +529,31 @@ export function Chat({
       <Box flex="1" overflowY="auto" px="6" py="4" minH="0">
         {messages.length === 0 ? (
           <Flex h="full" align="center" justify="center">
-            <Text color="text.subtle">Say hi to start a conversation.</Text>
+            <VStack gap="4" textAlign="center">
+              <Text color="text.subtle">Say hi to start a conversation.</Text>
+              <Wrap gap="2" justify="center">
+                {[
+                  'What can you do?',
+                  'Help me write an email',
+                  'Create a cronjob',
+                  'Summarize a document',
+                ].map((chip) => (
+                  <Button
+                    key={chip}
+                    variant="outline"
+                    size="sm"
+                    borderRadius="full"
+                    fontSize="xs"
+                    color="text.secondary"
+                    borderColor="border.default"
+                    _hover={{ bg: 'bg.surface', borderColor: 'brand.400', color: 'text.primary' }}
+                    onClick={() => setSuggestedPrompt(chip)}
+                  >
+                    {chip}
+                  </Button>
+                ))}
+              </Wrap>
+            </VStack>
           </Flex>
         ) : (
           messages.map((message) => {
@@ -703,19 +752,13 @@ export function Chat({
 
       {/* Input area */}
       <Box px="6" pb="6" pt="2" flexShrink={0}>
-        <Box
-          as="input"
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,.txt,.csv,.md,text/plain,text/csv,text/markdown"
-          multiple
-          display="none"
-          onChange={handleFileChange}
-        />
         <ChatInput
           onSubmit={handleChatInputSubmit}
+          onFileChange={handleFileChange}
           isLoading={isLoading}
           placeholder="Type a message..."
+          fillValue={suggestedPrompt}
+          onFillConsumed={() => setSuggestedPrompt('')}
         />
       </Box>
     </Flex>
