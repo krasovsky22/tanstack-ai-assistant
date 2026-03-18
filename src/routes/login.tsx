@@ -1,11 +1,11 @@
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useAppSession } from '@/services/session'
 import { useState } from 'react'
 import { Box, Button, Flex, Heading, Input, Text, VStack } from '@chakra-ui/react'
 
 const loginFn = createServerFn({ method: 'POST' })
-  .validator((d: { username: string; password: string }) => d)
+  .inputValidator((d: { username: string; password: string }) => d)
   .handler(async ({ data }) => {
     const { db } = await import('@/db')
     const { users } = await import('@/db/schema')
@@ -20,7 +20,7 @@ const loginFn = createServerFn({ method: 'POST' })
 
     const session = await useAppSession()
     await session.update({ userId: user.id, username: user.username })
-    throw redirect({ to: '/' })
+    return { success: true }
   })
 
 export const logoutFn = createServerFn({ method: 'POST' }).handler(async () => {
@@ -49,10 +49,8 @@ function LoginPage() {
       if (result?.error) {
         setError(result.error)
       } else {
-        router.invalidate()
+        await router.navigate({ to: '/' })
       }
-    } catch {
-      // redirect throws — swallow it
     } finally {
       setLoading(false)
     }
