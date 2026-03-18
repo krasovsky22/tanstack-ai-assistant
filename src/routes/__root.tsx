@@ -8,6 +8,8 @@ import { Provider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Box, Flex } from '@chakra-ui/react';
 import { useState } from 'react';
+import { createServerFn } from '@tanstack/react-start';
+import { useAppSession } from '@/services/session';
 
 import IconRail from '@/components/IconRail';
 import ChatSidebar from '@/components/ChatSidebar';
@@ -18,6 +20,12 @@ import appCss from '../styles.css?url';
 // IconRail (60px) + ChatSidebar collapsed (48px) = 108px
 const SIDEBAR_OPEN_WIDTH = '340px';
 const SIDEBAR_COLLAPSED_WIDTH = '108px';
+
+const fetchUser = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await useAppSession()
+  if (!session.data.userId) return null
+  return { userId: session.data.userId, username: session.data.username }
+})
 
 function NotFound() {
   return (
@@ -38,6 +46,10 @@ function NotFound() {
 }
 
 export const Route = createRootRoute({
+  beforeLoad: async () => {
+    const user = await fetchUser()
+    return { user }
+  },
   notFoundComponent: NotFound,
   head: () => ({
     meta: [
@@ -65,18 +77,19 @@ export const Route = createRootRoute({
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isLoginPage = pathname === '/login';
   const showSidebar = pathname.startsWith('/conversations');
 
-  const mainMargin = showSidebar
-    ? isSidebarOpen
-      ? SIDEBAR_OPEN_WIDTH
-      : SIDEBAR_COLLAPSED_WIDTH
-    : '60px';
+  const mainMargin = isLoginPage
+    ? '0px'
+    : showSidebar
+      ? isSidebarOpen ? SIDEBAR_OPEN_WIDTH : SIDEBAR_COLLAPSED_WIDTH
+      : '60px';
 
   return (
     <Flex minH="100vh" bg="bg.page">
-      <IconRail />
-      {showSidebar && (
+      {!isLoginPage && <IconRail />}
+      {!isLoginPage && showSidebar && (
         <ChatSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen((v) => !v)} />
       )}
       <Box
