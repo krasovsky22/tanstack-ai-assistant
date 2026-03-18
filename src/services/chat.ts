@@ -15,7 +15,7 @@ export async function buildChatOptions(
     getCmdTools,
     getMemoryTools,
     getKnowledgeBaseTools,
-    // getJiraTools,
+    getJiraTools,
   } = await import('@/tools');
   const disabledTools = new Set(
     (process.env.DISABLE_TOOLS ?? '')
@@ -39,7 +39,7 @@ export async function buildChatOptions(
     ...(enabled('cmd') ? getCmdTools() : []),
     ...(enabled('memory') ? getMemoryTools() : []),
     ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
-    // ...(enabled('jira') ? getJiraTools() : []),
+    ...(enabled('jira') ? getJiraTools() : []),
   ];
   return {
     adapter: openaiText('gpt-5.2'),

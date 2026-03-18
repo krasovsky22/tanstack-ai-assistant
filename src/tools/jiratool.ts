@@ -19,23 +19,6 @@ function cfg() {
   return { config, error: null } as const;
 }
 
-function extractDescriptionText(description: unknown): string {
-  if (!description) return '';
-  if (typeof description === 'string') return description;
-  // ADF format: extract text nodes recursively
-  if (typeof description === 'object') {
-    const adf = description as Record<string, unknown>;
-    const content = adf.content as unknown[] | undefined;
-    if (!content) return '';
-    return content
-      .flatMap((block: any) => block?.content ?? [])
-      .filter((node: any) => node?.type === 'text')
-      .map((node: any) => node.text ?? '')
-      .join(' ');
-  }
-  return '';
-}
-
 export function getJiraTools() {
   return [
     toolDefinition({

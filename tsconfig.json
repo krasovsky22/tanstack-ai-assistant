@@ -1,5 +1,5 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "src/tools/jiratool.ts.bkp"],
+  "include": ["**/*.ts", "**/*.tsx", "src/tools/jiratool.ts"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
