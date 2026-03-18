@@ -34,6 +34,7 @@ Phase 02: [####] 4/4 plans complete
 - Phase 1 added: Yahoo Mail Ingestion & Job Email Tracking — pull Yahoo IMAP emails, LLM classify, match/create jobs, job_emails table, dashboard badges, job detail mail view
 - Phase 2 added: Add Elasticsearch to Docker stack for LLM memory - store generated files, conversations, and cronjob results
 - Phase 3 added: jira-integration
+- Phase 4 added: user authentication.
 
 ### Decisions
 

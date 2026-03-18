@@ -45,4 +45,14 @@ Plans:
 - [ ] 03-02-PLAN.md — src/tools/jiratool.ts: jiraFetch helper + 6 tools (search, get, update-desc, add-comment, get-comments, assign)
 - [ ] 03-03-PLAN.md — Wiring: export from index.ts, register in buildChatOptions() under 'jira' key, document env vars in .env.example
 
+### Phase 4: user authentication.
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 4 to break down)
+
 ---
