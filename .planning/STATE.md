@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-18T09:02:44.151Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-18T09:18:18.907Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-18T09:02:44.148Z
-- **Stopped At:** Completed 04-01-PLAN.md
+- **Last session:** 2026-03-18T09:18:18.903Z
+- **Stopped At:** Completed 04-02-PLAN.md
 
 ## Progress
 
@@ -66,6 +66,8 @@ Phase 02: [####] 4/4 plans complete
 - [Phase 03]: JIRA_DEFAULT_PROJECT documented as optional reference var — not actively consumed by tools in this phase
 - [Phase 04]: FK columns referencing users.id (uuid) must use uuid type — text FK causes type mismatch in PostgreSQL
 - [Phase 04]: Wave 0 TDD stubs confirmed RED before schema changes, GREEN after — pattern established for auth phase tests
+- [Phase 04]: All old route files deleted after copying to _protected/ — TanStack Router file-based routing requires no duplicate path registrations
+- [Phase 04]: loginFn returns { error } on bad credentials — avoids username enumeration and allows client-side error display without redirect
 
 ### Performance Metrics
 
@@ -83,4 +85,5 @@ Phase 02: [####] 4/4 plans complete
 | Phase 03 P03-02 | 2min | 1 tasks | 4 files |
 | Phase 03 P03-03 | 2min | 3 tasks | 1 files |
 | Phase 04 P04-01 | 4min | 2 tasks | 9 files |
+| Phase 04 P04-02 | 11min | 2 tasks | 25 files |
 
