@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-18T09:18:18.907Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-03-18T09:24:43.033Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-18T09:18:18.903Z
-- **Stopped At:** Completed 04-02-PLAN.md
+- **Last session:** 2026-03-18T09:24:43.029Z
+- **Stopped At:** Completed 04-03-PLAN.md
 
 ## Progress
 
@@ -68,6 +68,9 @@ Phase 02: [####] 4/4 plans complete
 - [Phase 04]: Wave 0 TDD stubs confirmed RED before schema changes, GREEN after — pattern established for auth phase tests
 - [Phase 04]: All old route files deleted after copying to _protected/ — TanStack Router file-based routing requires no duplicate path registrations
 - [Phase 04]: loginFn returns { error } on bad credentials — avoids username enumeration and allows client-side error display without redirect
+- [Phase 04]: Unauthenticated GET returns empty arrays (graceful degradation) rather than 401 on user-scoped routes
+- [Phase 04]: Ownership guards fire only when both session userId and record userId are non-null — avoids locking legacy unowned records
+- [Phase 04]: userId excluded from onConflictDoUpdate set clause in conversations/index.tsx to preserve original owner on upsert
 
 ### Performance Metrics
 
@@ -86,4 +89,5 @@ Phase 02: [####] 4/4 plans complete
 | Phase 03 P03-03 | 2min | 3 tasks | 1 files |
 | Phase 04 P04-01 | 4min | 2 tasks | 9 files |
 | Phase 04 P04-02 | 11min | 2 tasks | 25 files |
+| Phase 04 P04-03 | 3min | 2 tasks | 8 files |
 

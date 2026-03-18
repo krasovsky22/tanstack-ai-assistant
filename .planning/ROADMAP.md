@@ -50,7 +50,7 @@ Plans:
 **Goal:** Add user authentication using TanStack Router's pathless layout route pattern with server-side encrypted cookie sessions. Delivers: users table, login page, protected routes for all existing pages, per-user data scoping on jobs/cronjobs/conversations, and a CLI user-creation script.
 **Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06
 **Depends on:** Phase 3
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [ ] 04-01-PLAN.md — DB foundation: users table migration, user_id FK on jobs/cronjobs/cronjobLogs, bcryptjs install, create-user script, Wave 0 test stubs
