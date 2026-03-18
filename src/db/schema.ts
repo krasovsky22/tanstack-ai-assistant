@@ -1,6 +1,13 @@
 import { pgTable, text, timestamp, uuid, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
 export { JOB_STATUSES, type JobStatus } from '@/lib/job-constants';
 
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  username: text('username').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
 export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey(),
   title: text('title').notNull(),
@@ -29,6 +36,7 @@ export const jobs = pgTable('jobs', {
   resumePdfPath: text('resume_pdf_path'),
   coverLetterPath: text('cover_letter_path'),
   retryCount: integer('retry_count').notNull().default(0),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
   errorMessage: text('error_message'),
   failedAt: timestamp('failed_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -55,6 +63,7 @@ export const cronjobs = pgTable('cronjobs', {
   lastResult: text('last_result'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const cronjobLogs = pgTable('cronjob_logs', {
@@ -65,6 +74,7 @@ export const cronjobLogs = pgTable('cronjob_logs', {
   error: text('error'),
   durationMs: integer('duration_ms'),
   ranAt: timestamp('ran_at').defaultNow().notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const generatedFiles = pgTable('generated_files', {
