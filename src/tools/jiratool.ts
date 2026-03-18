@@ -100,7 +100,7 @@ export function getJiraTools() {
     toolDefinition({
       name: 'jira_get_issue',
       description:
-        'Retrieve a single Jira issue by its key, including its summary, status, assignee, description, and comments.',
+        'Retrieve a single Jira issue by its key. Returns full ticket context: summary, status, assignee, priority, issue type, plain-text description, and all comments (author, timestamp, plain-text body). Use this to get complete context before acting on a ticket.',
       inputSchema: z.object({
         issueKey: z.string().describe('Jira issue key, e.g. PROJ-123'),
       }),

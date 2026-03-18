@@ -19,6 +19,17 @@ export const JIRA_CONFIG_ERROR =
 
 // ── HTTP helper ────────────────────────────────────────────────────────────
 
+function adfToText(node: any): string {
+  if (!node) return '';
+  if (node.type === 'text') return node.text ?? '';
+  if (node.type === 'hardBreak' || node.type === 'rule') return '\n';
+  const children = (node.content ?? []).map(adfToText).join('');
+  if (['paragraph', 'heading', 'listItem', 'blockquote', 'bulletList', 'orderedList'].includes(node.type)) {
+    return children + '\n';
+  }
+  return children;
+}
+
 function toAdf(text: string) {
   return {
     type: 'doc',
@@ -129,7 +140,26 @@ export async function getIssue(config: JiraConfig, issueKey: string) {
     );
   }
   const data = await res.json();
-  return { key: data.key, id: data.id, fields: data.fields };
+  const f = data.fields;
+  const comments = (f.comment?.comments ?? []).map((c: any) => ({
+    id: c.id,
+    author: c.author?.displayName ?? c.author?.name ?? null,
+    created: c.created,
+    body: adfToText(c.body).trim(),
+  }));
+  return {
+    key: data.key,
+    id: data.id,
+    summary: f.summary,
+    status: f.status?.name ?? null,
+    assignee: f.assignee?.displayName ?? f.assignee?.name ?? null,
+    priority: f.priority?.name ?? null,
+    issueType: f.issuetype?.name ?? null,
+    created: f.created,
+    updated: f.updated,
+    description: adfToText(f.description).trim(),
+    comments,
+  };
 }
 
 export async function updateIssueDescription(
@@ -183,8 +213,8 @@ export async function getComments(config: JiraConfig, issueKey: string) {
     issueKey,
     comments: (data.comments ?? []).map((c: any) => ({
       id: c.id,
-      author: c.author?.displayName ?? c.author?.name,
-      body: c.body,
+      author: c.author?.displayName ?? c.author?.name ?? null,
+      body: adfToText(c.body).trim(),
       created: c.created,
     })),
   };
