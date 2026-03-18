@@ -7,10 +7,15 @@ export const Route = createFileRoute('/api/conversations/')({
       GET: async () => {
         const { db } = await import('@/db');
         const { conversations } = await import('@/db/schema');
-        const { desc } = await import('drizzle-orm');
+        const { desc, eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
+
         const rows = await db
           .select()
           .from(conversations)
+          .where(userId ? eq(conversations.userId, userId) : undefined)
           .orderBy(desc(conversations.updatedAt));
 
         return new Response(JSON.stringify(rows), {
@@ -22,12 +27,15 @@ export const Route = createFileRoute('/api/conversations/')({
         const { db } = await import('@/db');
         const { conversations, messages } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
         const { id, title, messages: msgs } = await request.json();
 
         await db.transaction(async (tx) => {
           await tx
             .insert(conversations)
-            .values({ id, title, updatedAt: new Date() })
+            .values({ id, title, userId: userId ?? null, updatedAt: new Date() })
             .onConflictDoUpdate({
               target: conversations.id,
               set: { title, updatedAt: new Date() },

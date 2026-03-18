@@ -18,10 +18,14 @@ export const Route = createFileRoute('/api/chat')({
           );
         }
 
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
+
         const { messages, conversationId } = await request.json();
 
         try {
-          const options = await buildChatOptions(messages, conversationId);
+          const options = await buildChatOptions(messages, conversationId, userId);
           const stream = chat(options);
           return toHttpResponse(stream);
         } catch (error) {

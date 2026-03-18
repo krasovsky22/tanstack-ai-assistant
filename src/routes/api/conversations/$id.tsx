@@ -8,6 +8,22 @@ export const Route = createFileRoute('/api/conversations/$id')({
         const { conversations, messages } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
         const { deleteConversationMemory } = await import('@/services/memory');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
+
+        // Verify ownership before deleting
+        const [existing] = await db
+          .select()
+          .from(conversations)
+          .where(eq(conversations.id, params.id));
+
+        if (existing && userId && existing.userId && existing.userId !== userId) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 
         await db.transaction(async (tx) => {
           await tx.delete(messages).where(eq(messages.conversationId, params.id));
@@ -25,7 +41,23 @@ export const Route = createFileRoute('/api/conversations/$id')({
         const { db } = await import('@/db');
         const { conversations } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
         const { title } = await request.json();
+
+        // Verify ownership before updating
+        const [existing] = await db
+          .select()
+          .from(conversations)
+          .where(eq(conversations.id, params.id));
+
+        if (existing && userId && existing.userId && existing.userId !== userId) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 
         await db
           .update(conversations)

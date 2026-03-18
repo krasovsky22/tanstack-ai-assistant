@@ -5,6 +5,7 @@ export async function buildChatOptions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: any[],
   conversationId?: string,
+  userId?: string | null,
 ) {
   const {
     getZapierMcpToolDefinitions,
@@ -41,10 +42,15 @@ export async function buildChatOptions(
     ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
     ...(enabled('jira') ? getJiraTools() : []),
   ];
+  const userPromptSnippet = userId
+    ? `\nThe authenticated user's id is: ${userId}.`
+    : '';
+
   return {
     adapter: openaiText('gpt-5.2'),
     messages,
     conversationId,
+    userId,
     agentLoopStrategy: maxIterations(15),
     systemPrompts: [
       'You are a helpful assistant. Always format your responses using Markdown for better readability. \
@@ -64,7 +70,7 @@ export async function buildChatOptions(
       When working with Jira issues, always include a full clickable navigation link that opens new browser tab to each issue using the format: [PROJ-123](JIRA_BASE_URL/browse/PROJ-123) where JIRA_BASE_URL is the configured Jira instance URL. \
       For newly created issues, always show the link so the user can navigate directly to it. \
       Before searching Jira or answering questions about tickets, use search_memory with source_type "jira_ticket" to recall previously seen tickets from memory — this avoids redundant API calls and surfaces historical context. \
-      When Jira API results are returned, they are automatically stored in memory for future recall.',
+      When Jira API results are returned, they are automatically stored in memory for future recall.' + userPromptSnippet,
     ],
     tools,
   };
