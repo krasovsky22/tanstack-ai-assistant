@@ -45,14 +45,17 @@ Plans:
 - [ ] 03-02-PLAN.md — src/tools/jiratool.ts: jiraFetch helper + 6 tools (search, get, update-desc, add-comment, get-comments, assign)
 - [ ] 03-03-PLAN.md — Wiring: export from index.ts, register in buildChatOptions() under 'jira' key, document env vars in .env.example
 
-### Phase 4: user authentication.
+### Phase 4: user-authentication
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Add user authentication using TanStack Router's pathless layout route pattern with server-side encrypted cookie sessions. Delivers: users table, login page, protected routes for all existing pages, per-user data scoping on jobs/cronjobs/conversations, and a CLI user-creation script.
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06
 **Depends on:** Phase 3
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 4 to break down)
+- [ ] 04-01-PLAN.md — DB foundation: users table migration, user_id FK on jobs/cronjobs/cronjobLogs, bcryptjs install, create-user script, Wave 0 test stubs
+- [ ] 04-02-PLAN.md — Auth wiring: session service, root user hydration, login/logout routes, _protected pathless layout, move all page routes under _protected/
+- [ ] 04-03-PLAN.md — API user-scoping: filter jobs/cronjobs/conversations by session userId; /api/chat reads userId from session
+- [ ] 04-04-PLAN.md — Human verification: full E2E auth flow checkpoint
 
 ---
