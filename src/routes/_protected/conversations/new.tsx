@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Box } from '@chakra-ui/react';
 import { Chat } from '@/components/Chat';
 
-export const Route = createFileRoute('/conversations/new')({
+export const Route = createFileRoute('/_protected/conversations/new')({
   component: NewConversation,
 });
 

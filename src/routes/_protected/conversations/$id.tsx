@@ -22,7 +22,7 @@ const getConversationData = createServerFn({ method: 'GET' })
     return { conversation, messages: msgs };
   });
 
-export const Route = createFileRoute('/conversations/$id')({
+export const Route = createFileRoute('/_protected/conversations/$id')({
   loader: ({ params }) => getConversationData({ data: params.id }),
   component: ConversationPage,
 });

@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
-import { createServerFn } from '@tanstack/react-start';
 import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
 import {
@@ -16,45 +15,31 @@ import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { FormField } from '@/components/FormField';
 
-const getCronjob = createServerFn({ method: 'GET' })
-  .inputValidator((id: string) => id)
-  .handler(async ({ data: id }) => {
-    const { db } = await import('@/db');
-    const { cronjobs } = await import('@/db/schema');
-    const { eq } = await import('drizzle-orm');
-
-    const [job] = await db.select().from(cronjobs).where(eq(cronjobs.id, id));
-    if (!job) throw new Error('Cronjob not found');
-    return job;
-  });
-
-export const Route = createFileRoute('/cronjobs/$id/')({
-  loader: ({ params }) => getCronjob({ data: params.id }),
-  component: EditCronjobPage,
+export const Route = createFileRoute('/_protected/cronjobs/new')({
+  component: NewCronjobPage,
 });
 
-function EditCronjobPage() {
-  const job = Route.useLoaderData();
+function NewCronjobPage() {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
-      name: job.name,
-      cronExpression: job.cronExpression,
-      prompt: job.prompt,
-      isActive: job.isActive,
+      name: '',
+      cronExpression: '',
+      prompt: '',
+      isActive: true,
     },
     onSubmit: async ({ value }) => {
       setSubmitError(null);
-      const res = await fetch(`/api/cronjobs/${job.id}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/cronjobs', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(value),
       });
       if (!res.ok) {
         const data = await res.json();
-        setSubmitError(data.error ?? 'Failed to update job');
+        setSubmitError(data.error ?? 'Failed to create job');
         return;
       }
       navigate({ to: '/cronjobs' });
@@ -63,7 +48,7 @@ function EditCronjobPage() {
 
   return (
     <PageContainer maxW="2xl">
-      <PageHeader title="Edit Cron Job" backTo="/cronjobs" backLabel="Automation" />
+      <PageHeader title="New Cron Job" backTo="/cronjobs" backLabel="Automation" />
 
       <Box
         as="form"
@@ -93,6 +78,7 @@ function EditCronjobPage() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="e.g. Daily Summary"
                 />
               </FormField>
             )}
@@ -119,6 +105,7 @@ function EditCronjobPage() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="* * * * *"
                   fontFamily="mono"
                 />
               </FormField>
@@ -145,6 +132,7 @@ function EditCronjobPage() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="What should the AI do when this job runs?"
                   rows={6}
                   resize="vertical"
                 />
@@ -163,7 +151,7 @@ function EditCronjobPage() {
                 <Switch.Control>
                   <Switch.Thumb />
                 </Switch.Control>
-                <Switch.Label>Active</Switch.Label>
+                <Switch.Label>Active (schedule immediately)</Switch.Label>
               </Switch.Root>
             )}
           </form.Field>
@@ -184,9 +172,9 @@ function EditCronjobPage() {
                     disabled={!canSubmit}
                     colorPalette="brand"
                     loading={isSubmitting as boolean}
-                    loadingText="Saving..."
+                    loadingText="Creating..."
                   >
-                    Save Changes
+                    Create Job
                   </Button>
                   <Box asChild>
                     <Link to="/cronjobs">

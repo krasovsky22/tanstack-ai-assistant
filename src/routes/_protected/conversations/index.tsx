@@ -19,7 +19,7 @@ import {
 import { toaster } from '@/components/ui/toaster';
 import { MessageSquare, Trash2 } from 'lucide-react';
 
-export const Route = createFileRoute('/conversations/')({
+export const Route = createFileRoute('/_protected/conversations/')({
   component: ConversationsDashboard,
 });
 

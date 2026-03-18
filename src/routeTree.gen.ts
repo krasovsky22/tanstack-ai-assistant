@@ -9,35 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as MailRouteImport } from './routes/mail'
-import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
-import { Route as JobsRouteImport } from './routes/jobs'
-import { Route as CronjobsRouteImport } from './routes/cronjobs'
-import { Route as ConversationsRouteImport } from './routes/conversations'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as MailIndexRouteImport } from './routes/mail/index'
-import { Route as KnowledgeBaseIndexRouteImport } from './routes/knowledge-base/index'
-import { Route as JobsIndexRouteImport } from './routes/jobs/index'
-import { Route as CronjobsIndexRouteImport } from './routes/cronjobs/index'
-import { Route as ConversationsIndexRouteImport } from './routes/conversations/index'
-import { Route as JobsNewRouteImport } from './routes/jobs/new'
-import { Route as JobsExtractFromUrlRouteImport } from './routes/jobs/extract-from-url'
-import { Route as JobsIdRouteImport } from './routes/jobs/$id'
-import { Route as CronjobsNewRouteImport } from './routes/cronjobs/new'
-import { Route as CronjobsIdRouteImport } from './routes/cronjobs/$id'
-import { Route as ConversationsNewRouteImport } from './routes/conversations/new'
-import { Route as ConversationsIdRouteImport } from './routes/conversations/$id'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProtectedRouteImport } from './routes/_protected'
+import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as ApiToolsRouteImport } from './routes/api/tools'
 import { Route as ApiSectionsRouteImport } from './routes/api/sections'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as CronjobsIdIndexRouteImport } from './routes/cronjobs/$id/index'
+import { Route as ProtectedMailRouteImport } from './routes/_protected/mail'
+import { Route as ProtectedKnowledgeBaseRouteImport } from './routes/_protected/knowledge-base'
+import { Route as ProtectedJobsRouteImport } from './routes/_protected/jobs'
+import { Route as ProtectedCronjobsRouteImport } from './routes/_protected/cronjobs'
+import { Route as ProtectedConversationsRouteImport } from './routes/_protected/conversations'
 import { Route as ApiKnowledgeBaseIndexRouteImport } from './routes/api/knowledge-base/index'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
 import { Route as ApiGeneratedFilesIndexRouteImport } from './routes/api/generated-files/index'
 import { Route as ApiCronjobsIndexRouteImport } from './routes/api/cronjobs/index'
 import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
-import { Route as CronjobsIdLogsRouteImport } from './routes/cronjobs/$id/logs'
+import { Route as ProtectedMailIndexRouteImport } from './routes/_protected/mail/index'
+import { Route as ProtectedKnowledgeBaseIndexRouteImport } from './routes/_protected/knowledge-base/index'
+import { Route as ProtectedJobsIndexRouteImport } from './routes/_protected/jobs/index'
+import { Route as ProtectedCronjobsIndexRouteImport } from './routes/_protected/cronjobs/index'
+import { Route as ProtectedConversationsIndexRouteImport } from './routes/_protected/conversations/index'
 import { Route as ApiReportsScrapeJobsRouteImport } from './routes/api/reports/scrape-jobs'
 import { Route as ApiMailStoreEmailsRouteImport } from './routes/api/mail/store-emails'
 import { Route as ApiMailIngestRouteImport } from './routes/api/mail/ingest'
@@ -54,98 +47,31 @@ import { Route as ApiGeneratedFilesIdRouteImport } from './routes/api/generated-
 import { Route as ApiFilesFilenameRouteImport } from './routes/api/files/$filename'
 import { Route as ApiCronjobsIdRouteImport } from './routes/api/cronjobs/$id'
 import { Route as ApiConversationsIdRouteImport } from './routes/api/conversations/$id'
+import { Route as ProtectedJobsNewRouteImport } from './routes/_protected/jobs/new'
+import { Route as ProtectedJobsExtractFromUrlRouteImport } from './routes/_protected/jobs/extract-from-url'
+import { Route as ProtectedJobsIdRouteImport } from './routes/_protected/jobs/$id'
+import { Route as ProtectedCronjobsNewRouteImport } from './routes/_protected/cronjobs/new'
+import { Route as ProtectedCronjobsIdRouteImport } from './routes/_protected/cronjobs/$id'
+import { Route as ProtectedConversationsNewRouteImport } from './routes/_protected/conversations/new'
+import { Route as ProtectedConversationsIdRouteImport } from './routes/_protected/conversations/$id'
+import { Route as ProtectedCronjobsIdIndexRouteImport } from './routes/_protected/cronjobs/$id/index'
 import { Route as ApiCronjobsIdTestRouteImport } from './routes/api/cronjobs/$id/test'
 import { Route as ApiCronjobsIdLogsRouteImport } from './routes/api/cronjobs/$id/logs'
+import { Route as ProtectedCronjobsIdLogsRouteImport } from './routes/_protected/cronjobs/$id/logs'
 
-const MailRoute = MailRouteImport.update({
-  id: '/mail',
-  path: '/mail',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KnowledgeBaseRoute = KnowledgeBaseRouteImport.update({
-  id: '/knowledge-base',
-  path: '/knowledge-base',
+const ProtectedRoute = ProtectedRouteImport.update({
+  id: '/_protected',
   getParentRoute: () => rootRouteImport,
 } as any)
-const JobsRoute = JobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CronjobsRoute = CronjobsRouteImport.update({
-  id: '/cronjobs',
-  path: '/cronjobs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConversationsRoute = ConversationsRouteImport.update({
-  id: '/conversations',
-  path: '/conversations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MailIndexRoute = MailIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => MailRoute,
-} as any)
-const KnowledgeBaseIndexRoute = KnowledgeBaseIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => KnowledgeBaseRoute,
-} as any)
-const JobsIndexRoute = JobsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => JobsRoute,
-} as any)
-const CronjobsIndexRoute = CronjobsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CronjobsRoute,
-} as any)
-const ConversationsIndexRoute = ConversationsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ConversationsRoute,
-} as any)
-const JobsNewRoute = JobsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => JobsRoute,
-} as any)
-const JobsExtractFromUrlRoute = JobsExtractFromUrlRouteImport.update({
-  id: '/extract-from-url',
-  path: '/extract-from-url',
-  getParentRoute: () => JobsRoute,
-} as any)
-const JobsIdRoute = JobsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => JobsRoute,
-} as any)
-const CronjobsNewRoute = CronjobsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => CronjobsRoute,
-} as any)
-const CronjobsIdRoute = CronjobsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => CronjobsRoute,
-} as any)
-const ConversationsNewRoute = ConversationsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => ConversationsRoute,
-} as any)
-const ConversationsIdRoute = ConversationsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ConversationsRoute,
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const ApiToolsRoute = ApiToolsRouteImport.update({
   id: '/api/tools',
@@ -167,10 +93,30 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CronjobsIdIndexRoute = CronjobsIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CronjobsIdRoute,
+const ProtectedMailRoute = ProtectedMailRouteImport.update({
+  id: '/mail',
+  path: '/mail',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedKnowledgeBaseRoute = ProtectedKnowledgeBaseRouteImport.update({
+  id: '/knowledge-base',
+  path: '/knowledge-base',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedJobsRoute = ProtectedJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedCronjobsRoute = ProtectedCronjobsRouteImport.update({
+  id: '/cronjobs',
+  path: '/cronjobs',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedConversationsRoute = ProtectedConversationsRouteImport.update({
+  id: '/conversations',
+  path: '/conversations',
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const ApiKnowledgeBaseIndexRoute = ApiKnowledgeBaseIndexRouteImport.update({
   id: '/api/knowledge-base/',
@@ -197,11 +143,33 @@ const ApiConversationsIndexRoute = ApiConversationsIndexRouteImport.update({
   path: '/api/conversations/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CronjobsIdLogsRoute = CronjobsIdLogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
-  getParentRoute: () => CronjobsIdRoute,
+const ProtectedMailIndexRoute = ProtectedMailIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedMailRoute,
 } as any)
+const ProtectedKnowledgeBaseIndexRoute =
+  ProtectedKnowledgeBaseIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ProtectedKnowledgeBaseRoute,
+  } as any)
+const ProtectedJobsIndexRoute = ProtectedJobsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedJobsRoute,
+} as any)
+const ProtectedCronjobsIndexRoute = ProtectedCronjobsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedCronjobsRoute,
+} as any)
+const ProtectedConversationsIndexRoute =
+  ProtectedConversationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ProtectedConversationsRoute,
+  } as any)
 const ApiReportsScrapeJobsRoute = ApiReportsScrapeJobsRouteImport.update({
   id: '/api/reports/scrape-jobs',
   path: '/api/reports/scrape-jobs',
@@ -282,6 +250,50 @@ const ApiConversationsIdRoute = ApiConversationsIdRouteImport.update({
   path: '/api/conversations/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedJobsNewRoute = ProtectedJobsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ProtectedJobsRoute,
+} as any)
+const ProtectedJobsExtractFromUrlRoute =
+  ProtectedJobsExtractFromUrlRouteImport.update({
+    id: '/extract-from-url',
+    path: '/extract-from-url',
+    getParentRoute: () => ProtectedJobsRoute,
+  } as any)
+const ProtectedJobsIdRoute = ProtectedJobsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ProtectedJobsRoute,
+} as any)
+const ProtectedCronjobsNewRoute = ProtectedCronjobsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ProtectedCronjobsRoute,
+} as any)
+const ProtectedCronjobsIdRoute = ProtectedCronjobsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ProtectedCronjobsRoute,
+} as any)
+const ProtectedConversationsNewRoute =
+  ProtectedConversationsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => ProtectedConversationsRoute,
+  } as any)
+const ProtectedConversationsIdRoute =
+  ProtectedConversationsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ProtectedConversationsRoute,
+  } as any)
+const ProtectedCronjobsIdIndexRoute =
+  ProtectedCronjobsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ProtectedCronjobsIdRoute,
+  } as any)
 const ApiCronjobsIdTestRoute = ApiCronjobsIdTestRouteImport.update({
   id: '/test',
   path: '/test',
@@ -292,30 +304,31 @@ const ApiCronjobsIdLogsRoute = ApiCronjobsIdLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => ApiCronjobsIdRoute,
 } as any)
+const ProtectedCronjobsIdLogsRoute = ProtectedCronjobsIdLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => ProtectedCronjobsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/conversations': typeof ConversationsRouteWithChildren
-  '/cronjobs': typeof CronjobsRouteWithChildren
-  '/jobs': typeof JobsRouteWithChildren
-  '/knowledge-base': typeof KnowledgeBaseRouteWithChildren
-  '/mail': typeof MailRouteWithChildren
+  '/': typeof ProtectedIndexRoute
+  '/login': typeof LoginRoute
+  '/conversations': typeof ProtectedConversationsRouteWithChildren
+  '/cronjobs': typeof ProtectedCronjobsRouteWithChildren
+  '/jobs': typeof ProtectedJobsRouteWithChildren
+  '/knowledge-base': typeof ProtectedKnowledgeBaseRouteWithChildren
+  '/mail': typeof ProtectedMailRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
-  '/conversations/$id': typeof ConversationsIdRoute
-  '/conversations/new': typeof ConversationsNewRoute
-  '/cronjobs/$id': typeof CronjobsIdRouteWithChildren
-  '/cronjobs/new': typeof CronjobsNewRoute
-  '/jobs/$id': typeof JobsIdRoute
-  '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
-  '/jobs/new': typeof JobsNewRoute
-  '/conversations/': typeof ConversationsIndexRoute
-  '/cronjobs/': typeof CronjobsIndexRoute
-  '/jobs/': typeof JobsIndexRoute
-  '/knowledge-base/': typeof KnowledgeBaseIndexRoute
-  '/mail/': typeof MailIndexRoute
+  '/conversations/$id': typeof ProtectedConversationsIdRoute
+  '/conversations/new': typeof ProtectedConversationsNewRoute
+  '/cronjobs/$id': typeof ProtectedCronjobsIdRouteWithChildren
+  '/cronjobs/new': typeof ProtectedCronjobsNewRoute
+  '/jobs/$id': typeof ProtectedJobsIdRoute
+  '/jobs/extract-from-url': typeof ProtectedJobsExtractFromUrlRoute
+  '/jobs/new': typeof ProtectedJobsNewRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/files/$filename': typeof ApiFilesFilenameRoute
@@ -332,33 +345,34 @@ export interface FileRoutesByFullPath {
   '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/mail/store-emails': typeof ApiMailStoreEmailsRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
-  '/cronjobs/$id/logs': typeof CronjobsIdLogsRoute
+  '/conversations/': typeof ProtectedConversationsIndexRoute
+  '/cronjobs/': typeof ProtectedCronjobsIndexRoute
+  '/jobs/': typeof ProtectedJobsIndexRoute
+  '/knowledge-base/': typeof ProtectedKnowledgeBaseIndexRoute
+  '/mail/': typeof ProtectedMailIndexRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/cronjobs/': typeof ApiCronjobsIndexRoute
   '/api/generated-files/': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
   '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
-  '/cronjobs/$id/': typeof CronjobsIdIndexRoute
+  '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/cronjobs/$id/': typeof ProtectedCronjobsIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
-  '/conversations/$id': typeof ConversationsIdRoute
-  '/conversations/new': typeof ConversationsNewRoute
-  '/cronjobs/new': typeof CronjobsNewRoute
-  '/jobs/$id': typeof JobsIdRoute
-  '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
-  '/jobs/new': typeof JobsNewRoute
-  '/conversations': typeof ConversationsIndexRoute
-  '/cronjobs': typeof CronjobsIndexRoute
-  '/jobs': typeof JobsIndexRoute
-  '/knowledge-base': typeof KnowledgeBaseIndexRoute
-  '/mail': typeof MailIndexRoute
+  '/': typeof ProtectedIndexRoute
+  '/conversations/$id': typeof ProtectedConversationsIdRoute
+  '/conversations/new': typeof ProtectedConversationsNewRoute
+  '/cronjobs/new': typeof ProtectedCronjobsNewRoute
+  '/jobs/$id': typeof ProtectedJobsIdRoute
+  '/jobs/extract-from-url': typeof ProtectedJobsExtractFromUrlRoute
+  '/jobs/new': typeof ProtectedJobsNewRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/files/$filename': typeof ApiFilesFilenameRoute
@@ -375,40 +389,42 @@ export interface FileRoutesByTo {
   '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/mail/store-emails': typeof ApiMailStoreEmailsRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
-  '/cronjobs/$id/logs': typeof CronjobsIdLogsRoute
+  '/conversations': typeof ProtectedConversationsIndexRoute
+  '/cronjobs': typeof ProtectedCronjobsIndexRoute
+  '/jobs': typeof ProtectedJobsIndexRoute
+  '/knowledge-base': typeof ProtectedKnowledgeBaseIndexRoute
+  '/mail': typeof ProtectedMailIndexRoute
   '/api/conversations': typeof ApiConversationsIndexRoute
   '/api/cronjobs': typeof ApiCronjobsIndexRoute
   '/api/generated-files': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs': typeof ApiJobsIndexRoute
   '/api/knowledge-base': typeof ApiKnowledgeBaseIndexRoute
-  '/cronjobs/$id': typeof CronjobsIdIndexRoute
+  '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/cronjobs/$id': typeof ProtectedCronjobsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/conversations': typeof ConversationsRouteWithChildren
-  '/cronjobs': typeof CronjobsRouteWithChildren
-  '/jobs': typeof JobsRouteWithChildren
-  '/knowledge-base': typeof KnowledgeBaseRouteWithChildren
-  '/mail': typeof MailRouteWithChildren
+  '/_protected': typeof ProtectedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_protected/conversations': typeof ProtectedConversationsRouteWithChildren
+  '/_protected/cronjobs': typeof ProtectedCronjobsRouteWithChildren
+  '/_protected/jobs': typeof ProtectedJobsRouteWithChildren
+  '/_protected/knowledge-base': typeof ProtectedKnowledgeBaseRouteWithChildren
+  '/_protected/mail': typeof ProtectedMailRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
-  '/conversations/$id': typeof ConversationsIdRoute
-  '/conversations/new': typeof ConversationsNewRoute
-  '/cronjobs/$id': typeof CronjobsIdRouteWithChildren
-  '/cronjobs/new': typeof CronjobsNewRoute
-  '/jobs/$id': typeof JobsIdRoute
-  '/jobs/extract-from-url': typeof JobsExtractFromUrlRoute
-  '/jobs/new': typeof JobsNewRoute
-  '/conversations/': typeof ConversationsIndexRoute
-  '/cronjobs/': typeof CronjobsIndexRoute
-  '/jobs/': typeof JobsIndexRoute
-  '/knowledge-base/': typeof KnowledgeBaseIndexRoute
-  '/mail/': typeof MailIndexRoute
+  '/_protected/': typeof ProtectedIndexRoute
+  '/_protected/conversations/$id': typeof ProtectedConversationsIdRoute
+  '/_protected/conversations/new': typeof ProtectedConversationsNewRoute
+  '/_protected/cronjobs/$id': typeof ProtectedCronjobsIdRouteWithChildren
+  '/_protected/cronjobs/new': typeof ProtectedCronjobsNewRoute
+  '/_protected/jobs/$id': typeof ProtectedJobsIdRoute
+  '/_protected/jobs/extract-from-url': typeof ProtectedJobsExtractFromUrlRoute
+  '/_protected/jobs/new': typeof ProtectedJobsNewRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/files/$filename': typeof ApiFilesFilenameRoute
@@ -425,20 +441,26 @@ export interface FileRoutesById {
   '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/mail/store-emails': typeof ApiMailStoreEmailsRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
-  '/cronjobs/$id/logs': typeof CronjobsIdLogsRoute
+  '/_protected/conversations/': typeof ProtectedConversationsIndexRoute
+  '/_protected/cronjobs/': typeof ProtectedCronjobsIndexRoute
+  '/_protected/jobs/': typeof ProtectedJobsIndexRoute
+  '/_protected/knowledge-base/': typeof ProtectedKnowledgeBaseIndexRoute
+  '/_protected/mail/': typeof ProtectedMailIndexRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/cronjobs/': typeof ApiCronjobsIndexRoute
   '/api/generated-files/': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
   '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
-  '/cronjobs/$id/': typeof CronjobsIdIndexRoute
+  '/_protected/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/_protected/cronjobs/$id/': typeof ProtectedCronjobsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/conversations'
     | '/cronjobs'
     | '/jobs'
@@ -455,11 +477,6 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/extract-from-url'
     | '/jobs/new'
-    | '/conversations/'
-    | '/cronjobs/'
-    | '/jobs/'
-    | '/knowledge-base/'
-    | '/mail/'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/files/$filename'
@@ -476,33 +493,34 @@ export interface FileRouteTypes {
     | '/api/mail/ingest'
     | '/api/mail/store-emails'
     | '/api/reports/scrape-jobs'
-    | '/cronjobs/$id/logs'
+    | '/conversations/'
+    | '/cronjobs/'
+    | '/jobs/'
+    | '/knowledge-base/'
+    | '/mail/'
     | '/api/conversations/'
     | '/api/cronjobs/'
     | '/api/generated-files/'
     | '/api/jobs/'
     | '/api/knowledge-base/'
-    | '/cronjobs/$id/'
+    | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/cronjobs/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/login'
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
     | '/api/tools'
+    | '/'
     | '/conversations/$id'
     | '/conversations/new'
     | '/cronjobs/new'
     | '/jobs/$id'
     | '/jobs/extract-from-url'
     | '/jobs/new'
-    | '/conversations'
-    | '/cronjobs'
-    | '/jobs'
-    | '/knowledge-base'
-    | '/mail'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/files/$filename'
@@ -519,39 +537,41 @@ export interface FileRouteTypes {
     | '/api/mail/ingest'
     | '/api/mail/store-emails'
     | '/api/reports/scrape-jobs'
-    | '/cronjobs/$id/logs'
+    | '/conversations'
+    | '/cronjobs'
+    | '/jobs'
+    | '/knowledge-base'
+    | '/mail'
     | '/api/conversations'
     | '/api/cronjobs'
     | '/api/generated-files'
     | '/api/jobs'
     | '/api/knowledge-base'
-    | '/cronjobs/$id'
+    | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/cronjobs/$id'
   id:
     | '__root__'
-    | '/'
-    | '/conversations'
-    | '/cronjobs'
-    | '/jobs'
-    | '/knowledge-base'
-    | '/mail'
+    | '/_protected'
+    | '/login'
+    | '/_protected/conversations'
+    | '/_protected/cronjobs'
+    | '/_protected/jobs'
+    | '/_protected/knowledge-base'
+    | '/_protected/mail'
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
     | '/api/tools'
-    | '/conversations/$id'
-    | '/conversations/new'
-    | '/cronjobs/$id'
-    | '/cronjobs/new'
-    | '/jobs/$id'
-    | '/jobs/extract-from-url'
-    | '/jobs/new'
-    | '/conversations/'
-    | '/cronjobs/'
-    | '/jobs/'
-    | '/knowledge-base/'
-    | '/mail/'
+    | '/_protected/'
+    | '/_protected/conversations/$id'
+    | '/_protected/conversations/new'
+    | '/_protected/cronjobs/$id'
+    | '/_protected/cronjobs/new'
+    | '/_protected/jobs/$id'
+    | '/_protected/jobs/extract-from-url'
+    | '/_protected/jobs/new'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/files/$filename'
@@ -568,24 +588,25 @@ export interface FileRouteTypes {
     | '/api/mail/ingest'
     | '/api/mail/store-emails'
     | '/api/reports/scrape-jobs'
-    | '/cronjobs/$id/logs'
+    | '/_protected/conversations/'
+    | '/_protected/cronjobs/'
+    | '/_protected/jobs/'
+    | '/_protected/knowledge-base/'
+    | '/_protected/mail/'
     | '/api/conversations/'
     | '/api/cronjobs/'
     | '/api/generated-files/'
     | '/api/jobs/'
     | '/api/knowledge-base/'
-    | '/cronjobs/$id/'
+    | '/_protected/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/_protected/cronjobs/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ConversationsRoute: typeof ConversationsRouteWithChildren
-  CronjobsRoute: typeof CronjobsRouteWithChildren
-  JobsRoute: typeof JobsRouteWithChildren
-  KnowledgeBaseRoute: typeof KnowledgeBaseRouteWithChildren
-  MailRoute: typeof MailRouteWithChildren
+  ProtectedRoute: typeof ProtectedRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiChatSyncRoute: typeof ApiChatSyncRoute
   ApiSectionsRoute: typeof ApiSectionsRoute
@@ -615,131 +636,26 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/mail': {
-      id: '/mail'
-      path: '/mail'
-      fullPath: '/mail'
-      preLoaderRoute: typeof MailRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/knowledge-base': {
-      id: '/knowledge-base'
-      path: '/knowledge-base'
-      fullPath: '/knowledge-base'
-      preLoaderRoute: typeof KnowledgeBaseRouteImport
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/jobs': {
-      id: '/jobs'
-      path: '/jobs'
-      fullPath: '/jobs'
-      preLoaderRoute: typeof JobsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cronjobs': {
-      id: '/cronjobs'
-      path: '/cronjobs'
-      fullPath: '/cronjobs'
-      preLoaderRoute: typeof CronjobsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/conversations': {
-      id: '/conversations'
-      path: '/conversations'
-      fullPath: '/conversations'
-      preLoaderRoute: typeof ConversationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_protected/': {
+      id: '/_protected/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mail/': {
-      id: '/mail/'
-      path: '/'
-      fullPath: '/mail/'
-      preLoaderRoute: typeof MailIndexRouteImport
-      parentRoute: typeof MailRoute
-    }
-    '/knowledge-base/': {
-      id: '/knowledge-base/'
-      path: '/'
-      fullPath: '/knowledge-base/'
-      preLoaderRoute: typeof KnowledgeBaseIndexRouteImport
-      parentRoute: typeof KnowledgeBaseRoute
-    }
-    '/jobs/': {
-      id: '/jobs/'
-      path: '/'
-      fullPath: '/jobs/'
-      preLoaderRoute: typeof JobsIndexRouteImport
-      parentRoute: typeof JobsRoute
-    }
-    '/cronjobs/': {
-      id: '/cronjobs/'
-      path: '/'
-      fullPath: '/cronjobs/'
-      preLoaderRoute: typeof CronjobsIndexRouteImport
-      parentRoute: typeof CronjobsRoute
-    }
-    '/conversations/': {
-      id: '/conversations/'
-      path: '/'
-      fullPath: '/conversations/'
-      preLoaderRoute: typeof ConversationsIndexRouteImport
-      parentRoute: typeof ConversationsRoute
-    }
-    '/jobs/new': {
-      id: '/jobs/new'
-      path: '/new'
-      fullPath: '/jobs/new'
-      preLoaderRoute: typeof JobsNewRouteImport
-      parentRoute: typeof JobsRoute
-    }
-    '/jobs/extract-from-url': {
-      id: '/jobs/extract-from-url'
-      path: '/extract-from-url'
-      fullPath: '/jobs/extract-from-url'
-      preLoaderRoute: typeof JobsExtractFromUrlRouteImport
-      parentRoute: typeof JobsRoute
-    }
-    '/jobs/$id': {
-      id: '/jobs/$id'
-      path: '/$id'
-      fullPath: '/jobs/$id'
-      preLoaderRoute: typeof JobsIdRouteImport
-      parentRoute: typeof JobsRoute
-    }
-    '/cronjobs/new': {
-      id: '/cronjobs/new'
-      path: '/new'
-      fullPath: '/cronjobs/new'
-      preLoaderRoute: typeof CronjobsNewRouteImport
-      parentRoute: typeof CronjobsRoute
-    }
-    '/cronjobs/$id': {
-      id: '/cronjobs/$id'
-      path: '/$id'
-      fullPath: '/cronjobs/$id'
-      preLoaderRoute: typeof CronjobsIdRouteImport
-      parentRoute: typeof CronjobsRoute
-    }
-    '/conversations/new': {
-      id: '/conversations/new'
-      path: '/new'
-      fullPath: '/conversations/new'
-      preLoaderRoute: typeof ConversationsNewRouteImport
-      parentRoute: typeof ConversationsRoute
-    }
-    '/conversations/$id': {
-      id: '/conversations/$id'
-      path: '/$id'
-      fullPath: '/conversations/$id'
-      preLoaderRoute: typeof ConversationsIdRouteImport
-      parentRoute: typeof ConversationsRoute
+      preLoaderRoute: typeof ProtectedIndexRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/api/tools': {
       id: '/api/tools'
@@ -769,12 +685,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cronjobs/$id/': {
-      id: '/cronjobs/$id/'
-      path: '/'
-      fullPath: '/cronjobs/$id/'
-      preLoaderRoute: typeof CronjobsIdIndexRouteImport
-      parentRoute: typeof CronjobsIdRoute
+    '/_protected/mail': {
+      id: '/_protected/mail'
+      path: '/mail'
+      fullPath: '/mail'
+      preLoaderRoute: typeof ProtectedMailRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/knowledge-base': {
+      id: '/_protected/knowledge-base'
+      path: '/knowledge-base'
+      fullPath: '/knowledge-base'
+      preLoaderRoute: typeof ProtectedKnowledgeBaseRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/jobs': {
+      id: '/_protected/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof ProtectedJobsRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/cronjobs': {
+      id: '/_protected/cronjobs'
+      path: '/cronjobs'
+      fullPath: '/cronjobs'
+      preLoaderRoute: typeof ProtectedCronjobsRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/conversations': {
+      id: '/_protected/conversations'
+      path: '/conversations'
+      fullPath: '/conversations'
+      preLoaderRoute: typeof ProtectedConversationsRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/api/knowledge-base/': {
       id: '/api/knowledge-base/'
@@ -811,12 +755,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiConversationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cronjobs/$id/logs': {
-      id: '/cronjobs/$id/logs'
-      path: '/logs'
-      fullPath: '/cronjobs/$id/logs'
-      preLoaderRoute: typeof CronjobsIdLogsRouteImport
-      parentRoute: typeof CronjobsIdRoute
+    '/_protected/mail/': {
+      id: '/_protected/mail/'
+      path: '/'
+      fullPath: '/mail/'
+      preLoaderRoute: typeof ProtectedMailIndexRouteImport
+      parentRoute: typeof ProtectedMailRoute
+    }
+    '/_protected/knowledge-base/': {
+      id: '/_protected/knowledge-base/'
+      path: '/'
+      fullPath: '/knowledge-base/'
+      preLoaderRoute: typeof ProtectedKnowledgeBaseIndexRouteImport
+      parentRoute: typeof ProtectedKnowledgeBaseRoute
+    }
+    '/_protected/jobs/': {
+      id: '/_protected/jobs/'
+      path: '/'
+      fullPath: '/jobs/'
+      preLoaderRoute: typeof ProtectedJobsIndexRouteImport
+      parentRoute: typeof ProtectedJobsRoute
+    }
+    '/_protected/cronjobs/': {
+      id: '/_protected/cronjobs/'
+      path: '/'
+      fullPath: '/cronjobs/'
+      preLoaderRoute: typeof ProtectedCronjobsIndexRouteImport
+      parentRoute: typeof ProtectedCronjobsRoute
+    }
+    '/_protected/conversations/': {
+      id: '/_protected/conversations/'
+      path: '/'
+      fullPath: '/conversations/'
+      preLoaderRoute: typeof ProtectedConversationsIndexRouteImport
+      parentRoute: typeof ProtectedConversationsRoute
     }
     '/api/reports/scrape-jobs': {
       id: '/api/reports/scrape-jobs'
@@ -930,6 +902,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiConversationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_protected/jobs/new': {
+      id: '/_protected/jobs/new'
+      path: '/new'
+      fullPath: '/jobs/new'
+      preLoaderRoute: typeof ProtectedJobsNewRouteImport
+      parentRoute: typeof ProtectedJobsRoute
+    }
+    '/_protected/jobs/extract-from-url': {
+      id: '/_protected/jobs/extract-from-url'
+      path: '/extract-from-url'
+      fullPath: '/jobs/extract-from-url'
+      preLoaderRoute: typeof ProtectedJobsExtractFromUrlRouteImport
+      parentRoute: typeof ProtectedJobsRoute
+    }
+    '/_protected/jobs/$id': {
+      id: '/_protected/jobs/$id'
+      path: '/$id'
+      fullPath: '/jobs/$id'
+      preLoaderRoute: typeof ProtectedJobsIdRouteImport
+      parentRoute: typeof ProtectedJobsRoute
+    }
+    '/_protected/cronjobs/new': {
+      id: '/_protected/cronjobs/new'
+      path: '/new'
+      fullPath: '/cronjobs/new'
+      preLoaderRoute: typeof ProtectedCronjobsNewRouteImport
+      parentRoute: typeof ProtectedCronjobsRoute
+    }
+    '/_protected/cronjobs/$id': {
+      id: '/_protected/cronjobs/$id'
+      path: '/$id'
+      fullPath: '/cronjobs/$id'
+      preLoaderRoute: typeof ProtectedCronjobsIdRouteImport
+      parentRoute: typeof ProtectedCronjobsRoute
+    }
+    '/_protected/conversations/new': {
+      id: '/_protected/conversations/new'
+      path: '/new'
+      fullPath: '/conversations/new'
+      preLoaderRoute: typeof ProtectedConversationsNewRouteImport
+      parentRoute: typeof ProtectedConversationsRoute
+    }
+    '/_protected/conversations/$id': {
+      id: '/_protected/conversations/$id'
+      path: '/$id'
+      fullPath: '/conversations/$id'
+      preLoaderRoute: typeof ProtectedConversationsIdRouteImport
+      parentRoute: typeof ProtectedConversationsRoute
+    }
+    '/_protected/cronjobs/$id/': {
+      id: '/_protected/cronjobs/$id/'
+      path: '/'
+      fullPath: '/cronjobs/$id/'
+      preLoaderRoute: typeof ProtectedCronjobsIdIndexRouteImport
+      parentRoute: typeof ProtectedCronjobsIdRoute
+    }
     '/api/cronjobs/$id/test': {
       id: '/api/cronjobs/$id/test'
       path: '/test'
@@ -944,92 +972,127 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronjobsIdLogsRouteImport
       parentRoute: typeof ApiCronjobsIdRoute
     }
+    '/_protected/cronjobs/$id/logs': {
+      id: '/_protected/cronjobs/$id/logs'
+      path: '/logs'
+      fullPath: '/cronjobs/$id/logs'
+      preLoaderRoute: typeof ProtectedCronjobsIdLogsRouteImport
+      parentRoute: typeof ProtectedCronjobsIdRoute
+    }
   }
 }
 
-interface ConversationsRouteChildren {
-  ConversationsIdRoute: typeof ConversationsIdRoute
-  ConversationsNewRoute: typeof ConversationsNewRoute
-  ConversationsIndexRoute: typeof ConversationsIndexRoute
+interface ProtectedConversationsRouteChildren {
+  ProtectedConversationsIdRoute: typeof ProtectedConversationsIdRoute
+  ProtectedConversationsNewRoute: typeof ProtectedConversationsNewRoute
+  ProtectedConversationsIndexRoute: typeof ProtectedConversationsIndexRoute
 }
 
-const ConversationsRouteChildren: ConversationsRouteChildren = {
-  ConversationsIdRoute: ConversationsIdRoute,
-  ConversationsNewRoute: ConversationsNewRoute,
-  ConversationsIndexRoute: ConversationsIndexRoute,
+const ProtectedConversationsRouteChildren: ProtectedConversationsRouteChildren =
+  {
+    ProtectedConversationsIdRoute: ProtectedConversationsIdRoute,
+    ProtectedConversationsNewRoute: ProtectedConversationsNewRoute,
+    ProtectedConversationsIndexRoute: ProtectedConversationsIndexRoute,
+  }
+
+const ProtectedConversationsRouteWithChildren =
+  ProtectedConversationsRoute._addFileChildren(
+    ProtectedConversationsRouteChildren,
+  )
+
+interface ProtectedCronjobsIdRouteChildren {
+  ProtectedCronjobsIdLogsRoute: typeof ProtectedCronjobsIdLogsRoute
+  ProtectedCronjobsIdIndexRoute: typeof ProtectedCronjobsIdIndexRoute
 }
 
-const ConversationsRouteWithChildren = ConversationsRoute._addFileChildren(
-  ConversationsRouteChildren,
+const ProtectedCronjobsIdRouteChildren: ProtectedCronjobsIdRouteChildren = {
+  ProtectedCronjobsIdLogsRoute: ProtectedCronjobsIdLogsRoute,
+  ProtectedCronjobsIdIndexRoute: ProtectedCronjobsIdIndexRoute,
+}
+
+const ProtectedCronjobsIdRouteWithChildren =
+  ProtectedCronjobsIdRoute._addFileChildren(ProtectedCronjobsIdRouteChildren)
+
+interface ProtectedCronjobsRouteChildren {
+  ProtectedCronjobsIdRoute: typeof ProtectedCronjobsIdRouteWithChildren
+  ProtectedCronjobsNewRoute: typeof ProtectedCronjobsNewRoute
+  ProtectedCronjobsIndexRoute: typeof ProtectedCronjobsIndexRoute
+}
+
+const ProtectedCronjobsRouteChildren: ProtectedCronjobsRouteChildren = {
+  ProtectedCronjobsIdRoute: ProtectedCronjobsIdRouteWithChildren,
+  ProtectedCronjobsNewRoute: ProtectedCronjobsNewRoute,
+  ProtectedCronjobsIndexRoute: ProtectedCronjobsIndexRoute,
+}
+
+const ProtectedCronjobsRouteWithChildren =
+  ProtectedCronjobsRoute._addFileChildren(ProtectedCronjobsRouteChildren)
+
+interface ProtectedJobsRouteChildren {
+  ProtectedJobsIdRoute: typeof ProtectedJobsIdRoute
+  ProtectedJobsExtractFromUrlRoute: typeof ProtectedJobsExtractFromUrlRoute
+  ProtectedJobsNewRoute: typeof ProtectedJobsNewRoute
+  ProtectedJobsIndexRoute: typeof ProtectedJobsIndexRoute
+}
+
+const ProtectedJobsRouteChildren: ProtectedJobsRouteChildren = {
+  ProtectedJobsIdRoute: ProtectedJobsIdRoute,
+  ProtectedJobsExtractFromUrlRoute: ProtectedJobsExtractFromUrlRoute,
+  ProtectedJobsNewRoute: ProtectedJobsNewRoute,
+  ProtectedJobsIndexRoute: ProtectedJobsIndexRoute,
+}
+
+const ProtectedJobsRouteWithChildren = ProtectedJobsRoute._addFileChildren(
+  ProtectedJobsRouteChildren,
 )
 
-interface CronjobsIdRouteChildren {
-  CronjobsIdLogsRoute: typeof CronjobsIdLogsRoute
-  CronjobsIdIndexRoute: typeof CronjobsIdIndexRoute
+interface ProtectedKnowledgeBaseRouteChildren {
+  ProtectedKnowledgeBaseIndexRoute: typeof ProtectedKnowledgeBaseIndexRoute
 }
 
-const CronjobsIdRouteChildren: CronjobsIdRouteChildren = {
-  CronjobsIdLogsRoute: CronjobsIdLogsRoute,
-  CronjobsIdIndexRoute: CronjobsIdIndexRoute,
+const ProtectedKnowledgeBaseRouteChildren: ProtectedKnowledgeBaseRouteChildren =
+  {
+    ProtectedKnowledgeBaseIndexRoute: ProtectedKnowledgeBaseIndexRoute,
+  }
+
+const ProtectedKnowledgeBaseRouteWithChildren =
+  ProtectedKnowledgeBaseRoute._addFileChildren(
+    ProtectedKnowledgeBaseRouteChildren,
+  )
+
+interface ProtectedMailRouteChildren {
+  ProtectedMailIndexRoute: typeof ProtectedMailIndexRoute
 }
 
-const CronjobsIdRouteWithChildren = CronjobsIdRoute._addFileChildren(
-  CronjobsIdRouteChildren,
+const ProtectedMailRouteChildren: ProtectedMailRouteChildren = {
+  ProtectedMailIndexRoute: ProtectedMailIndexRoute,
+}
+
+const ProtectedMailRouteWithChildren = ProtectedMailRoute._addFileChildren(
+  ProtectedMailRouteChildren,
 )
 
-interface CronjobsRouteChildren {
-  CronjobsIdRoute: typeof CronjobsIdRouteWithChildren
-  CronjobsNewRoute: typeof CronjobsNewRoute
-  CronjobsIndexRoute: typeof CronjobsIndexRoute
+interface ProtectedRouteChildren {
+  ProtectedConversationsRoute: typeof ProtectedConversationsRouteWithChildren
+  ProtectedCronjobsRoute: typeof ProtectedCronjobsRouteWithChildren
+  ProtectedJobsRoute: typeof ProtectedJobsRouteWithChildren
+  ProtectedKnowledgeBaseRoute: typeof ProtectedKnowledgeBaseRouteWithChildren
+  ProtectedMailRoute: typeof ProtectedMailRouteWithChildren
+  ProtectedIndexRoute: typeof ProtectedIndexRoute
 }
 
-const CronjobsRouteChildren: CronjobsRouteChildren = {
-  CronjobsIdRoute: CronjobsIdRouteWithChildren,
-  CronjobsNewRoute: CronjobsNewRoute,
-  CronjobsIndexRoute: CronjobsIndexRoute,
+const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedConversationsRoute: ProtectedConversationsRouteWithChildren,
+  ProtectedCronjobsRoute: ProtectedCronjobsRouteWithChildren,
+  ProtectedJobsRoute: ProtectedJobsRouteWithChildren,
+  ProtectedKnowledgeBaseRoute: ProtectedKnowledgeBaseRouteWithChildren,
+  ProtectedMailRoute: ProtectedMailRouteWithChildren,
+  ProtectedIndexRoute: ProtectedIndexRoute,
 }
 
-const CronjobsRouteWithChildren = CronjobsRoute._addFileChildren(
-  CronjobsRouteChildren,
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
 )
-
-interface JobsRouteChildren {
-  JobsIdRoute: typeof JobsIdRoute
-  JobsExtractFromUrlRoute: typeof JobsExtractFromUrlRoute
-  JobsNewRoute: typeof JobsNewRoute
-  JobsIndexRoute: typeof JobsIndexRoute
-}
-
-const JobsRouteChildren: JobsRouteChildren = {
-  JobsIdRoute: JobsIdRoute,
-  JobsExtractFromUrlRoute: JobsExtractFromUrlRoute,
-  JobsNewRoute: JobsNewRoute,
-  JobsIndexRoute: JobsIndexRoute,
-}
-
-const JobsRouteWithChildren = JobsRoute._addFileChildren(JobsRouteChildren)
-
-interface KnowledgeBaseRouteChildren {
-  KnowledgeBaseIndexRoute: typeof KnowledgeBaseIndexRoute
-}
-
-const KnowledgeBaseRouteChildren: KnowledgeBaseRouteChildren = {
-  KnowledgeBaseIndexRoute: KnowledgeBaseIndexRoute,
-}
-
-const KnowledgeBaseRouteWithChildren = KnowledgeBaseRoute._addFileChildren(
-  KnowledgeBaseRouteChildren,
-)
-
-interface MailRouteChildren {
-  MailIndexRoute: typeof MailIndexRoute
-}
-
-const MailRouteChildren: MailRouteChildren = {
-  MailIndexRoute: MailIndexRoute,
-}
-
-const MailRouteWithChildren = MailRoute._addFileChildren(MailRouteChildren)
 
 interface ApiCronjobsIdRouteChildren {
   ApiCronjobsIdLogsRoute: typeof ApiCronjobsIdLogsRoute
@@ -1046,12 +1109,8 @@ const ApiCronjobsIdRouteWithChildren = ApiCronjobsIdRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ConversationsRoute: ConversationsRouteWithChildren,
-  CronjobsRoute: CronjobsRouteWithChildren,
-  JobsRoute: JobsRouteWithChildren,
-  KnowledgeBaseRoute: KnowledgeBaseRouteWithChildren,
-  MailRoute: MailRouteWithChildren,
+  ProtectedRoute: ProtectedRouteWithChildren,
+  LoginRoute: LoginRoute,
   ApiChatRoute: ApiChatRoute,
   ApiChatSyncRoute: ApiChatSyncRoute,
   ApiSectionsRoute: ApiSectionsRoute,

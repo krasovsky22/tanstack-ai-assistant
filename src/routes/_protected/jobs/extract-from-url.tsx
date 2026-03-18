@@ -19,7 +19,7 @@ import {
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 
-export const Route = createFileRoute('/jobs/extract-from-url')({
+export const Route = createFileRoute('/_protected/jobs/extract-from-url')({
   component: ReportsPage,
 });
 

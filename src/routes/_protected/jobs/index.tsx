@@ -21,7 +21,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-export const Route = createFileRoute('/jobs/')({
+export const Route = createFileRoute('/_protected/jobs/')({
   component: JobsDashboard,
 });
 

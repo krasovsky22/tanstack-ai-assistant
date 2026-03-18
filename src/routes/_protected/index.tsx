@@ -9,7 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { ChatInput } from '@/components/ChatInput';
 
-export const Route = createFileRoute('/')({ component: HomePage });
+export const Route = createFileRoute('/_protected/')({ component: HomePage });
 
 function GreenOrb() {
   return (

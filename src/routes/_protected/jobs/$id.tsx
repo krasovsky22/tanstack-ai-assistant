@@ -66,7 +66,7 @@ const resetJob = createServerFn({ method: 'POST' })
     return job;
   });
 
-export const Route = createFileRoute('/jobs/$id')({
+export const Route = createFileRoute('/_protected/jobs/$id')({
   loader: ({ params }) => getJob({ data: params.id }),
   component: EditJobPage,
 });

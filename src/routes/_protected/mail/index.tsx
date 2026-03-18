@@ -17,7 +17,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-export const Route = createFileRoute('/mail/')({
+export const Route = createFileRoute('/_protected/mail/')({
   component: MailDashboard,
 });
 

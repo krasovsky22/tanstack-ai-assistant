@@ -17,7 +17,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-export const Route = createFileRoute('/cronjobs/')({
+export const Route = createFileRoute('/_protected/cronjobs/')({
   component: CronjobsDashboard,
 });
 

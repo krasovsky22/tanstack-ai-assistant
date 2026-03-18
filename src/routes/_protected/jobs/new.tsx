@@ -17,7 +17,7 @@ import { FormField } from '@/components/FormField';
 import { JOB_STATUSES } from '@/lib/job-constants';
 import { STATUS_LABELS } from '@/components/StatusBadge';
 
-export const Route = createFileRoute('/jobs/new')({
+export const Route = createFileRoute('/_protected/jobs/new')({
   component: NewJobPage,
 });
 

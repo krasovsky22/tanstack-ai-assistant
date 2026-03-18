@@ -43,7 +43,7 @@ const getCronjobLogs = createServerFn({ method: 'GET' })
     return { job, logs };
   });
 
-export const Route = createFileRoute('/cronjobs/$id/logs')({
+export const Route = createFileRoute('/_protected/cronjobs/$id/logs')({
   loader: ({ params }) => getCronjobLogs({ data: params.id }),
   component: CronjobLogsPage,
 });

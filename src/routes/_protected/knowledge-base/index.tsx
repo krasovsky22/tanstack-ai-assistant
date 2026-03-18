@@ -22,7 +22,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-export const Route = createFileRoute('/knowledge-base/')({
+export const Route = createFileRoute('/_protected/knowledge-base/')({
   component: KnowledgeBaseDashboard,
 });
 

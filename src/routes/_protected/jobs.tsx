@@ -2,10 +2,10 @@ import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { useSectionDisabled } from '@/lib/sections';
 import SectionDisabled from '@/components/SectionDisabled';
 
-export const Route = createFileRoute('/conversations')({
+export const Route = createFileRoute('/_protected/jobs')({
   component: () => {
-    const disabled = useSectionDisabled('ai');
-    if (disabled) return <SectionDisabled name="AI" />;
+    const disabled = useSectionDisabled('jobs');
+    if (disabled) return <SectionDisabled name="Job Search" />;
     return <Outlet />;
   },
 });
