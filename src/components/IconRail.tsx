@@ -6,6 +6,7 @@ import {
   Clock,
   MessageSquare,
   Mail,
+  Settings,
 } from 'lucide-react';
 import { useDisabledSections, type Section } from '@/lib/sections';
 
@@ -101,6 +102,7 @@ export default function IconRail() {
   const isMailActive = pathname.startsWith('/mail');
   const isCronjobsActive = pathname.startsWith('/cronjobs');
   const isKbActive = pathname.startsWith('/knowledge-base');
+  const isSettingsActive = pathname.startsWith('/settings');
 
   return (
     <Flex
@@ -169,6 +171,15 @@ export default function IconRail() {
             isActive={isMailActive}
           />
         )}
+
+        <Box mt="auto">
+          <RailIcon
+            icon={<Settings size={18} />}
+            label="Settings"
+            to="/settings"
+            isActive={isSettingsActive}
+          />
+        </Box>
       </Flex>
     </Flex>
   );

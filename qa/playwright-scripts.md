@@ -98,6 +98,25 @@
 - **Notes**:
   - The `transition: margin-left 0.2s` on the main content area fires on collapse/expand but the sidebar panel itself has no `transition: width` — there is a visual mismatch (main slides, sidebar snaps). See visual polish improvement V-3 in QA report.
 
+## User Authentication Flow
+- **ID**: user-auth-flow
+- **Coverage**: Phase 4 user auth — login page rendering, valid login + navigation, session persistence after refresh, invalid credentials error display
+- **Steps**:
+  1. Clear cookies/localStorage/sessionStorage via `browser_evaluate`, navigate to `http://<host-ip>:3000/login`
+  2. Fill username=`testuser`, password=`mypassword123`, click Sign in — assert URL becomes `/`, IconRail nav (AI Chat, Job Search, Automation, Knowledge Base, Mail) visible in snapshot
+  3. Reload page (`location.reload()`) — assert URL stays `/`, home page content intact, no redirect to `/login`
+  4. Clear cookies/localStorage/sessionStorage, navigate to `/login`
+  5. Fill username=`wronguser`, password=`wrongpass`, click Sign in — assert error text "Invalid credentials" appears in snapshot, URL stays `/login`
+- **Last Run**: 2026-03-18
+- **Status**: passing
+- **Notes**:
+  - Fix applied: server function now returns `{ success: true }` instead of throwing redirect; client calls `router.navigate({ to: '/' })` on success. All 3 targeted tests pass.
+  - Session cookie is `HttpOnly` — JS `document.cookie` returns `""` after clearing, which is correct for non-HttpOnly cookies. The session cookie itself persists through the browser context across reload (by design).
+  - Cookie clearing via `document.cookie` JS manipulation is sufficient for test isolation between the three sub-tests here since each test navigates to `/login` fresh.
+  - "Invalid credentials" error text renders as a `paragraph` element below the password field — reliable selector target.
+  - Console noise during tests: 1 WebSocket DevTools error + 2 Vite crypto warnings — all known non-blocking, safe to ignore.
+  - Host IP: `192.168.68.103` (as of 2026-03-18). Always confirm with `ifconfig | grep "inet " | grep -v 127.0.0.1` before running.
+
 ## Cronjob List Page
 - **ID**: cronjob-list
 - **Coverage**: `/cronjobs` — lists all cronjobs with name, schedule, status badge, last run, and action buttons

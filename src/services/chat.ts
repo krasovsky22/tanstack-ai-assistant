@@ -1,11 +1,13 @@
 import { maxIterations } from '@tanstack/ai';
 import { openaiText } from '@tanstack/ai-openai';
+import type { UserJiraSettings } from '@/services/jira';
 
 export async function buildChatOptions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: any[],
   conversationId?: string,
   userId?: string | null,
+  jiraSettings?: UserJiraSettings | null,
 ) {
   const {
     getZapierMcpToolDefinitions,
@@ -40,7 +42,7 @@ export async function buildChatOptions(
     ...(enabled('cmd') ? getCmdTools() : []),
     ...(enabled('memory') ? getMemoryTools() : []),
     ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
-    ...(enabled('jira') ? getJiraTools() : []),
+    ...(enabled('jira') && jiraSettings?.jiraBaseUrl && jiraSettings?.jiraEmail && jiraSettings?.jiraPat ? getJiraTools(jiraSettings) : []),
   ];
   const userPromptSnippet = userId
     ? `\nThe authenticated user's id is: ${userId}.`

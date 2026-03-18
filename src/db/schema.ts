@@ -99,6 +99,17 @@ export const knowledgebaseFiles = pgTable('knowledgebase_files', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+export const userSettings = pgTable('user_settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
+  jiraBaseUrl: text('jira_base_url'),
+  jiraEmail: text('jira_email'),
+  jiraPat: text('jira_pat'),
+  jiraDefaultProject: text('jira_default_project'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const jobEmails = pgTable('job_emails', {
   id: uuid('id').primaryKey().defaultRandom(),
   jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),

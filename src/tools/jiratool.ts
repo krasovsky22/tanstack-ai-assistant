@@ -12,14 +12,15 @@ import {
   createIssue,
   getTransitions,
   transitionIssue,
+  type UserJiraSettings,
 } from '@/services/jira';
-function cfg() {
-  const config = getJiraConfig();
-  if (!config) return { config: null, error: JIRA_CONFIG_ERROR } as const;
-  return { config, error: null } as const;
-}
 
-export function getJiraTools() {
+export function getJiraTools(settings?: UserJiraSettings | null) {
+  function cfg() {
+    const config = getJiraConfig(settings);
+    if (!config) return { config: null, error: JIRA_CONFIG_ERROR } as const;
+    return { config, error: null } as const;
+  }
   return [
     toolDefinition({
       name: 'jira_search',
@@ -177,15 +178,14 @@ export function getJiraTools() {
         email: z
           .string()
           .nullish()
-          .default(process.env.JIRA_EMAIL ?? null)
           .describe(
-            'Email address of the user to assign. Omit or pass null to assign to the default user (JIRA_EMAIL). Use "unassign" to remove assignee.',
+            'Email address of the user to assign. Omit or pass null to assign to the default user (configured JIRA email). Use "unassign" to remove assignee.',
           ),
       }),
     }).server(async ({ issueKey, email }) => {
       const { config, error } = cfg();
       if (!config) return { success: false, error };
-      const resolvedEmail = email ?? process.env.JIRA_EMAIL ?? null;
+      const resolvedEmail = email ?? settings?.jiraEmail ?? null;
       try {
         await assignIssue(config, issueKey, resolvedEmail);
         return { success: true };
@@ -206,7 +206,6 @@ export function getJiraTools() {
         projectKey: z
           .string()
           .optional()
-          .default(process.env.JIRA_DEFAULT_PROJECT ?? '')
           .describe(
             'Jira project key, e.g. PROJ. Omit to use the configured default project.',
           ),
@@ -225,9 +224,8 @@ export function getJiraTools() {
         assignee: z
           .string()
           .optional()
-          .default(process.env.JIRA_EMAIL ?? '')
           .describe(
-            'Email address of the user to assign the issue to. Defaults to JIRA_EMAIL when omitted.',
+            'Email address of the user to assign the issue to. Defaults to configured JIRA email when omitted.',
           ),
         priority: z
           .string()
@@ -254,18 +252,18 @@ export function getJiraTools() {
         if (!config) return { success: false, error };
 
         const resolvedProjectKey =
-          projectKey ?? process.env.JIRA_DEFAULT_PROJECT;
+          projectKey ?? settings?.jiraDefaultProject;
         if (!resolvedProjectKey) {
           return {
             success: false,
             error:
-              'No project key provided and JIRA_DEFAULT_PROJECT is not configured.',
+              'No project key provided and no default project is configured in user settings.',
           };
         }
 
         try {
           const resolvedAssignee =
-            assignee || process.env.JIRA_EMAIL || undefined;
+            assignee || settings?.jiraEmail || undefined;
           const result = await createIssue(config, {
             projectKey: resolvedProjectKey,
             issueType,

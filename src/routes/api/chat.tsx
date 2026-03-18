@@ -24,8 +24,15 @@ export const Route = createFileRoute('/api/chat')({
 
         const { messages, conversationId } = await request.json();
 
+        let jiraSettings = null;
+        if (userId) {
+          const { getUserSettings, toJiraSettings } = await import('@/services/user-settings');
+          const settings = await getUserSettings(userId);
+          jiraSettings = toJiraSettings(settings);
+        }
+
         try {
-          const options = await buildChatOptions(messages, conversationId, userId);
+          const options = await buildChatOptions(messages, conversationId, userId, jiraSettings);
           const stream = chat(options);
           return toHttpResponse(stream);
         } catch (error) {

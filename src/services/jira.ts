@@ -4,18 +4,26 @@ export interface JiraConfig {
   baseUrl: string;
   email: string;
   token: string;
+  defaultProject?: string | null;
 }
 
-export function getJiraConfig(): JiraConfig | null {
-  const baseUrl = process.env.JIRA_BASE_URL?.replace(/\/$/, '');
-  const email = process.env.JIRA_EMAIL;
-  const token = process.env.JIRA_PAT;
+export interface UserJiraSettings {
+  jiraBaseUrl?: string | null;
+  jiraEmail?: string | null;
+  jiraPat?: string | null;
+  jiraDefaultProject?: string | null;
+}
+
+export function getJiraConfig(settings?: UserJiraSettings | null): JiraConfig | null {
+  const baseUrl = settings?.jiraBaseUrl?.replace(/\/$/, '');
+  const email = settings?.jiraEmail;
+  const token = settings?.jiraPat;
   if (!baseUrl || !email || !token) return null;
-  return { baseUrl, email, token };
+  return { baseUrl, email, token, defaultProject: settings?.jiraDefaultProject };
 }
 
 export const JIRA_CONFIG_ERROR =
-  'JIRA_BASE_URL and JIRA_PAT environment variables are not configured. Ask the user to set them.';
+  'Jira is not configured. Ask the user to set up their Jira credentials in the Settings page.';
 
 // ── HTTP helper ────────────────────────────────────────────────────────────
 

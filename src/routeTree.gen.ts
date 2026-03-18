@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ApiUserSettingsRouteImport } from './routes/api/user-settings'
 import { Route as ApiToolsRouteImport } from './routes/api/tools'
 import { Route as ApiSectionsRouteImport } from './routes/api/sections'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedMailRouteImport } from './routes/_protected/mail'
 import { Route as ProtectedKnowledgeBaseRouteImport } from './routes/_protected/knowledge-base'
 import { Route as ProtectedJobsRouteImport } from './routes/_protected/jobs'
@@ -73,6 +75,11 @@ const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ApiUserSettingsRoute = ApiUserSettingsRouteImport.update({
+  id: '/api/user-settings',
+  path: '/api/user-settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiToolsRoute = ApiToolsRouteImport.update({
   id: '/api/tools',
   path: '/api/tools',
@@ -92,6 +99,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedMailRoute = ProtectedMailRouteImport.update({
   id: '/mail',
@@ -318,10 +330,12 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof ProtectedJobsRouteWithChildren
   '/knowledge-base': typeof ProtectedKnowledgeBaseRouteWithChildren
   '/mail': typeof ProtectedMailRouteWithChildren
+  '/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
+  '/api/user-settings': typeof ApiUserSettingsRoute
   '/conversations/$id': typeof ProtectedConversationsIdRoute
   '/conversations/new': typeof ProtectedConversationsNewRoute
   '/cronjobs/$id': typeof ProtectedCronjobsIdRouteWithChildren
@@ -362,10 +376,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
+  '/api/user-settings': typeof ApiUserSettingsRoute
   '/': typeof ProtectedIndexRoute
   '/conversations/$id': typeof ProtectedConversationsIdRoute
   '/conversations/new': typeof ProtectedConversationsNewRoute
@@ -413,10 +429,12 @@ export interface FileRoutesById {
   '/_protected/jobs': typeof ProtectedJobsRouteWithChildren
   '/_protected/knowledge-base': typeof ProtectedKnowledgeBaseRouteWithChildren
   '/_protected/mail': typeof ProtectedMailRouteWithChildren
+  '/_protected/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
+  '/api/user-settings': typeof ApiUserSettingsRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/conversations/$id': typeof ProtectedConversationsIdRoute
   '/_protected/conversations/new': typeof ProtectedConversationsNewRoute
@@ -466,10 +484,12 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/knowledge-base'
     | '/mail'
+    | '/settings'
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
     | '/api/tools'
+    | '/api/user-settings'
     | '/conversations/$id'
     | '/conversations/new'
     | '/cronjobs/$id'
@@ -510,10 +530,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/settings'
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
     | '/api/tools'
+    | '/api/user-settings'
     | '/'
     | '/conversations/$id'
     | '/conversations/new'
@@ -560,10 +582,12 @@ export interface FileRouteTypes {
     | '/_protected/jobs'
     | '/_protected/knowledge-base'
     | '/_protected/mail'
+    | '/_protected/settings'
     | '/api/chat'
     | '/api/chat-sync'
     | '/api/sections'
     | '/api/tools'
+    | '/api/user-settings'
     | '/_protected/'
     | '/_protected/conversations/$id'
     | '/_protected/conversations/new'
@@ -611,6 +635,7 @@ export interface RootRouteChildren {
   ApiChatSyncRoute: typeof ApiChatSyncRoute
   ApiSectionsRoute: typeof ApiSectionsRoute
   ApiToolsRoute: typeof ApiToolsRoute
+  ApiUserSettingsRoute: typeof ApiUserSettingsRoute
   ApiConversationsIdRoute: typeof ApiConversationsIdRoute
   ApiCronjobsIdRoute: typeof ApiCronjobsIdRouteWithChildren
   ApiFilesFilenameRoute: typeof ApiFilesFilenameRoute
@@ -657,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/api/user-settings': {
+      id: '/api/user-settings'
+      path: '/api/user-settings'
+      fullPath: '/api/user-settings'
+      preLoaderRoute: typeof ApiUserSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tools': {
       id: '/api/tools'
       path: '/api/tools'
@@ -684,6 +716,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_protected/settings': {
+      id: '/_protected/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ProtectedSettingsRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/_protected/mail': {
       id: '/_protected/mail'
@@ -1078,6 +1117,7 @@ interface ProtectedRouteChildren {
   ProtectedJobsRoute: typeof ProtectedJobsRouteWithChildren
   ProtectedKnowledgeBaseRoute: typeof ProtectedKnowledgeBaseRouteWithChildren
   ProtectedMailRoute: typeof ProtectedMailRouteWithChildren
+  ProtectedSettingsRoute: typeof ProtectedSettingsRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
 }
 
@@ -1087,6 +1127,7 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedJobsRoute: ProtectedJobsRouteWithChildren,
   ProtectedKnowledgeBaseRoute: ProtectedKnowledgeBaseRouteWithChildren,
   ProtectedMailRoute: ProtectedMailRouteWithChildren,
+  ProtectedSettingsRoute: ProtectedSettingsRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
 }
 
@@ -1115,6 +1156,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatSyncRoute: ApiChatSyncRoute,
   ApiSectionsRoute: ApiSectionsRoute,
   ApiToolsRoute: ApiToolsRoute,
+  ApiUserSettingsRoute: ApiUserSettingsRoute,
   ApiConversationsIdRoute: ApiConversationsIdRoute,
   ApiCronjobsIdRoute: ApiCronjobsIdRouteWithChildren,
   ApiFilesFilenameRoute: ApiFilesFilenameRoute,

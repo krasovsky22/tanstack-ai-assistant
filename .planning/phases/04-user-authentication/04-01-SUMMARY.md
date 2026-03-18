@@ -137,6 +137,17 @@ openssl rand -base64 32
 - `bcryptjs` available for reuse in login route (plan 04-02)
 - Wave 0 tests GREEN — ready for session/auth implementation
 
+## Self-Check: PASSED
+
+- FOUND: src/db/schema.ts
+- FOUND: src/db/migrations/0009_add_users_table.sql
+- FOUND: src/db/migrations/0010_add_user_id_to_tables.sql
+- FOUND: scripts/create-user.mjs
+- FOUND: src/db/schema.test.ts
+- FOUND: src/db/user-scoping.test.ts
+- FOUND commit: 41e6cdc (Wave 0 test stubs)
+- FOUND commit: fa016c8 (schema + migrations + bcryptjs + create-user script)
+
 ---
 *Phase: 04-user-authentication*
 *Completed: 2026-03-18*
