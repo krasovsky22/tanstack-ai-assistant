@@ -8,11 +8,34 @@ export const Route = createFileRoute('/api/cronjobs/$id')({
         const { db } = await import('@/db');
         const { cronjobs } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
         const body = await request.json();
 
         if (body.cronExpression !== undefined && !validate(body.cronExpression)) {
           return new Response(JSON.stringify({ error: 'Invalid cron expression' }), {
             status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Fetch existing record to verify ownership
+        const [existing] = await db
+          .select()
+          .from(cronjobs)
+          .where(eq(cronjobs.id, params.id));
+
+        if (!existing) {
+          return new Response(JSON.stringify({ error: 'Not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (userId && existing.userId && existing.userId !== userId) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
             headers: { 'Content-Type': 'application/json' },
           });
         }
@@ -45,6 +68,22 @@ export const Route = createFileRoute('/api/cronjobs/$id')({
         const { db } = await import('@/db');
         const { cronjobs } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
+
+        // Fetch existing record to verify ownership
+        const [existing] = await db
+          .select()
+          .from(cronjobs)
+          .where(eq(cronjobs.id, params.id));
+
+        if (existing && userId && existing.userId && existing.userId !== userId) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 
         await db.delete(cronjobs).where(eq(cronjobs.id, params.id));
 

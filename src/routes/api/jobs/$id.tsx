@@ -29,7 +29,30 @@ export const Route = createFileRoute('/api/jobs/$id')({
         const { db } = await import('@/db');
         const { jobs } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
         const body = await request.json();
+
+        // Fetch existing job to verify ownership
+        const [existing] = await db
+          .select()
+          .from(jobs)
+          .where(eq(jobs.id, params.id));
+
+        if (!existing) {
+          return new Response(JSON.stringify({ error: 'Not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (userId && existing.userId && existing.userId !== userId) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 
         const [job] = await db
           .update(jobs)
@@ -53,6 +76,22 @@ export const Route = createFileRoute('/api/jobs/$id')({
         const { db } = await import('@/db');
         const { jobs } = await import('@/db/schema');
         const { eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
+
+        // Fetch existing job to verify ownership
+        const [existing] = await db
+          .select()
+          .from(jobs)
+          .where(eq(jobs.id, params.id));
+
+        if (existing && userId && existing.userId && existing.userId !== userId) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 
         await db.delete(jobs).where(eq(jobs.id, params.id));
 

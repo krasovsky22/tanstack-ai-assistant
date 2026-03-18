@@ -7,6 +7,9 @@ export const Route = createFileRoute('/api/jobs/')({
         const { db } = await import('@/db');
         const { jobs } = await import('@/db/schema');
         const { desc, ilike, eq, and } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
 
         const url = new URL(request.url);
         const status = url.searchParams.get('status');
@@ -27,6 +30,9 @@ export const Route = createFileRoute('/api/jobs/')({
             ),
           );
         }
+        if (userId) {
+          conditions.push(eq(jobs.userId, userId));
+        }
 
         const rows = await db
           .select()
@@ -42,6 +48,9 @@ export const Route = createFileRoute('/api/jobs/')({
       POST: async ({ request }) => {
         const { db } = await import('@/db');
         const { jobs } = await import('@/db/schema');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
         const body = await request.json();
 
         const [job] = await db
@@ -54,6 +63,7 @@ export const Route = createFileRoute('/api/jobs/')({
             status: body.status ?? 'new',
             link: body.link ?? null,
             notes: body.notes ?? null,
+            userId: userId ?? null,
           })
           .returning();
 

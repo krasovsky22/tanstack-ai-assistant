@@ -7,9 +7,16 @@ export const Route = createFileRoute('/api/cronjobs/')({
       GET: async () => {
         const { db } = await import('@/db');
         const { cronjobs } = await import('@/db/schema');
-        const { desc } = await import('drizzle-orm');
+        const { desc, eq } = await import('drizzle-orm');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
 
-        const rows = await db.select().from(cronjobs).orderBy(desc(cronjobs.createdAt));
+        const rows = await db
+          .select()
+          .from(cronjobs)
+          .where(userId ? eq(cronjobs.userId, userId) : undefined)
+          .orderBy(desc(cronjobs.createdAt));
 
         return new Response(JSON.stringify(rows), {
           headers: { 'Content-Type': 'application/json' },
@@ -19,6 +26,9 @@ export const Route = createFileRoute('/api/cronjobs/')({
       POST: async ({ request }) => {
         const { db } = await import('@/db');
         const { cronjobs } = await import('@/db/schema');
+        const { useAppSession } = await import('@/services/session');
+        const session = await useAppSession();
+        const userId = session.data.userId ?? null;
         const body = await request.json();
 
         if (!validate(body.cronExpression)) {
@@ -35,6 +45,7 @@ export const Route = createFileRoute('/api/cronjobs/')({
             cronExpression: body.cronExpression,
             prompt: body.prompt,
             isActive: body.isActive ?? true,
+            userId: userId ?? null,
           })
           .returning();
 
