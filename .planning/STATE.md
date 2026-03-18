@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-03-11T08:55:18.355Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-18T09:02:44.151Z"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 4
+  completed_plans: 1
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 2 — Add Elasticsearch to Docker stack for LLM memory
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-11T08:52:27.244Z
-- **Stopped At:** Completed 03-03-PLAN.md
+- **Last session:** 2026-03-18T09:02:44.148Z
+- **Stopped At:** Completed 04-01-PLAN.md
 
 ## Progress
 
@@ -64,6 +64,8 @@ Phase 02: [####] 4/4 plans complete
 - [Phase 03]: jira_add_comment returns res.json() directly (not wrapped) — matches test assertion toMatchObject({ id })
 - [Phase 03]: getJiraTools registered in buildChatOptions() with DISABLE_TOOLS=jira guard alongside existing tool groups
 - [Phase 03]: JIRA_DEFAULT_PROJECT documented as optional reference var — not actively consumed by tools in this phase
+- [Phase 04]: FK columns referencing users.id (uuid) must use uuid type — text FK causes type mismatch in PostgreSQL
+- [Phase 04]: Wave 0 TDD stubs confirmed RED before schema changes, GREEN after — pattern established for auth phase tests
 
 ### Performance Metrics
 
@@ -80,4 +82,5 @@ Phase 02: [####] 4/4 plans complete
 | Phase 03-jira-integration P03-01 | 3min | 2 tasks | 2 files |
 | Phase 03 P03-02 | 2min | 1 tasks | 4 files |
 | Phase 03 P03-03 | 2min | 3 tasks | 1 files |
+| Phase 04 P04-01 | 4min | 2 tasks | 9 files |
 
