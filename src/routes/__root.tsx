@@ -1,4 +1,9 @@
-import { HeadContent, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router';
+import {
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  useRouterState,
+} from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { aiDevtoolsPlugin } from '@tanstack/react-ai-devtools';
@@ -22,10 +27,10 @@ const SIDEBAR_OPEN_WIDTH = '340px';
 const SIDEBAR_COLLAPSED_WIDTH = '108px';
 
 const fetchUser = createServerFn({ method: 'GET' }).handler(async () => {
-  const session = await useAppSession()
-  if (!session.data.userId) return null
-  return { userId: session.data.userId, username: session.data.username }
-})
+  const session = await useAppSession();
+  if (!session.data.userId) return null;
+  return { userId: session.data.userId, username: session.data.username };
+});
 
 function NotFound() {
   return (
@@ -40,15 +45,17 @@ function NotFound() {
       <Box fontSize="2xl" fontWeight="bold" color="text.primary">
         404 - Page Not Found
       </Box>
-      <Box color="text.secondary">The page you're looking for doesn't exist.</Box>
+      <Box color="text.secondary">
+        The page you're looking for doesn't exist.
+      </Box>
     </Flex>
   );
 }
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
-    const user = await fetchUser()
-    return { user }
+    const user = await fetchUser();
+    return { user };
   },
   notFoundComponent: NotFound,
   head: () => ({
@@ -83,14 +90,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const mainMargin = isLoginPage
     ? '0px'
     : showSidebar
-      ? isSidebarOpen ? SIDEBAR_OPEN_WIDTH : SIDEBAR_COLLAPSED_WIDTH
+      ? isSidebarOpen
+        ? SIDEBAR_OPEN_WIDTH
+        : SIDEBAR_COLLAPSED_WIDTH
       : '60px';
 
   return (
     <Flex minH="100vh" bg="bg.page">
       {!isLoginPage && <IconRail />}
       {!isLoginPage && showSidebar && (
-        <ChatSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen((v) => !v)} />
+        <ChatSidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen((v) => !v)}
+        />
       )}
       <Box
         flex="1"
