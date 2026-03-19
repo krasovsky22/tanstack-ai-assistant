@@ -1,198 +1,87 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import {
+  Badge,
   Box,
+  Button,
   Flex,
   Grid,
   HStack,
+  Heading,
+  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import { ChatInput } from '@/components/ChatInput';
+import { MessageSquare, List, Briefcase, Clock, Settings } from 'lucide-react';
 
 export const Route = createFileRoute('/_protected/')({ component: HomePage });
 
-function GreenOrb() {
-  return (
-    <Box
-      position="relative"
-      w="100px"
-      h="100px"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      mb="2"
-    >
-      <Box
-        position="absolute"
-        inset="-20px"
-        borderRadius="full"
-        background="radial-gradient(circle, rgba(90,158,58,0.3) 0%, rgba(90,158,58,0.1) 50%, transparent 70%)"
-      />
-      <Box
-        w="80px"
-        h="80px"
-        borderRadius="full"
-        background="radial-gradient(circle at 35% 35%, #7ACC50, #3D7A28)"
-        boxShadow="0 8px 32px rgba(61,122,40,0.4)"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        position="relative"
-      >
-        <Box
-          position="absolute"
-          top="8px"
-          right="10px"
-          w="8px"
-          h="8px"
-          borderRadius="full"
-          bg="rgba(255,255,255,0.6)"
-        />
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 2L13.5 8.5L20 7L15 12L20 17L13.5 15.5L12 22L10.5 15.5L4 17L9 12L4 7L10.5 8.5L12 2Z"
-            fill="white"
-          />
-        </svg>
-      </Box>
-    </Box>
-  );
-}
-
-function CodeSnippetPreview({ type }: { type: 'generator' | 'explain' | 'debug' }) {
-  if (type === 'generator') {
-    return (
-      <Box
-        borderRadius="8px"
-        overflow="hidden"
-        border="1px solid"
-        borderColor="border.default"
-        mb="3"
-        h="120px"
-      >
-        <HStack px="3" py="2" bg="brand.600" gap="2">
-          <Box w="8px" h="8px" borderRadius="full" bg="rgba(255,255,255,0.4)" />
-          <Text fontSize="xs" color="white" fontWeight="medium">
-            Create auth API with JWT
-          </Text>
-        </HStack>
-        <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="text.subtle">
-          <Text color="text.secondary">function</Text>
-          <Text color="text.primary">
-            {' '}auth() {'{'}
-          </Text>
-          <Text pl="4" color="text.secondary">
-            ...
-          </Text>
-          <Text color="text.primary">{'}'}</Text>
-        </Box>
-      </Box>
-    );
-  }
-
-  if (type === 'explain') {
-    return (
-      <Box
-        borderRadius="8px"
-        overflow="hidden"
-        border="1px solid"
-        borderColor="border.default"
-        mb="3"
-        h="120px"
-        position="relative"
-      >
-        <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="text.subtle" h="full">
-          <Text>
-            <Text as="span" color="text.secondary">while </Text>
-            <Text as="span">(i {'<='} 5) {'{'}</Text>
-          </Text>
-          <Text pl="4" color="text.secondary">...</Text>
-          <Text>{'}'}</Text>
-          <Box
-            position="absolute"
-            right="8px"
-            top="50%"
-            transform="translateY(-50%)"
-            bg="bg.surface"
-            borderRadius="6px"
-            border="1px solid"
-            borderColor="border.default"
-            px="2"
-            py="1"
-            shadow="sm"
-          >
-            <Text fontSize="xs" color="text.subtle" fontWeight="medium">
-              Prevents infinite loop
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-
-  return (
-    <Box
-      borderRadius="8px"
-      overflow="hidden"
-      border="1px solid"
-      borderColor="border.default"
-      mb="3"
-      h="120px"
-    >
-      <Box bg="#FAFAFA" p="3" fontFamily="mono" fontSize="xs" color="text.subtle">
-        <Text>
-          <Text as="span" color="text.secondary">const </Text>
-          <Text as="span">res = fetch("/api");</Text>
-        </Text>
-        <Text>
-          <Text as="span" color="text.secondary">const </Text>
-          <Text as="span">data = res.json();</Text>
-        </Text>
-        <Text>
-          <Text as="span" color="text.secondary">console</Text>
-          <Text as="span">.log(</Text>
-          <Text as="span" color="brand.600" style={{ textDecoration: 'underline' }}>data.name</Text>
-          <Text as="span">);</Text>
-        </Text>
-      </Box>
-    </Box>
-  );
-}
-
-interface FeatureCardProps {
-  type: 'generator' | 'explain' | 'debug';
+type Conversation = {
+  id: string;
   title: string;
-  description: string;
-  prompt: string;
+  source: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Job = {
+  id: string;
+  title: string;
+  company: string;
+  status: string;
+};
+
+type Cronjob = {
+  id: string;
+  name: string;
+  cronExpression: string;
+  isActive: boolean;
+  lastRunAt: string | null;
+};
+
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
-function FeatureCard({ type, title, description, prompt }: FeatureCardProps) {
-  const navigate = useNavigate();
-
-  return (
-    <Box
-      bg="bg.surface"
-      borderRadius="16px"
-      border="1px solid"
-      borderColor="border.default"
-      p="4"
-      cursor="pointer"
-      _hover={{ shadow: 'md', borderColor: '#D1FAE5', transform: 'translateY(-2px)' }}
-      transition="all 0.2s"
-      onClick={() =>
-        navigate({ to: '/conversations/new', search: { q: prompt } } as never)
-      }
-    >
-      <CodeSnippetPreview type={type} />
-      <Text fontWeight="bold" color="text.primary" fontSize="md" mb="1">
-        {title}
-      </Text>
-      <Text fontSize="sm" color="text.secondary" lineHeight="1.5">
-        {description}
-      </Text>
-    </Box>
-  );
+function sourceBadgeColor(source: string | null): string {
+  if (source === 'telegram') return 'blue';
+  if (source === 'cron') return 'green';
+  return 'gray';
 }
+
+const JOB_STATUS_COLORS: Record<string, string> = {
+  new: 'blue',
+  processed: 'yellow',
+  resume_generated: 'purple',
+  applied: 'green',
+  answered: 'violet',
+  scheduled_for_interview: 'orange',
+  offer_received: 'green',
+  rejected: 'red',
+  withdrawn: 'gray',
+  'generated-from-email': 'orange',
+};
+
+const JOB_STATUS_LABELS: Record<string, string> = {
+  new: 'New',
+  processed: 'Processed',
+  resume_generated: 'Resume Generated',
+  applied: 'Applied',
+  answered: 'Answered',
+  scheduled_for_interview: 'Interview Scheduled',
+  offer_received: 'Offer Received',
+  rejected: 'Rejected',
+  withdrawn: 'Withdrawn',
+  'generated-from-email': 'From Email',
+};
 
 function HomePageChatInput() {
   const navigate = useNavigate();
@@ -212,78 +101,379 @@ function HomePageChatInput() {
   );
 }
 
-function HomePage() {
-  return (
-    <Flex
-      direction="column"
-      minH="100vh"
-      bg="bg.page"
-      p="6"
-      gap="4"
-    >
-      <Box
-        bg="bg.surface"
-        borderRadius="20px"
-        p="8"
-        flex="1"
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        minH="300px"
-        mb="2"
-      >
-        <VStack gap="3" align="center" mb="0">
-          <GreenOrb />
-          <Text
-            fontSize="4xl"
-            fontWeight="extrabold"
-            color="text.primary"
-            textAlign="center"
-            lineHeight="1.1"
-          >
-            Built to think clearly.
-          </Text>
-          <Text
-            fontSize="3xl"
-            fontWeight="bold"
-            color="#C4C4C4"
-            textAlign="center"
-            lineHeight="1.2"
-          >
-            Helping you write better code.
-          </Text>
-        </VStack>
-      </Box>
+interface QuickActionCardProps {
+  icon: React.ReactNode;
+  label: string;
+  subtitle: string;
+  onClick: () => void;
+}
 
+function QuickActionCard({ icon, label, subtitle, onClick }: QuickActionCardProps) {
+  return (
+    <Box
+      bg="bg.surface"
+      borderRadius="12px"
+      border="1px solid"
+      borderColor="border.default"
+      p="4"
+      cursor="pointer"
+      _hover={{ shadow: 'md', borderColor: 'brand.300' }}
+      transition="all 0.2s"
+      onClick={onClick}
+    >
+      <VStack align="start" gap="2">
+        <Box color="brand.600">{icon}</Box>
+        <Box>
+          <Text fontWeight="bold" color="text.primary" fontSize="sm">
+            {label}
+          </Text>
+          <Text fontSize="xs" color="text.secondary">
+            {subtitle}
+          </Text>
+        </Box>
+      </VStack>
+    </Box>
+  );
+}
+
+function RecentConversationsPanel() {
+  const { data: conversations, isLoading } = useQuery<Conversation[]>({
+    queryKey: ['conversations'],
+    queryFn: async () => {
+      const res = await fetch('/api/conversations');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const cardStyle = {
+    bg: 'bg.surface' as const,
+    borderRadius: '16px',
+    border: '1px solid',
+    borderColor: 'border.default' as const,
+    p: '6',
+  };
+
+  return (
+    <Box {...cardStyle}>
+      <HStack justify="space-between" mb="4">
+        <Text fontWeight="bold" color="text.primary">
+          Recent Conversations
+        </Text>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/conversations">View All</Link>
+        </Button>
+      </HStack>
+
+      {isLoading ? (
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} height="52px" borderRadius="md" />
+          ))}
+        </VStack>
+      ) : !conversations || conversations.length === 0 ? (
+        <VStack gap="2" py="8" alignItems="center" textAlign="center">
+          <Text color="text.secondary" fontSize="sm">
+            No conversations yet
+          </Text>
+          <Box asChild fontSize="sm" color="brand.600" _hover={{ textDecoration: 'underline' }}>
+            <Link to="/conversations/new">Start one</Link>
+          </Box>
+        </VStack>
+      ) : (
+        <VStack gap="2" align="stretch">
+          {[...conversations]
+            .sort(
+              (a, b) =>
+                new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+            )
+            .slice(0, 5)
+            .map((c) => (
+              <Box
+                key={c.id}
+                asChild
+                display="block"
+                p="3"
+                borderRadius="md"
+                border="1px solid"
+                borderColor="border.default"
+                _hover={{ bg: 'bg.subtle' }}
+                transition="all 0.15s ease"
+                style={{ textDecoration: 'none' }}
+              >
+                <Link to="/conversations/$id" params={{ id: c.id }}>
+                  <HStack justify="space-between" gap="2">
+                    <Text
+                      fontWeight="medium"
+                      color="text.primary"
+                      fontSize="sm"
+                      truncate
+                      flex="1"
+                    >
+                      {c.title}
+                    </Text>
+                    <HStack gap="2" flexShrink="0">
+                      {c.source && (
+                        <Badge
+                          colorPalette={sourceBadgeColor(c.source)}
+                          variant="subtle"
+                          borderRadius="full"
+                          px="2"
+                          fontSize="xs"
+                          textTransform="capitalize"
+                        >
+                          {c.source}
+                        </Badge>
+                      )}
+                      <Text fontSize="xs" color="text.secondary" whiteSpace="nowrap">
+                        {relativeTime(c.updatedAt)}
+                      </Text>
+                    </HStack>
+                  </HStack>
+                </Link>
+              </Box>
+            ))}
+        </VStack>
+      )}
+    </Box>
+  );
+}
+
+function JobsOverviewPanel() {
+  const { data: jobs, isLoading } = useQuery<Job[]>({
+    queryKey: ['jobs', 'all', ''],
+    queryFn: async () => {
+      const res = await fetch('/api/jobs');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const cardStyle = {
+    bg: 'bg.surface' as const,
+    borderRadius: '16px',
+    border: '1px solid',
+    borderColor: 'border.default' as const,
+    p: '6',
+  };
+
+  return (
+    <Box {...cardStyle}>
+      <HStack justify="space-between" mb="4">
+        <Text fontWeight="bold" color="text.primary">
+          Jobs
+        </Text>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/jobs">View All</Link>
+        </Button>
+      </HStack>
+
+      {isLoading ? (
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} height="52px" borderRadius="md" />
+          ))}
+        </VStack>
+      ) : !jobs || jobs.length === 0 ? (
+        <VStack gap="2" py="8" alignItems="center" textAlign="center">
+          <Text color="text.secondary" fontSize="sm">
+            No jobs tracked yet
+          </Text>
+          <Box asChild fontSize="sm" color="brand.600" _hover={{ textDecoration: 'underline' }}>
+            <Link to="/jobs">Add job</Link>
+          </Box>
+        </VStack>
+      ) : (
+        <VStack gap="2" align="stretch">
+          {jobs.slice(0, 4).map((job) => (
+            <Box
+              key={job.id}
+              p="3"
+              borderRadius="md"
+              border="1px solid"
+              borderColor="border.default"
+            >
+              <HStack justify="space-between" gap="2">
+                <Box flex="1" minW="0">
+                  <Text
+                    fontWeight="medium"
+                    color="text.primary"
+                    fontSize="sm"
+                    truncate
+                  >
+                    {job.title}
+                  </Text>
+                  {job.company && (
+                    <Text fontSize="xs" color="text.secondary" truncate>
+                      {job.company}
+                    </Text>
+                  )}
+                </Box>
+                <Badge
+                  colorPalette={JOB_STATUS_COLORS[job.status] ?? 'gray'}
+                  variant="subtle"
+                  borderRadius="full"
+                  px="2"
+                  fontSize="xs"
+                  flexShrink="0"
+                >
+                  {JOB_STATUS_LABELS[job.status] ?? job.status}
+                </Badge>
+              </HStack>
+            </Box>
+          ))}
+        </VStack>
+      )}
+    </Box>
+  );
+}
+
+function AutomationsPanel() {
+  const { data: cronjobs, isLoading } = useQuery<Cronjob[]>({
+    queryKey: ['cronjobs'],
+    queryFn: async () => {
+      const res = await fetch('/api/cronjobs');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+
+  return (
+    <Box
+      bg="bg.surface"
+      borderRadius="16px"
+      border="1px solid"
+      borderColor="border.default"
+      p="6"
+    >
+      <HStack justify="space-between" mb="4">
+        <Text fontWeight="bold" color="text.primary">
+          Automations
+        </Text>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/cronjobs">View All</Link>
+        </Button>
+      </HStack>
+
+      {isLoading ? (
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} height="44px" borderRadius="md" />
+          ))}
+        </VStack>
+      ) : !cronjobs || cronjobs.length === 0 ? (
+        <VStack gap="2" py="8" alignItems="center" textAlign="center">
+          <Text color="text.secondary" fontSize="sm">
+            No automations configured
+          </Text>
+          <Box asChild fontSize="sm" color="brand.600" _hover={{ textDecoration: 'underline' }}>
+            <Link to="/cronjobs">Create one</Link>
+          </Box>
+        </VStack>
+      ) : (
+        <VStack gap="2" align="stretch">
+          {cronjobs.slice(0, 3).map((job) => (
+            <Box
+              key={job.id}
+              p="3"
+              borderRadius="md"
+              border="1px solid"
+              borderColor="border.default"
+            >
+              <HStack justify="space-between" gap="3">
+                <Box flex="1" minW="0">
+                  <Text fontWeight="medium" color="text.primary" fontSize="sm" truncate>
+                    {job.name}
+                  </Text>
+                  <Text fontSize="xs" color="text.secondary" fontFamily="mono">
+                    {job.cronExpression}
+                  </Text>
+                </Box>
+                <HStack gap="2" flexShrink="0">
+                  <Badge
+                    colorPalette={job.isActive ? 'green' : 'gray'}
+                    variant="subtle"
+                    borderRadius="full"
+                    px="2"
+                    fontSize="xs"
+                  >
+                    {job.isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                  {job.lastRunAt && (
+                    <Text fontSize="xs" color="text.secondary" whiteSpace="nowrap">
+                      {relativeTime(job.lastRunAt)}
+                    </Text>
+                  )}
+                </HStack>
+              </HStack>
+            </Box>
+          ))}
+        </VStack>
+      )}
+    </Box>
+  );
+}
+
+function HomePage() {
+  const navigate = useNavigate();
+
+  return (
+    <Flex direction="column" minH="100vh" bg="bg.page" p="6" gap="4">
+      {/* Zone 1: Chat Input Card */}
       <Box
         bg="bg.surface"
-        borderRadius="20px"
+        borderRadius="16px"
+        border="1px solid"
+        borderColor="border.default"
         p="6"
       >
-        <Grid templateColumns="repeat(3, 1fr)" gap="4" mb="6">
-          <FeatureCard
-            type="generator"
-            title="Code Generator"
-            description="Generate clean code from simple prompts."
-            prompt="Generate clean code for me"
-          />
-          <FeatureCard
-            type="explain"
-            title="Explain My Code"
-            description="Understand complex code with clear explanations."
-            prompt="Explain this code to me"
-          />
-          <FeatureCard
-            type="debug"
-            title="Debug Code"
-            description="Identify and resolve code errors in seconds."
-            prompt="Help me debug this code"
-          />
-        </Grid>
-
+        <Heading size="md" color="text.primary" mb="4">
+          What can I help with today?
+        </Heading>
         <HomePageChatInput />
       </Box>
+
+      {/* Zone 2: Quick Actions Row */}
+      <Grid templateColumns="repeat(5, 1fr)" gap="3">
+        <QuickActionCard
+          icon={<MessageSquare size={32} />}
+          label="New Chat"
+          subtitle="Start a conversation"
+          onClick={() => navigate({ to: '/conversations/new' } as never)}
+        />
+        <QuickActionCard
+          icon={<List size={32} />}
+          label="Conversations"
+          subtitle="View history"
+          onClick={() => navigate({ to: '/conversations' } as never)}
+        />
+        <QuickActionCard
+          icon={<Briefcase size={32} />}
+          label="Jobs"
+          subtitle="Track applications"
+          onClick={() => navigate({ to: '/jobs' } as never)}
+        />
+        <QuickActionCard
+          icon={<Clock size={32} />}
+          label="Automations"
+          subtitle="Schedule AI tasks"
+          onClick={() => navigate({ to: '/cronjobs' } as never)}
+        />
+        <QuickActionCard
+          icon={<Settings size={32} />}
+          label="Settings"
+          subtitle="Configure account"
+          onClick={() => navigate({ to: '/settings' } as never)}
+        />
+      </Grid>
+
+      {/* Zone 3: Activity Dashboard */}
+      <Grid templateColumns="repeat(2, 1fr)" gap="4">
+        <RecentConversationsPanel />
+        <JobsOverviewPanel />
+      </Grid>
+
+      <AutomationsPanel />
     </Flex>
   );
 }
