@@ -19,6 +19,7 @@ export async function buildChatOptions(
     getMemoryTools,
     getKnowledgeBaseTools,
     getJiraTools,
+    getNotificationTools,
   } = await import('@/tools');
   const disabledTools = new Set(
     (process.env.DISABLE_TOOLS ?? '')
@@ -33,6 +34,7 @@ export async function buildChatOptions(
     Promise.resolve(enabled('cronjob') ? getCronjobTools() : []),
     Promise.resolve(enabled('news') ? getNewsApiTools() : []),
   ]);
+  const notificationTools = enabled('notifications') ? getNotificationTools(userId ?? null) : [];
   const tools = [
     ...zapierTools,
     ...cronjobTools,
@@ -43,6 +45,7 @@ export async function buildChatOptions(
     ...(enabled('memory') ? getMemoryTools() : []),
     ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
     ...(enabled('jira') && jiraSettings?.jiraBaseUrl && jiraSettings?.jiraEmail && jiraSettings?.jiraPat ? getJiraTools(jiraSettings) : []),
+    ...notificationTools,
   ];
   const userPromptSnippet = userId
     ? `\nThe authenticated user's id is: ${userId}.`

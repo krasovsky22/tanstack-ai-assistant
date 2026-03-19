@@ -117,6 +117,46 @@
   - Console noise during tests: 1 WebSocket DevTools error + 2 Vite crypto warnings — all known non-blocking, safe to ignore.
   - Host IP: `192.168.68.103` (as of 2026-03-18). Always confirm with `ifconfig | grep "inet " | grep -v 127.0.0.1` before running.
 
+## Notifications Feature
+- **ID**: notifications-feature
+- **Coverage**: `/notifications` list, `/notifications/$id` detail, bell icon badge, home page panel, settings toggle, LLM create_notification tool
+- **Steps**:
+  1. Login at `http://<host-ip>:3000/login` with testuser/mypassword123
+  2. On home page `/`, verify left icon rail contains a "Notifications" bell icon link (5th position)
+  3. Click the Notifications bell icon — assert URL becomes `/notifications`
+  4. Verify empty state shows heading "No notifications yet" with descriptor text
+  5. Navigate to `/conversations/new`
+  6. Type: `create a notification with the title 'Test Notification' and content 'This is a **test** notification with *markdown* support.'`
+  7. Click Send — wait for `create_notification` tool call to complete and response to say "Notification created"
+  8. Verify bell icon in left rail shows a count badge (e.g. "1") immediately after creation
+  9. Navigate to `/notifications` — verify notification card appears with: title "Test Notification", source badge "llm" (purple), relative timestamp ("just now"), green unread dot
+  10. Verify "Mark All Read" button and unread count badge ("1") are visible in page header
+  11. Click the notification card — assert URL becomes `/notifications/<uuid>`
+  12. On detail page: verify title as h2 heading, content rendered as markdown (`**test**` is bold, `*markdown*` is italic), "Mark as Unread" button (meaning auto-read on view), "Convert to Conversation" button, "Delete" button (red), "← Notifications" back link
+  13. Click "← Notifications" — verify the green unread dot is gone from the card (marked read)
+  14. Re-open detail page, click "Mark as Unread" — verify button changes to "Mark as Read", bell badge shows count again
+  15. Navigate to `/notifications` — click "Mark All Read" — verify unread count badge in heading disappears and "Mark All Read" button is hidden
+  16. Navigate to `/settings` — verify "Browser Notifications" section exists with a toggle and status badge
+  17. Navigate to `/` — scroll to bottom — verify "Recent Notifications" panel is visible with "View All" link
+- **Last Run**: 2026-03-19
+- **Status**: failing
+- **Known Failures**:
+  - **BUG-NOTIF-01** (FAIL): Notification list card content preview renders raw markdown (`**test**`, `*markdown*`) instead of rendered HTML. Only the detail page renders markdown correctly.
+  - **BUG-NOTIF-02** (FAIL): "Convert to Conversation" navigates to `/conversations/new?from_notification_id=<uuid>` but does NOT pre-fill the chat input with the notification content. The textbox shows empty placeholder.
+  - **BUG-NOTIF-03** (FAIL): "Mark All Read" on the list page does not reactively update the bell icon badge count in the left nav rail. Badge still shows old count until next navigation.
+  - **NON-CRITICAL**: Hydration error appears in console on `/settings` page.
+- **Passing**:
+  - Bell icon in left rail with unread count badge
+  - Empty state on `/notifications`
+  - LLM `create_notification` tool call creates notification
+  - Notification list page with card: title, timestamp, source badge, unread dot
+  - Detail page: title as heading, markdown rendering, all action buttons present
+  - Auto-mark-read on detail page view
+  - Mark as Unread / Mark as Read toggle on detail page
+  - Mark All Read button hides itself and count badge after click
+  - Settings Browser Notifications section with toggle
+  - Home page Recent Notifications panel
+
 ## Cronjob List Page
 - **ID**: cronjob-list
 - **Coverage**: `/cronjobs` — lists all cronjobs with name, schedule, status badge, last run, and action buttons

@@ -13,7 +13,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { ChatInput } from '@/components/ChatInput';
-import { MessageSquare, List, Briefcase, Clock, Settings } from 'lucide-react';
+import { Bell, MessageSquare, List, Briefcase, Clock, Settings } from 'lucide-react';
 
 export const Route = createFileRoute('/_protected/')({ component: HomePage });
 
@@ -414,6 +414,126 @@ function AutomationsPanel() {
   );
 }
 
+type Notification = {
+  id: string;
+  title: string;
+  content: string;
+  source: 'llm' | 'cron' | 'system' | null;
+  isRead: boolean;
+  createdAt: string;
+};
+
+function notificationSourceColor(source: 'llm' | 'cron' | 'system' | null): string {
+  if (source === 'llm') return 'purple';
+  if (source === 'cron') return 'green';
+  if (source === 'system') return 'blue';
+  return 'gray';
+}
+
+function NotificationsPanel() {
+  const { data: notifications, isLoading } = useQuery<Notification[]>({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await fetch('/api/notifications');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const unread = (notifications ?? []).filter((n) => !n.isRead).slice(0, 5);
+
+  return (
+    <Box
+      bg="bg.surface"
+      borderRadius="16px"
+      border="1px solid"
+      borderColor="border.default"
+      p="6"
+    >
+      <HStack justify="space-between" mb="4">
+        <Text fontWeight="bold" color="text.primary">
+          Recent Notifications
+        </Text>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/notifications">View All</Link>
+        </Button>
+      </HStack>
+
+      {isLoading ? (
+        <VStack gap="2" align="stretch">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} height="44px" borderRadius="md" />
+          ))}
+        </VStack>
+      ) : unread.length === 0 ? (
+        <VStack gap="2" py="8" alignItems="center" textAlign="center">
+          <Bell size={24} color="var(--chakra-colors-text-muted)" />
+          <Text color="text.secondary" fontSize="sm">
+            No unread notifications
+          </Text>
+        </VStack>
+      ) : (
+        <VStack gap="2" align="stretch">
+          {unread.map((n) => (
+            <Box
+              key={n.id}
+              asChild
+              display="block"
+              p="3"
+              borderRadius="md"
+              border="1px solid"
+              borderColor="border.default"
+              _hover={{ bg: 'bg.subtle' }}
+              transition="all 0.15s ease"
+              style={{ textDecoration: 'none' }}
+            >
+              <Link to="/notifications/$id" params={{ id: n.id }}>
+                <HStack justify="space-between" gap="2">
+                  <HStack gap="2" flex="1" minW="0">
+                    <Box
+                      w="6px"
+                      h="6px"
+                      borderRadius="full"
+                      bg="brand.500"
+                      flexShrink={0}
+                    />
+                    <Text
+                      fontWeight="medium"
+                      color="text.primary"
+                      fontSize="sm"
+                      truncate
+                      flex="1"
+                    >
+                      {n.title}
+                    </Text>
+                  </HStack>
+                  <HStack gap="2" flexShrink={0}>
+                    {n.source && (
+                      <Badge
+                        colorPalette={notificationSourceColor(n.source)}
+                        variant="subtle"
+                        borderRadius="full"
+                        px="2"
+                        fontSize="xs"
+                        textTransform="capitalize"
+                      >
+                        {n.source}
+                      </Badge>
+                    )}
+                    <Text fontSize="xs" color="text.secondary" whiteSpace="nowrap">
+                      {relativeTime(n.createdAt)}
+                    </Text>
+                  </HStack>
+                </HStack>
+              </Link>
+            </Box>
+          ))}
+        </VStack>
+      )}
+    </Box>
+  );
+}
+
 function HomePage() {
   const navigate = useNavigate();
 
@@ -474,6 +594,8 @@ function HomePage() {
       </Grid>
 
       <AutomationsPanel />
+
+      <NotificationsPanel />
     </Flex>
   );
 }

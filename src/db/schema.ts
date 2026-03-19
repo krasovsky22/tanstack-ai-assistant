@@ -110,6 +110,18 @@ export const userSettings = pgTable('user_settings', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  source: text('source'),
+  sourceConversationId: uuid('source_conversation_id')
+    .references(() => conversations.id, { onDelete: 'set null' }),
+  isRead: boolean('is_read').notNull().default(false),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const jobEmails = pgTable('job_emails', {
   id: uuid('id').primaryKey().defaultRandom(),
   jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),

@@ -18,22 +18,28 @@ import { Route as ApiSectionsRouteImport } from './routes/api/sections'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
+import { Route as ProtectedNotificationsRouteImport } from './routes/_protected/notifications'
 import { Route as ProtectedMailRouteImport } from './routes/_protected/mail'
 import { Route as ProtectedKnowledgeBaseRouteImport } from './routes/_protected/knowledge-base'
 import { Route as ProtectedJobsRouteImport } from './routes/_protected/jobs'
 import { Route as ProtectedCronjobsRouteImport } from './routes/_protected/cronjobs'
 import { Route as ProtectedConversationsRouteImport } from './routes/_protected/conversations'
+import { Route as ApiNotificationsIndexRouteImport } from './routes/api/notifications/index'
 import { Route as ApiKnowledgeBaseIndexRouteImport } from './routes/api/knowledge-base/index'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
 import { Route as ApiGeneratedFilesIndexRouteImport } from './routes/api/generated-files/index'
 import { Route as ApiCronjobsIndexRouteImport } from './routes/api/cronjobs/index'
 import { Route as ApiConversationsIndexRouteImport } from './routes/api/conversations/index'
+import { Route as ProtectedNotificationsIndexRouteImport } from './routes/_protected/notifications/index'
 import { Route as ProtectedMailIndexRouteImport } from './routes/_protected/mail/index'
 import { Route as ProtectedKnowledgeBaseIndexRouteImport } from './routes/_protected/knowledge-base/index'
 import { Route as ProtectedJobsIndexRouteImport } from './routes/_protected/jobs/index'
 import { Route as ProtectedCronjobsIndexRouteImport } from './routes/_protected/cronjobs/index'
 import { Route as ProtectedConversationsIndexRouteImport } from './routes/_protected/conversations/index'
 import { Route as ApiReportsScrapeJobsRouteImport } from './routes/api/reports/scrape-jobs'
+import { Route as ApiNotificationsUnreadCountRouteImport } from './routes/api/notifications/unread-count'
+import { Route as ApiNotificationsMarkAllReadRouteImport } from './routes/api/notifications/mark-all-read'
+import { Route as ApiNotificationsIdRouteImport } from './routes/api/notifications/$id'
 import { Route as ApiMailStoreEmailsRouteImport } from './routes/api/mail/store-emails'
 import { Route as ApiMailIngestRouteImport } from './routes/api/mail/ingest'
 import { Route as ApiMailEmailsByJobRouteImport } from './routes/api/mail/emails-by-job'
@@ -49,6 +55,7 @@ import { Route as ApiGeneratedFilesIdRouteImport } from './routes/api/generated-
 import { Route as ApiFilesFilenameRouteImport } from './routes/api/files/$filename'
 import { Route as ApiCronjobsIdRouteImport } from './routes/api/cronjobs/$id'
 import { Route as ApiConversationsIdRouteImport } from './routes/api/conversations/$id'
+import { Route as ProtectedNotificationsIdRouteImport } from './routes/_protected/notifications/$id'
 import { Route as ProtectedJobsNewRouteImport } from './routes/_protected/jobs/new'
 import { Route as ProtectedJobsExtractFromUrlRouteImport } from './routes/_protected/jobs/extract-from-url'
 import { Route as ProtectedJobsIdRouteImport } from './routes/_protected/jobs/$id'
@@ -105,6 +112,11 @@ const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedNotificationsRoute = ProtectedNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedMailRoute = ProtectedMailRouteImport.update({
   id: '/mail',
   path: '/mail',
@@ -129,6 +141,11 @@ const ProtectedConversationsRoute = ProtectedConversationsRouteImport.update({
   id: '/conversations',
   path: '/conversations',
   getParentRoute: () => ProtectedRoute,
+} as any)
+const ApiNotificationsIndexRoute = ApiNotificationsIndexRouteImport.update({
+  id: '/api/notifications/',
+  path: '/api/notifications/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiKnowledgeBaseIndexRoute = ApiKnowledgeBaseIndexRouteImport.update({
   id: '/api/knowledge-base/',
@@ -155,6 +172,12 @@ const ApiConversationsIndexRoute = ApiConversationsIndexRouteImport.update({
   path: '/api/conversations/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedNotificationsIndexRoute =
+  ProtectedNotificationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ProtectedNotificationsRoute,
+  } as any)
 const ProtectedMailIndexRoute = ProtectedMailIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -185,6 +208,23 @@ const ProtectedConversationsIndexRoute =
 const ApiReportsScrapeJobsRoute = ApiReportsScrapeJobsRouteImport.update({
   id: '/api/reports/scrape-jobs',
   path: '/api/reports/scrape-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotificationsUnreadCountRoute =
+  ApiNotificationsUnreadCountRouteImport.update({
+    id: '/api/notifications/unread-count',
+    path: '/api/notifications/unread-count',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiNotificationsMarkAllReadRoute =
+  ApiNotificationsMarkAllReadRouteImport.update({
+    id: '/api/notifications/mark-all-read',
+    path: '/api/notifications/mark-all-read',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiNotificationsIdRoute = ApiNotificationsIdRouteImport.update({
+  id: '/api/notifications/$id',
+  path: '/api/notifications/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMailStoreEmailsRoute = ApiMailStoreEmailsRouteImport.update({
@@ -262,6 +302,12 @@ const ApiConversationsIdRoute = ApiConversationsIdRouteImport.update({
   path: '/api/conversations/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedNotificationsIdRoute =
+  ProtectedNotificationsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ProtectedNotificationsRoute,
+  } as any)
 const ProtectedJobsNewRoute = ProtectedJobsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -330,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof ProtectedJobsRouteWithChildren
   '/knowledge-base': typeof ProtectedKnowledgeBaseRouteWithChildren
   '/mail': typeof ProtectedMailRouteWithChildren
+  '/notifications': typeof ProtectedNotificationsRouteWithChildren
   '/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
@@ -343,6 +390,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$id': typeof ProtectedJobsIdRoute
   '/jobs/extract-from-url': typeof ProtectedJobsExtractFromUrlRoute
   '/jobs/new': typeof ProtectedJobsNewRoute
+  '/notifications/$id': typeof ProtectedNotificationsIdRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/files/$filename': typeof ApiFilesFilenameRoute
@@ -358,17 +406,22 @@ export interface FileRoutesByFullPath {
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
   '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/mail/store-emails': typeof ApiMailStoreEmailsRoute
+  '/api/notifications/$id': typeof ApiNotificationsIdRoute
+  '/api/notifications/mark-all-read': typeof ApiNotificationsMarkAllReadRoute
+  '/api/notifications/unread-count': typeof ApiNotificationsUnreadCountRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/conversations/': typeof ProtectedConversationsIndexRoute
   '/cronjobs/': typeof ProtectedCronjobsIndexRoute
   '/jobs/': typeof ProtectedJobsIndexRoute
   '/knowledge-base/': typeof ProtectedKnowledgeBaseIndexRoute
   '/mail/': typeof ProtectedMailIndexRoute
+  '/notifications/': typeof ProtectedNotificationsIndexRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/cronjobs/': typeof ApiCronjobsIndexRoute
   '/api/generated-files/': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
   '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
+  '/api/notifications/': typeof ApiNotificationsIndexRoute
   '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
@@ -389,6 +442,7 @@ export interface FileRoutesByTo {
   '/jobs/$id': typeof ProtectedJobsIdRoute
   '/jobs/extract-from-url': typeof ProtectedJobsExtractFromUrlRoute
   '/jobs/new': typeof ProtectedJobsNewRoute
+  '/notifications/$id': typeof ProtectedNotificationsIdRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/files/$filename': typeof ApiFilesFilenameRoute
@@ -404,17 +458,22 @@ export interface FileRoutesByTo {
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
   '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/mail/store-emails': typeof ApiMailStoreEmailsRoute
+  '/api/notifications/$id': typeof ApiNotificationsIdRoute
+  '/api/notifications/mark-all-read': typeof ApiNotificationsMarkAllReadRoute
+  '/api/notifications/unread-count': typeof ApiNotificationsUnreadCountRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/conversations': typeof ProtectedConversationsIndexRoute
   '/cronjobs': typeof ProtectedCronjobsIndexRoute
   '/jobs': typeof ProtectedJobsIndexRoute
   '/knowledge-base': typeof ProtectedKnowledgeBaseIndexRoute
   '/mail': typeof ProtectedMailIndexRoute
+  '/notifications': typeof ProtectedNotificationsIndexRoute
   '/api/conversations': typeof ApiConversationsIndexRoute
   '/api/cronjobs': typeof ApiCronjobsIndexRoute
   '/api/generated-files': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs': typeof ApiJobsIndexRoute
   '/api/knowledge-base': typeof ApiKnowledgeBaseIndexRoute
+  '/api/notifications': typeof ApiNotificationsIndexRoute
   '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
@@ -429,6 +488,7 @@ export interface FileRoutesById {
   '/_protected/jobs': typeof ProtectedJobsRouteWithChildren
   '/_protected/knowledge-base': typeof ProtectedKnowledgeBaseRouteWithChildren
   '/_protected/mail': typeof ProtectedMailRouteWithChildren
+  '/_protected/notifications': typeof ProtectedNotificationsRouteWithChildren
   '/_protected/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
@@ -443,6 +503,7 @@ export interface FileRoutesById {
   '/_protected/jobs/$id': typeof ProtectedJobsIdRoute
   '/_protected/jobs/extract-from-url': typeof ProtectedJobsExtractFromUrlRoute
   '/_protected/jobs/new': typeof ProtectedJobsNewRoute
+  '/_protected/notifications/$id': typeof ProtectedNotificationsIdRoute
   '/api/conversations/$id': typeof ApiConversationsIdRoute
   '/api/cronjobs/$id': typeof ApiCronjobsIdRouteWithChildren
   '/api/files/$filename': typeof ApiFilesFilenameRoute
@@ -458,17 +519,22 @@ export interface FileRoutesById {
   '/api/mail/emails-by-job': typeof ApiMailEmailsByJobRoute
   '/api/mail/ingest': typeof ApiMailIngestRoute
   '/api/mail/store-emails': typeof ApiMailStoreEmailsRoute
+  '/api/notifications/$id': typeof ApiNotificationsIdRoute
+  '/api/notifications/mark-all-read': typeof ApiNotificationsMarkAllReadRoute
+  '/api/notifications/unread-count': typeof ApiNotificationsUnreadCountRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/_protected/conversations/': typeof ProtectedConversationsIndexRoute
   '/_protected/cronjobs/': typeof ProtectedCronjobsIndexRoute
   '/_protected/jobs/': typeof ProtectedJobsIndexRoute
   '/_protected/knowledge-base/': typeof ProtectedKnowledgeBaseIndexRoute
   '/_protected/mail/': typeof ProtectedMailIndexRoute
+  '/_protected/notifications/': typeof ProtectedNotificationsIndexRoute
   '/api/conversations/': typeof ApiConversationsIndexRoute
   '/api/cronjobs/': typeof ApiCronjobsIndexRoute
   '/api/generated-files/': typeof ApiGeneratedFilesIndexRoute
   '/api/jobs/': typeof ApiJobsIndexRoute
   '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
+  '/api/notifications/': typeof ApiNotificationsIndexRoute
   '/_protected/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
@@ -484,6 +550,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/knowledge-base'
     | '/mail'
+    | '/notifications'
     | '/settings'
     | '/api/chat'
     | '/api/chat-sync'
@@ -497,6 +564,7 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/extract-from-url'
     | '/jobs/new'
+    | '/notifications/$id'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/files/$filename'
@@ -512,17 +580,22 @@ export interface FileRouteTypes {
     | '/api/mail/emails-by-job'
     | '/api/mail/ingest'
     | '/api/mail/store-emails'
+    | '/api/notifications/$id'
+    | '/api/notifications/mark-all-read'
+    | '/api/notifications/unread-count'
     | '/api/reports/scrape-jobs'
     | '/conversations/'
     | '/cronjobs/'
     | '/jobs/'
     | '/knowledge-base/'
     | '/mail/'
+    | '/notifications/'
     | '/api/conversations/'
     | '/api/cronjobs/'
     | '/api/generated-files/'
     | '/api/jobs/'
     | '/api/knowledge-base/'
+    | '/api/notifications/'
     | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
@@ -543,6 +616,7 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/extract-from-url'
     | '/jobs/new'
+    | '/notifications/$id'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/files/$filename'
@@ -558,17 +632,22 @@ export interface FileRouteTypes {
     | '/api/mail/emails-by-job'
     | '/api/mail/ingest'
     | '/api/mail/store-emails'
+    | '/api/notifications/$id'
+    | '/api/notifications/mark-all-read'
+    | '/api/notifications/unread-count'
     | '/api/reports/scrape-jobs'
     | '/conversations'
     | '/cronjobs'
     | '/jobs'
     | '/knowledge-base'
     | '/mail'
+    | '/notifications'
     | '/api/conversations'
     | '/api/cronjobs'
     | '/api/generated-files'
     | '/api/jobs'
     | '/api/knowledge-base'
+    | '/api/notifications'
     | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
@@ -582,6 +661,7 @@ export interface FileRouteTypes {
     | '/_protected/jobs'
     | '/_protected/knowledge-base'
     | '/_protected/mail'
+    | '/_protected/notifications'
     | '/_protected/settings'
     | '/api/chat'
     | '/api/chat-sync'
@@ -596,6 +676,7 @@ export interface FileRouteTypes {
     | '/_protected/jobs/$id'
     | '/_protected/jobs/extract-from-url'
     | '/_protected/jobs/new'
+    | '/_protected/notifications/$id'
     | '/api/conversations/$id'
     | '/api/cronjobs/$id'
     | '/api/files/$filename'
@@ -611,17 +692,22 @@ export interface FileRouteTypes {
     | '/api/mail/emails-by-job'
     | '/api/mail/ingest'
     | '/api/mail/store-emails'
+    | '/api/notifications/$id'
+    | '/api/notifications/mark-all-read'
+    | '/api/notifications/unread-count'
     | '/api/reports/scrape-jobs'
     | '/_protected/conversations/'
     | '/_protected/cronjobs/'
     | '/_protected/jobs/'
     | '/_protected/knowledge-base/'
     | '/_protected/mail/'
+    | '/_protected/notifications/'
     | '/api/conversations/'
     | '/api/cronjobs/'
     | '/api/generated-files/'
     | '/api/jobs/'
     | '/api/knowledge-base/'
+    | '/api/notifications/'
     | '/_protected/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
@@ -651,12 +737,16 @@ export interface RootRouteChildren {
   ApiMailEmailsByJobRoute: typeof ApiMailEmailsByJobRoute
   ApiMailIngestRoute: typeof ApiMailIngestRoute
   ApiMailStoreEmailsRoute: typeof ApiMailStoreEmailsRoute
+  ApiNotificationsIdRoute: typeof ApiNotificationsIdRoute
+  ApiNotificationsMarkAllReadRoute: typeof ApiNotificationsMarkAllReadRoute
+  ApiNotificationsUnreadCountRoute: typeof ApiNotificationsUnreadCountRoute
   ApiReportsScrapeJobsRoute: typeof ApiReportsScrapeJobsRoute
   ApiConversationsIndexRoute: typeof ApiConversationsIndexRoute
   ApiCronjobsIndexRoute: typeof ApiCronjobsIndexRoute
   ApiGeneratedFilesIndexRoute: typeof ApiGeneratedFilesIndexRoute
   ApiJobsIndexRoute: typeof ApiJobsIndexRoute
   ApiKnowledgeBaseIndexRoute: typeof ApiKnowledgeBaseIndexRoute
+  ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -724,6 +814,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedSettingsRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/notifications': {
+      id: '/_protected/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof ProtectedNotificationsRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/mail': {
       id: '/_protected/mail'
       path: '/mail'
@@ -759,6 +856,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConversationsRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/api/notifications/': {
+      id: '/api/notifications/'
+      path: '/api/notifications'
+      fullPath: '/api/notifications/'
+      preLoaderRoute: typeof ApiNotificationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/knowledge-base/': {
       id: '/api/knowledge-base/'
       path: '/api/knowledge-base'
@@ -793,6 +897,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/conversations/'
       preLoaderRoute: typeof ApiConversationsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_protected/notifications/': {
+      id: '/_protected/notifications/'
+      path: '/'
+      fullPath: '/notifications/'
+      preLoaderRoute: typeof ProtectedNotificationsIndexRouteImport
+      parentRoute: typeof ProtectedNotificationsRoute
     }
     '/_protected/mail/': {
       id: '/_protected/mail/'
@@ -834,6 +945,27 @@ declare module '@tanstack/react-router' {
       path: '/api/reports/scrape-jobs'
       fullPath: '/api/reports/scrape-jobs'
       preLoaderRoute: typeof ApiReportsScrapeJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications/unread-count': {
+      id: '/api/notifications/unread-count'
+      path: '/api/notifications/unread-count'
+      fullPath: '/api/notifications/unread-count'
+      preLoaderRoute: typeof ApiNotificationsUnreadCountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications/mark-all-read': {
+      id: '/api/notifications/mark-all-read'
+      path: '/api/notifications/mark-all-read'
+      fullPath: '/api/notifications/mark-all-read'
+      preLoaderRoute: typeof ApiNotificationsMarkAllReadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications/$id': {
+      id: '/api/notifications/$id'
+      path: '/api/notifications/$id'
+      fullPath: '/api/notifications/$id'
+      preLoaderRoute: typeof ApiNotificationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mail/store-emails': {
@@ -940,6 +1072,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/conversations/$id'
       preLoaderRoute: typeof ApiConversationsIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_protected/notifications/$id': {
+      id: '/_protected/notifications/$id'
+      path: '/$id'
+      fullPath: '/notifications/$id'
+      preLoaderRoute: typeof ProtectedNotificationsIdRouteImport
+      parentRoute: typeof ProtectedNotificationsRoute
     }
     '/_protected/jobs/new': {
       id: '/_protected/jobs/new'
@@ -1111,12 +1250,29 @@ const ProtectedMailRouteWithChildren = ProtectedMailRoute._addFileChildren(
   ProtectedMailRouteChildren,
 )
 
+interface ProtectedNotificationsRouteChildren {
+  ProtectedNotificationsIdRoute: typeof ProtectedNotificationsIdRoute
+  ProtectedNotificationsIndexRoute: typeof ProtectedNotificationsIndexRoute
+}
+
+const ProtectedNotificationsRouteChildren: ProtectedNotificationsRouteChildren =
+  {
+    ProtectedNotificationsIdRoute: ProtectedNotificationsIdRoute,
+    ProtectedNotificationsIndexRoute: ProtectedNotificationsIndexRoute,
+  }
+
+const ProtectedNotificationsRouteWithChildren =
+  ProtectedNotificationsRoute._addFileChildren(
+    ProtectedNotificationsRouteChildren,
+  )
+
 interface ProtectedRouteChildren {
   ProtectedConversationsRoute: typeof ProtectedConversationsRouteWithChildren
   ProtectedCronjobsRoute: typeof ProtectedCronjobsRouteWithChildren
   ProtectedJobsRoute: typeof ProtectedJobsRouteWithChildren
   ProtectedKnowledgeBaseRoute: typeof ProtectedKnowledgeBaseRouteWithChildren
   ProtectedMailRoute: typeof ProtectedMailRouteWithChildren
+  ProtectedNotificationsRoute: typeof ProtectedNotificationsRouteWithChildren
   ProtectedSettingsRoute: typeof ProtectedSettingsRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
 }
@@ -1127,6 +1283,7 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedJobsRoute: ProtectedJobsRouteWithChildren,
   ProtectedKnowledgeBaseRoute: ProtectedKnowledgeBaseRouteWithChildren,
   ProtectedMailRoute: ProtectedMailRouteWithChildren,
+  ProtectedNotificationsRoute: ProtectedNotificationsRouteWithChildren,
   ProtectedSettingsRoute: ProtectedSettingsRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
 }
@@ -1172,12 +1329,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMailEmailsByJobRoute: ApiMailEmailsByJobRoute,
   ApiMailIngestRoute: ApiMailIngestRoute,
   ApiMailStoreEmailsRoute: ApiMailStoreEmailsRoute,
+  ApiNotificationsIdRoute: ApiNotificationsIdRoute,
+  ApiNotificationsMarkAllReadRoute: ApiNotificationsMarkAllReadRoute,
+  ApiNotificationsUnreadCountRoute: ApiNotificationsUnreadCountRoute,
   ApiReportsScrapeJobsRoute: ApiReportsScrapeJobsRoute,
   ApiConversationsIndexRoute: ApiConversationsIndexRoute,
   ApiCronjobsIndexRoute: ApiCronjobsIndexRoute,
   ApiGeneratedFilesIndexRoute: ApiGeneratedFilesIndexRoute,
   ApiJobsIndexRoute: ApiJobsIndexRoute,
   ApiKnowledgeBaseIndexRoute: ApiKnowledgeBaseIndexRoute,
+  ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -7,3 +7,4 @@
 - [Navigation structure](navigation_structure.md) — Routes, active states, section disabling
 - [Chat component architecture](chat_component.md) — ChatInput shared component, message bubbles, flex height layout, ReactMarkdown setup
 - [Empty state and loading patterns](project_empty_states.md) — VStack centered empty states with Lucide icon, Skeleton rows for loading
+- [Notifications feature](notifications_feature.md) — Routes, MarkdownRenderer extraction, browser-notifications util, IconRail badge, settings toggle, home panel

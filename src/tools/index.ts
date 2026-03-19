@@ -7,3 +7,4 @@ export { getCmdTools } from './cmdtool';
 export { getMemoryTools } from './memory';
 export { getKnowledgeBaseTools } from './knowledgebasetool';
 export { getJiraTools } from './jiratool';
+export { getNotificationTools } from './notificationtool';

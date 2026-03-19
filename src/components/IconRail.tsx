@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Box, Flex, Separator } from '@chakra-ui/react';
+import { Badge, Box, Flex, Separator } from '@chakra-ui/react';
 import {
+  Bell,
   Briefcase,
   BookOpen,
   Clock,
@@ -8,7 +10,9 @@ import {
   Mail,
   Settings,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useDisabledSections, type Section } from '@/lib/sections';
+import { showBrowserNotification } from '@/lib/browser-notifications';
 
 // Must stay in sync with ChatSidebar left offset and __root.tsx ml offset
 export const ICON_RAIL_WIDTH = '60px';
@@ -103,6 +107,30 @@ export default function IconRail() {
   const isCronjobsActive = pathname.startsWith('/cronjobs');
   const isKbActive = pathname.startsWith('/knowledge-base');
   const isSettingsActive = pathname.startsWith('/settings');
+  const isNotificationsActive = pathname.startsWith('/notifications');
+
+  const { data: unreadData } = useQuery<{ count: number }>({
+    queryKey: ['notifications-unread-count'],
+    queryFn: async () => {
+      const res = await fetch('/api/notifications/unread-count');
+      return res.json();
+    },
+    refetchInterval: 30_000,
+    enabled: enabled('notifications'),
+  });
+
+  const unreadCount = unreadData?.count ?? 0;
+  const prevUnreadCount = useRef(unreadCount);
+
+  useEffect(() => {
+    if (unreadCount > prevUnreadCount.current) {
+      showBrowserNotification(
+        'New Notification',
+        `You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}.`,
+      );
+    }
+    prevUnreadCount.current = unreadCount;
+  }, [unreadCount]);
 
   return (
     <Flex
@@ -152,6 +180,38 @@ export default function IconRail() {
             to="/cronjobs"
             isActive={isCronjobsActive}
           />
+        )}
+
+        {enabled('notifications') && (
+          <Box position="relative" display="inline-flex">
+            <RailIcon
+              icon={<Bell size={18} />}
+              label="Notifications"
+              to="/notifications"
+              isActive={isNotificationsActive}
+            />
+            {unreadCount > 0 && (
+              <Badge
+                position="absolute"
+                top="-1"
+                right="-1"
+                colorPalette="red"
+                variant="solid"
+                borderRadius="full"
+                minW="16px"
+                h="16px"
+                fontSize="9px"
+                fontWeight="bold"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                px="1"
+                pointerEvents="none"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
+          </Box>
         )}
 
         {enabled('knowledge-base') && (

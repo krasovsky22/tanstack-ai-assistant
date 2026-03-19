@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-export type Section = 'ai' | 'jobs' | 'mail' | 'knowledge-base' | 'cronjobs';
+export type Section = 'ai' | 'jobs' | 'mail' | 'knowledge-base' | 'cronjobs' | 'notifications';
 
 export function useDisabledSections() {
   return useQuery<{ disabled: Section[] }>({

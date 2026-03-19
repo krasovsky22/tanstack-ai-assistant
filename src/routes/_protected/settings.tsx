@@ -1,19 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Badge,
   Box,
   Button,
+  Flex,
   Input,
   Stack,
+  Switch,
   Text,
 } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { FormField } from '@/components/FormField';
 import { toaster } from '@/components/ui/toaster';
+import {
+  isNotificationSupported,
+  requestNotificationPermission,
+} from '@/lib/browser-notifications';
 
 export const Route = createFileRoute('/_protected/settings')({
   component: SettingsPage,
@@ -254,6 +260,112 @@ function JiraIntegrationCard({ settings }: { settings: UserSettings | undefined 
   );
 }
 
+function permissionLabel(permission: NotificationPermission): string {
+  if (permission === 'granted') return 'Granted';
+  if (permission === 'denied') return 'Denied';
+  return 'Not requested';
+}
+
+function permissionBadgeColor(permission: NotificationPermission): string {
+  if (permission === 'granted') return 'green';
+  if (permission === 'denied') return 'red';
+  return 'gray';
+}
+
+function BrowserNotificationsCard() {
+  const supported = isNotificationSupported();
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [enabled, setEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (supported) {
+      setPermission(Notification.permission);
+    }
+    setEnabled(localStorage.getItem('browserNotificationsEnabled') === 'true');
+  }, [supported]);
+
+  const handleToggle = async (checked: boolean) => {
+    if (checked) {
+      const granted = await requestNotificationPermission();
+      const newPermission = supported ? Notification.permission : 'default';
+      setPermission(newPermission);
+      setEnabled(granted);
+      localStorage.setItem('browserNotificationsEnabled', granted ? 'true' : 'false');
+    } else {
+      setEnabled(false);
+      localStorage.setItem('browserNotificationsEnabled', 'false');
+    }
+  };
+
+  return (
+    <Box
+      bg="white"
+      borderRadius="lg"
+      borderWidth="1px"
+      borderColor="border.default"
+      shadow="sm"
+      overflow="hidden"
+      mt="6"
+    >
+      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="gray.50">
+        <Stack direction="row" align="center" justify="space-between">
+          <Box>
+            <Text fontWeight="semibold" color="text.primary" fontSize="md">
+              Browser Notifications
+            </Text>
+            <Text color="text.secondary" fontSize="sm" mt="0.5">
+              Receive browser notifications when new notifications arrive
+            </Text>
+          </Box>
+          <Badge
+            colorPalette={permissionBadgeColor(permission)}
+            variant="subtle"
+            borderRadius="full"
+            px="3"
+            py="1"
+            fontSize="xs"
+            fontWeight="medium"
+          >
+            {permissionLabel(permission)}
+          </Badge>
+        </Stack>
+      </Box>
+
+      <Box px="6" py="5">
+        {!supported ? (
+          <Text fontSize="sm" color="text.secondary">
+            Browser notifications are not supported in this browser.
+          </Text>
+        ) : (
+          <Flex align="center" gap="4">
+            <Switch.Root
+              checked={enabled && permission === 'granted'}
+              onCheckedChange={(details) => handleToggle(details.checked)}
+              disabled={permission === 'denied'}
+              colorPalette="green"
+            >
+              <Switch.HiddenInput />
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Label>
+                <Text fontSize="sm" color="text.primary" fontWeight="medium">
+                  Browser Notifications
+                </Text>
+              </Switch.Label>
+            </Switch.Root>
+            {permission === 'denied' && (
+              <Text fontSize="xs" color="red.600">
+                Notifications have been blocked. Enable them in your browser settings to continue.
+              </Text>
+            )}
+          </Flex>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
 function SettingsPage() {
   const { data: settings, isLoading } = useQuery<UserSettings>({
     queryKey: ['user-settings'],
@@ -290,6 +402,8 @@ function SettingsPage() {
       ) : (
         <JiraIntegrationCard settings={settings} />
       )}
+
+      <BrowserNotificationsCard />
     </PageContainer>
   );
 }

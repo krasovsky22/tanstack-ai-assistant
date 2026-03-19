@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-const VALID_SECTIONS = ['ai', 'jobs', 'mail', 'knowledge-base', 'cronjobs'] as const;
+const VALID_SECTIONS = ['ai', 'jobs', 'mail', 'knowledge-base', 'cronjobs', 'notifications'] as const;
 
 export const Route = createFileRoute('/api/sections')({
   server: {
