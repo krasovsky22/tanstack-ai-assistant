@@ -12,10 +12,10 @@ import {
   Heading,
   IconButton,
   Input,
-  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react';
+import Loader from '@/components/Loader';
 import { toaster } from '@/components/ui/toaster';
 import { MessageSquare, Trash2 } from 'lucide-react';
 
@@ -30,26 +30,13 @@ function sourceBadgeColor(source: string): string {
 }
 
 function ConversationsDashboard() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <Container maxW="2xl" py="6" px="6">
       <Flex justify="space-between" align="center" mb="6">
         <Heading size="xl">Conversations</Heading>
       </Flex>
-      {mounted ? <ConversationList /> : <ConversationListSkeleton />}
+      <ConversationList />
     </Container>
-  );
-}
-
-function ConversationListSkeleton() {
-  return (
-    <VStack gap="2" align="stretch">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} height="72px" borderRadius="lg" />
-      ))}
-    </VStack>
   );
 }
 
@@ -76,7 +63,11 @@ function ConversationList() {
     };
   }, []);
 
-  const sorted = [...(conversations ?? [])].sort(
+  if (conversations === undefined) {
+    return <Loader text="Loading conversations..." />;
+  }
+
+  const sorted = [...conversations].sort(
     (a, b) =>
       new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );

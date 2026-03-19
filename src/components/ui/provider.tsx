@@ -1,4 +1,9 @@
-import { ChakraProvider, createSystem, defaultConfig, defineConfig } from '@chakra-ui/react';
+import {
+  ChakraProvider,
+  createSystem,
+  defaultConfig,
+  defineConfig,
+} from '@chakra-ui/react';
 
 const customConfig = defineConfig({
   globalCss: {},
@@ -46,7 +51,12 @@ const customConfig = defineConfig({
         brand: {
           solid: { value: '{colors.brand.600}' },
           contrast: { value: '{colors.brand.50}' },
-          fg: { value: { _light: '{colors.brand.700}', _dark: '{colors.brand.500}' } },
+          fg: {
+            value: {
+              _light: '{colors.brand.700}',
+              _dark: '{colors.brand.500}',
+            },
+          },
           muted: { value: '{colors.brand.100}' },
           subtle: { value: '{colors.brand.200}' },
           emphasized: { value: '{colors.brand.300}' },

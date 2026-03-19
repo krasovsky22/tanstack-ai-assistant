@@ -12,6 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { ChevronDown, ChevronRight, PanelLeft, Plus } from 'lucide-react';
+import Loader from '@/components/Loader';
 
 type ConversationGroup = {
   label: string;
@@ -277,7 +278,11 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
       </Box>
 
       <Box flex="1" overflowY="auto" px="1">
-        {mounted ? <ConversationListMounted activeId={activeConversationId} /> : null}
+        {mounted ? (
+          <ConversationListMounted activeId={activeConversationId} />
+        ) : (
+          <Loader text="Loading conversations..." />
+        )}
       </Box>
     </Flex>
   );
