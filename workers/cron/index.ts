@@ -12,11 +12,19 @@ const APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
 const SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 // Map of job ID → { task, cronExpression } for change detection
-const scheduledTasks = new Map<string, { task: ScheduledTask; cronExpression: string }>();
+const scheduledTasks = new Map<
+  string,
+  { task: ScheduledTask; cronExpression: string }
+>();
 
-async function runCronjob(job: { id: string; name: string; prompt: string }) {
+async function runCronjob(job: {
+  id: string;
+  name: string;
+  prompt: string;
+  userId: string | null;
+}) {
   const startTime = Date.now();
-  console.log(`[cron] Firing job "${job.name}" (${job.id})`);
+  console.log(`[cron] Firing job "${job.name}" (${job.id})`, job);
 
   try {
     const res = await fetch(`${APP_URL}/api/chat-sync`, {
@@ -26,6 +34,7 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
         messages: [{ role: 'user', content: job.prompt }],
         title: `Cronjob: ${job.name}`,
         source: CONVERSATION_SOURCES.CRONJOB,
+        userId: job.userId ?? undefined,
       }),
     });
 
@@ -36,23 +45,37 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
       throw new Error(`HTTP ${res.status}: ${errText}`);
     }
 
-    const data = await res.json() as { text?: string; error?: string };
+    const data = (await res.json()) as { text?: string; error?: string };
     const resultText = data.text ?? '';
 
-    const [logRow] = await db.insert(cronjobLogs).values({
-      cronjobId: job.id,
-      status: 'success',
-      result: resultText,
-      durationMs,
-    }).returning();
+    const [logRow] = await db
+      .insert(cronjobLogs)
+      .values({
+        cronjobId: job.id,
+        status: 'success',
+        result: resultText,
+        durationMs,
+      })
+      .returning();
 
     // Index into Elasticsearch (fire-and-forget)
     const { indexCronjobResult } = await import('@/services/memory');
-    indexCronjobResult(logRow.id, job.id, job.name, resultText, null, 'success');
+    indexCronjobResult(
+      logRow.id,
+      job.id,
+      job.name,
+      resultText,
+      null,
+      'success',
+    );
 
     await db
       .update(cronjobs)
-      .set({ lastRunAt: new Date(), lastResult: resultText, updatedAt: new Date() })
+      .set({
+        lastRunAt: new Date(),
+        lastResult: resultText,
+        updatedAt: new Date(),
+      })
       .where(eq(cronjobs.id, job.id));
 
     console.log(`[cron] Job "${job.name}" succeeded in ${durationMs}ms`);
@@ -60,23 +83,39 @@ async function runCronjob(job: { id: string; name: string; prompt: string }) {
     const durationMs = Date.now() - startTime;
     const errorMessage = err instanceof Error ? err.message : String(err);
 
-    const [errorLogRow] = await db.insert(cronjobLogs).values({
-      cronjobId: job.id,
-      status: 'error',
-      error: errorMessage,
-      durationMs,
-    }).returning();
+    const [errorLogRow] = await db
+      .insert(cronjobLogs)
+      .values({
+        cronjobId: job.id,
+        status: 'error',
+        error: errorMessage,
+        durationMs,
+      })
+      .returning();
 
     // Index into Elasticsearch (fire-and-forget)
     const { indexCronjobResult } = await import('@/services/memory');
-    indexCronjobResult(errorLogRow.id, job.id, job.name, null, errorMessage, 'error');
+    indexCronjobResult(
+      errorLogRow.id,
+      job.id,
+      job.name,
+      null,
+      errorMessage,
+      'error',
+    );
 
     await db
       .update(cronjobs)
-      .set({ lastRunAt: new Date(), lastResult: `ERROR: ${errorMessage}`, updatedAt: new Date() })
+      .set({
+        lastRunAt: new Date(),
+        lastResult: `ERROR: ${errorMessage}`,
+        updatedAt: new Date(),
+      })
       .where(eq(cronjobs.id, job.id));
 
-    console.error(`[cron] Job "${job.name}" failed in ${durationMs}ms: ${errorMessage}`);
+    console.error(
+      `[cron] Job "${job.name}" failed in ${durationMs}ms: ${errorMessage}`,
+    );
   }
 }
 
@@ -100,7 +139,9 @@ async function syncJobs() {
     activeJobIds.add(job.id);
 
     if (!validate(job.cronExpression)) {
-      console.warn(`[cron] Skipping job "${job.name}" — invalid expression: ${job.cronExpression}`);
+      console.warn(
+        `[cron] Skipping job "${job.name}" — invalid expression: ${job.cronExpression}`,
+      );
       continue;
     }
 
@@ -110,23 +151,40 @@ async function syncJobs() {
     if (existing && existing.cronExpression !== job.cronExpression) {
       existing.task.stop();
       scheduledTasks.delete(job.id);
-      console.log(`[cron] Expression changed for "${job.name}", rescheduling...`);
+      console.log(
+        `[cron] Expression changed for "${job.name}", rescheduling...`,
+      );
     }
 
     if (!scheduledTasks.has(job.id)) {
       const jobId = job.id;
       const task = schedule(job.cronExpression, async () => {
-        const [freshJob] = await db.select().from(cronjobs).where(eq(cronjobs.id, jobId));
+        const [freshJob] = await db
+          .select()
+          .from(cronjobs)
+          .where(eq(cronjobs.id, jobId));
         if (!freshJob || !freshJob.isActive) {
-          console.log(`[cron] Skipping job (id: ${jobId}) — not found or inactive`);
+          console.log(
+            `[cron] Skipping job (id: ${jobId}) — not found or inactive`,
+          );
           return;
         }
-        runCronjob({ id: freshJob.id, name: freshJob.name, prompt: freshJob.prompt }).catch((err) => {
-          console.error(`[cron] Unhandled error in job "${freshJob.name}":`, err);
+        runCronjob({
+          id: freshJob.id,
+          name: freshJob.name,
+          prompt: freshJob.prompt,
+          userId: freshJob.userId ?? null,
+        }).catch((err) => {
+          console.error(
+            `[cron] Unhandled error in job "${freshJob.name}":`,
+            err,
+          );
         });
       });
       scheduledTasks.set(job.id, { task, cronExpression: job.cronExpression });
-      console.log(`[cron] Scheduled "${job.name}" with expression: ${job.cronExpression}`);
+      console.log(
+        `[cron] Scheduled "${job.name}" with expression: ${job.cronExpression}`,
+      );
     }
   }
 
@@ -139,7 +197,9 @@ async function syncJobs() {
     }
   }
 
-  console.log(`[cron] Sync complete. Active scheduled jobs: ${scheduledTasks.size}`);
+  console.log(
+    `[cron] Sync complete. Active scheduled jobs: ${scheduledTasks.size}`,
+  );
 }
 
 async function start() {
@@ -153,7 +213,9 @@ async function start() {
     });
   }, SYNC_INTERVAL_MS);
 
-  console.log(`[cron] Polling for job changes every ${SYNC_INTERVAL_MS / 1000}s`);
+  console.log(
+    `[cron] Polling for job changes every ${SYNC_INTERVAL_MS / 1000}s`,
+  );
 }
 
 process.on('SIGINT', () => {

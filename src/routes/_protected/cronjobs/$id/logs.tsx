@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, notFound } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useState } from 'react';
 import {
@@ -11,10 +11,12 @@ import {
   Table,
   Text,
 } from '@chakra-ui/react';
+import { isValidUUID } from '@/lib/uuid';
 
 const getCronjobLogs = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
+    if (!isValidUUID(id)) throw notFound();
     const { db } = await import('@/db');
     const { cronjobs, cronjobLogs } = await import('@/db/schema');
     const { eq, desc } = await import('drizzle-orm');
@@ -24,7 +26,7 @@ const getCronjobLogs = createServerFn({ method: 'GET' })
       .from(cronjobs)
       .where(eq(cronjobs.id, id));
 
-    if (!job) throw new Error('Cronjob not found');
+    if (!job) throw notFound();
 
     const logs = await db
       .select({

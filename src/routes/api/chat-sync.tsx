@@ -7,6 +7,7 @@ import {
   closeConversation,
   appendMessagesToConversation,
 } from '@/services/chat';
+import { getUserSettings, toJiraSettings } from '@/services/user-settings';
 // import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
 /**
@@ -96,7 +97,10 @@ export const Route = createFileRoute('/api/chat-sync')({
         if (!chatId) {
           try {
             const conversationId = crypto.randomUUID();
-            const options = await buildChatOptions(messages, conversationId);
+            const resolvedUserId = userId ? String(userId) : null;
+            const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
+            const jiraSettings = toJiraSettings(userSettingsRecord);
+            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings);
             const { text } = await runChatWithToolCollection(options);
 
             // Cronjob source: do not persist — only return the response for cronjob logs
@@ -151,7 +155,10 @@ export const Route = createFileRoute('/api/chat-sync')({
             : String(messages[0].content);
 
           // Single LLM call: determine action + generate response (with all tools)
-          const gatewayOptions = await buildChatOptions(allMessages);
+          const resolvedUserId = userId ? String(userId) : null;
+          const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
+          const jiraSettings = toJiraSettings(userSettingsRecord);
+          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings);
           const { text: rawDecision, assistantParts } =
             await runChatWithToolCollection(gatewayOptions, [
               GATEWAY_SYSTEM_PROMPT,

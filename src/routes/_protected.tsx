@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, Outlet } from '@tanstack/react-router'
+import { NotFoundPage } from '@/components/NotFoundPage'
 
 export const Route = createFileRoute('/_protected')({
   beforeLoad: ({ context }) => {
@@ -7,4 +8,5 @@ export const Route = createFileRoute('/_protected')({
     }
   },
   component: () => <Outlet />,
+  notFoundComponent: NotFoundPage,
 })

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, notFound } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useForm } from '@tanstack/react-form';
@@ -15,16 +15,18 @@ import {
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { FormField } from '@/components/FormField';
+import { isValidUUID } from '@/lib/uuid';
 
 const getCronjob = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
+    if (!isValidUUID(id)) throw notFound();
     const { db } = await import('@/db');
     const { cronjobs } = await import('@/db/schema');
     const { eq } = await import('drizzle-orm');
 
     const [job] = await db.select().from(cronjobs).where(eq(cronjobs.id, id));
-    if (!job) throw new Error('Cronjob not found');
+    if (!job) throw notFound();
     return job;
   });
 

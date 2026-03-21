@@ -25,6 +25,8 @@ export const Route = createFileRoute('/api/cronjobs/$id/test')({
         try {
           const options = await buildChatOptions(
             [{ role: 'user', content: job.prompt }],
+            undefined,
+            job.userId ?? null,
           );
           const result = await chat({ ...options, stream: false });
 

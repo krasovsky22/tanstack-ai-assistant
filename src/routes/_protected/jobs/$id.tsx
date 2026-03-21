@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, useRouter, notFound } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useForm } from '@tanstack/react-form';
@@ -25,16 +25,18 @@ import { PageHeader } from '@/components/PageHeader';
 import { FormField } from '@/components/FormField';
 import { JOB_STATUSES } from '@/lib/job-constants';
 import { STATUS_LABELS } from '@/components/StatusBadge';
+import { isValidUUID } from '@/lib/uuid';
 
 const getJob = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
+    if (!isValidUUID(id)) throw notFound();
     const { db } = await import('@/db');
     const { jobs } = await import('@/db/schema');
     const { eq } = await import('drizzle-orm');
 
     const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
-    if (!job) throw new Error('Job not found');
+    if (!job) throw notFound();
     return job;
   });
 

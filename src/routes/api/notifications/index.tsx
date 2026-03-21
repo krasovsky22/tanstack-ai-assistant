@@ -36,6 +36,14 @@ export const Route = createFileRoute('/api/notifications/')({
         const { useAppSession } = await import('@/services/session');
         const session = await useAppSession();
         const userId = session.data.userId ?? null;
+
+        if (!userId) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
         const body = await request.json();
 
         const [notification] = await db
@@ -45,7 +53,7 @@ export const Route = createFileRoute('/api/notifications/')({
             content: body.content,
             source: body.source ?? null,
             sourceConversationId: body.sourceConversationId ?? null,
-            userId: userId ?? null,
+            userId,
           })
           .returning();
 

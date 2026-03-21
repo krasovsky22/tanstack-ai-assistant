@@ -118,7 +118,7 @@ export const notifications = pgTable('notifications', {
   sourceConversationId: uuid('source_conversation_id')
     .references(() => conversations.id, { onDelete: 'set null' }),
   isRead: boolean('is_read').notNull().default(false),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

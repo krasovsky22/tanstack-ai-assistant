@@ -1,12 +1,14 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, notFound } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { type UIMessage } from '@tanstack/ai-react';
 import { Box } from '@chakra-ui/react';
 import { Chat } from '@/components/Chat';
+import { isValidUUID } from '@/lib/uuid';
 
 const getConversationData = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
+    if (!isValidUUID(id)) throw notFound();
     const { db } = await import('@/db');
     const { conversations, messages } = await import('@/db/schema');
     const { eq } = await import('drizzle-orm');
@@ -14,7 +16,8 @@ const getConversationData = createServerFn({ method: 'GET' })
       .select()
       .from(conversations)
       .where(eq(conversations.id, id));
-    if (!conversation) throw new Error('Conversation not found');
+
+    if (!conversation) throw notFound();
     const msgs = await db
       .select()
       .from(messages)

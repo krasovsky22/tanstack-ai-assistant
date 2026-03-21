@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, notFound } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { PageContainer } from '@/components/PageContainer';
 import MarkdownContent from '@/components/MarkdownRenderer';
+import { isValidUUID } from '@/lib/uuid';
 
 type Notification = {
   id: string;
@@ -28,10 +29,11 @@ type Notification = {
 const getNotification = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
+    if (!isValidUUID(id)) throw notFound();
     const res = await fetch(
       `${process.env['APP_URL'] ?? 'http://localhost:3000'}/api/notifications/${id}`,
     );
-    if (!res.ok) throw new Error('Notification not found');
+    if (!res.ok) throw notFound();
     return res.json() as Promise<Notification>;
   });
 
