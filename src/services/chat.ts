@@ -31,7 +31,7 @@ export async function buildChatOptions(
 
   const [zapierTools, cronjobTools, newsApiTools] = await Promise.all([
     enabled('zapier') ? getZapierMcpToolDefinitions() : Promise.resolve([]),
-    Promise.resolve(enabled('cronjob') ? getCronjobTools() : []),
+    Promise.resolve(enabled('cronjob') ? getCronjobTools(userId) : []),
     Promise.resolve(enabled('news') ? getNewsApiTools() : []),
   ]);
   const notificationTools = enabled('notifications') ? getNotificationTools(userId ?? null) : [];

@@ -1,7 +1,7 @@
 import { toolDefinition } from '@tanstack/ai';
 import { z } from 'zod';
 
-export function getCronjobTools() {
+export function getCronjobTools(userId?: string | null) {
   return [
     toolDefinition({
       name: 'list_cronjobs',
@@ -11,8 +11,11 @@ export function getCronjobTools() {
     }).server(async () => {
       const { db } = await import('@/db');
       const { cronjobs } = await import('@/db/schema');
+      const { eq } = await import('drizzle-orm');
 
-      const rows = await db.select().from(cronjobs);
+      const rows = userId
+        ? await db.select().from(cronjobs).where(eq(cronjobs.userId, userId))
+        : await db.select().from(cronjobs);
       return rows.map((r) => ({
         id: r.id,
         name: r.name,
@@ -43,12 +46,16 @@ export function getCronjobTools() {
           .describe('Whether to activate the job immediately (default: true)'),
       }),
     }).server(async ({ name, cronExpression, prompt, isActive = true }) => {
+      if (!userId) {
+        return { success: false, error: 'A user_id is required to create a cronjob.' };
+      }
+
       const { db } = await import('@/db');
       const { cronjobs } = await import('@/db/schema');
 
       const [row] = await db
         .insert(cronjobs)
-        .values({ name, cronExpression, prompt, isActive })
+        .values({ name, cronExpression, prompt, isActive, userId })
         .returning();
 
       return { success: true, id: row.id, name: row.name };
@@ -80,13 +87,16 @@ export function getCronjobTools() {
     }).server(async ({ id, ...fields }) => {
       const { db } = await import('@/db');
       const { cronjobs } = await import('@/db/schema');
-      const { eq } = await import('drizzle-orm');
+      const { eq, and } = await import('drizzle-orm');
 
       // Fetch existing record so we can merge — never overwrite with empty/undefined
+      const condition = userId
+        ? and(eq(cronjobs.id, id), eq(cronjobs.userId, userId))
+        : eq(cronjobs.id, id);
       const existing = await db
         .select()
         .from(cronjobs)
-        .where(eq(cronjobs.id, id))
+        .where(condition)
         .then((rows) => rows[0] ?? null);
 
       if (!existing)
@@ -129,11 +139,15 @@ export function getCronjobTools() {
     }).server(async ({ id }) => {
       const { db } = await import('@/db');
       const { cronjobs } = await import('@/db/schema');
-      const { eq } = await import('drizzle-orm');
+      const { eq, and } = await import('drizzle-orm');
+
+      const condition = userId
+        ? and(eq(cronjobs.id, id), eq(cronjobs.userId, userId))
+        : eq(cronjobs.id, id);
 
       const [row] = await db
         .delete(cronjobs)
-        .where(eq(cronjobs.id, id))
+        .where(condition)
         .returning();
 
       if (!row)

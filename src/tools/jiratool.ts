@@ -14,7 +14,6 @@ import {
   transitionIssue,
   type UserJiraSettings,
 } from '@/services/jira';
-import { ConsoleLogWriter } from 'drizzle-orm';
 
 export function getJiraTools(settings?: UserJiraSettings | null) {
   function cfg() {
@@ -209,7 +208,7 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
           .describe('Short summary / title of the issue'),
         projectKey: z
           .string()
-          .default(config.defaultProject ?? '')
+          .default(config?.defaultProject ?? '')
           .describe(
             'Jira project key, e.g. PROJ. Omit to use the configured default project.',
           ),
