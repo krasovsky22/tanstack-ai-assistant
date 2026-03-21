@@ -30,11 +30,15 @@ const getNotification = createServerFn({ method: 'GET' })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     if (!isValidUUID(id)) throw notFound();
-    const res = await fetch(
-      `${process.env['APP_URL'] ?? 'http://localhost:3000'}/api/notifications/${id}`,
-    );
-    if (!res.ok) throw notFound();
-    return res.json() as Promise<Notification>;
+    const { db } = await import('@/db');
+    const { notifications } = await import('@/db/schema');
+    const { eq } = await import('drizzle-orm');
+    const [notification] = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.id, id));
+    if (!notification) throw notFound();
+    return notification as Notification;
   });
 
 export const Route = createFileRoute('/_protected/notifications/$id')({
