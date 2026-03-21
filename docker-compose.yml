@@ -41,13 +41,20 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_ANALYSIS_MODEL: ${OPENAI_ANALYSIS_MODEL:-}
       OPEN_WEATHER_API: ${OPEN_WEATHER_API:-}
       NEWS_API_TOKEN: ${NEWS_API_TOKEN:-}
       APP_URL: ${APP_URL:-http://localhost:3000}
-      YAHOO_IMAP_USER: ${YAHOO_IMAP_USER}
-      YAHOO_IMAP_PASSWORD: ${YAHOO_IMAP_PASSWORD}
-      YAHOO_MAIL_FOLDERS: ${YAHOO_MAIL_FOLDERS}
-      YAHOO_MAIL_MAX_EMAILS: ${YAHOO_MAIL_MAX_EMAILS}
+      SESSION_SECRET: ${SESSION_SECRET}
+      YAHOO_IMAP_USER: ${YAHOO_IMAP_USER:-}
+      YAHOO_IMAP_PASSWORD: ${YAHOO_IMAP_PASSWORD:-}
+      YAHOO_MAIL_FOLDERS: ${YAHOO_MAIL_FOLDERS:-INBOX}
+      YAHOO_MAIL_MAX_EMAILS: ${YAHOO_MAIL_MAX_EMAILS:-50}
+      ZAPIER_MCP_URL: ${ZAPIER_MCP_URL:-}
+      ZAPIER_MCP_TOKEN: ${ZAPIER_MCP_TOKEN:-}
+      DISABLE_TOOLS: ${DISABLE_TOOLS:-}
+      DISABLE_SECTIONS: ${DISABLE_SECTIONS:-}
+      CHROME_EXECUTABLE_PATH: ${CHROME_EXECUTABLE_PATH:-}
       ELASTICSEARCH_URL: http://elasticsearch:9200
     restart: unless-stopped
 
@@ -63,6 +70,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID:-}
       APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ELASTICSEARCH_URL: http://elasticsearch:9200
@@ -80,6 +88,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       APP_URL: ${APP_URL:-http://ui:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHROME_EXECUTABLE_PATH: ${CHROME_EXECUTABLE_PATH:-}
       ELASTICSEARCH_URL: http://elasticsearch:9200
     restart: unless-stopped
 

@@ -14,6 +14,7 @@ import {
   transitionIssue,
   type UserJiraSettings,
 } from '@/services/jira';
+import { ConsoleLogWriter } from 'drizzle-orm';
 
 export function getJiraTools(settings?: UserJiraSettings | null) {
   function cfg() {
@@ -21,6 +22,9 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
     if (!config) return { config: null, error: JIRA_CONFIG_ERROR } as const;
     return { config, error: null } as const;
   }
+
+  const { config } = cfg();
+  console.log('user settings in jira tool config:', config);
   return [
     toolDefinition({
       name: 'jira_search',
@@ -205,7 +209,7 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
           .describe('Short summary / title of the issue'),
         projectKey: z
           .string()
-          .optional()
+          .default(config.defaultProject ?? '')
           .describe(
             'Jira project key, e.g. PROJ. Omit to use the configured default project.',
           ),
@@ -251,8 +255,8 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
         const { config, error } = cfg();
         if (!config) return { success: false, error };
 
-        const resolvedProjectKey =
-          projectKey ?? settings?.jiraDefaultProject;
+        const resolvedProjectKey = projectKey ?? config?.defaultProject;
+        console.log('[create_issue] resolved project key:', resolvedProjectKey);
         if (!resolvedProjectKey) {
           return {
             success: false,
@@ -262,8 +266,7 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
         }
 
         try {
-          const resolvedAssignee =
-            assignee || settings?.jiraEmail || undefined;
+          const resolvedAssignee = assignee || undefined;
           const result = await createIssue(config, {
             projectKey: resolvedProjectKey,
             issueType,

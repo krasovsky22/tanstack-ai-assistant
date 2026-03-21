@@ -1,5 +1,7 @@
 // ── Config ─────────────────────────────────────────────────────────────────
 
+import { json } from 'zod';
+
 export interface JiraConfig {
   baseUrl: string;
   email: string;
@@ -14,12 +16,19 @@ export interface UserJiraSettings {
   jiraDefaultProject?: string | null;
 }
 
-export function getJiraConfig(settings?: UserJiraSettings | null): JiraConfig | null {
+export function getJiraConfig(
+  settings?: UserJiraSettings | null,
+): JiraConfig | null {
   const baseUrl = settings?.jiraBaseUrl?.replace(/\/$/, '');
   const email = settings?.jiraEmail;
   const token = settings?.jiraPat;
   if (!baseUrl || !email || !token) return null;
-  return { baseUrl, email, token, defaultProject: settings?.jiraDefaultProject };
+  return {
+    baseUrl,
+    email,
+    token,
+    defaultProject: settings?.jiraDefaultProject,
+  };
 }
 
 export const JIRA_CONFIG_ERROR =
@@ -32,7 +41,16 @@ function adfToText(node: any): string {
   if (node.type === 'text') return node.text ?? '';
   if (node.type === 'hardBreak' || node.type === 'rule') return '\n';
   const children = (node.content ?? []).map(adfToText).join('');
-  if (['paragraph', 'heading', 'listItem', 'blockquote', 'bulletList', 'orderedList'].includes(node.type)) {
+  if (
+    [
+      'paragraph',
+      'heading',
+      'listItem',
+      'blockquote',
+      'bulletList',
+      'orderedList',
+    ].includes(node.type)
+  ) {
     return children + '\n';
   }
   return children;
@@ -51,13 +69,18 @@ function toAdf(text: string) {
   };
 }
 
-export function jiraFetch(
+export async function jiraFetch(
   { baseUrl, email, token }: JiraConfig,
   path: string,
   options?: RequestInit,
 ) {
   const url = `${baseUrl}/rest/api/3${path}`;
-  return fetch(url, {
+  const method = options?.method ?? 'GET';
+  console.log(
+    `[jira] ${method} ${url}`,
+    options?.body ? JSON.parse(options.body as string) : '',
+  );
+  const res = await fetch(url, {
     ...options,
     headers: {
       Authorization: `Basic ${Buffer.from(`${email}:${token}`).toString('base64')}`,
@@ -66,6 +89,11 @@ export function jiraFetch(
       ...(options?.headers ?? {}),
     },
   });
+  console.log(
+    `[jira] ${method} ${url} → ${res.status}`,
+    JSON.stringify(res, null, 2),
+  );
+  return res;
 }
 
 // ── API methods ────────────────────────────────────────────────────────────
@@ -290,7 +318,11 @@ export async function getTransitions(config: JiraConfig, issueKey: string) {
     );
   }
   const data = await res.json();
-  return (data.transitions ?? []) as Array<{ id: string; name: string; to: { name: string } }>;
+  return (data.transitions ?? []) as Array<{
+    id: string;
+    name: string;
+    to: { name: string };
+  }>;
 }
 
 export async function transitionIssue(
@@ -318,25 +350,27 @@ export async function createIssue(
   const { summary, description, assignee, priority, labels } = params;
 
   const issueType = params.issueType ?? 'Task';
+  const projectKey = params.projectKey || config.defaultProject;
+  if (!projectKey) {
+    throw new Error(
+      'No project key provided and no default project configured in Jira settings.',
+    );
+  }
 
   const fields: Record<string, unknown> = {
-    project: { id: 10001 },
+    project: { key: projectKey },
     issuetype: { name: issueType },
     summary,
+    assignee: { accountId: null },
   };
 
   if (description !== undefined) fields.description = toAdf(description);
-  if (assignee) {
+  if (assignee && assignee.toLowerCase() !== 'unassigned') {
     const accountId = await findUserByEmail(config, assignee);
     if (accountId) fields.assignee = { accountId };
   }
   if (priority !== undefined) fields.priority = { name: priority };
   if (labels !== undefined) fields.labels = labels;
-
-  console.log(
-    'Creating Jira issue with fields:',
-    JSON.stringify({ fields }, null, 2),
-  );
 
   const res = await jiraFetch(config, '/issue', {
     method: 'POST',
@@ -345,7 +379,7 @@ export async function createIssue(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    console.error('Failed to create Jira issue:', err);
+    console.log(`[jira] failed tocreateIssue response:`, err);
     throw new Error(
       (err.errorMessages ?? []).join('; ') ||
         JSON.stringify(err.errors ?? {}) ||

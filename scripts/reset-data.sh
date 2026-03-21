@@ -11,6 +11,18 @@ fi
 DB_URL="${DATABASE_URL:-postgresql://postgres:password@localhost:5432/tanstack_ai}"
 ES_URL="${ELASTICSEARCH_URL:-http://localhost:9200}"
 
+echo "WARNING: This will permanently delete ALL data:"
+echo "  - All PostgreSQL table rows (users, conversations, messages, jobs, cronjobs, etc.)"
+echo "  - All Elasticsearch indices"
+echo "  - All generated and uploaded files"
+echo ""
+read -r -p "Are you sure you want to continue? [y/N] " confirm
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+  echo "Aborted."
+  exit 0
+fi
+echo ""
+
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 POSTGRES_DB="${POSTGRES_DB:-tanstack_ai}"
 
