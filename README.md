@@ -1,10 +1,12 @@
-Welcome to your new TanStack Start app!
+# TanStack AI Assistant
+
+Full-stack AI assistant platform built with TanStack Start, TanStack Router, and TanStack AI. Features streaming chat, a tool-calling system, PostgreSQL persistence, a Telegram gateway, and a cronjob automation system.
 
 # Getting Started
 
 ## Prerequisites
 
-This app requires a PostgreSQL database. Start one with Docker:
+This app requires a PostgreSQL database and Elasticsearch. Start both with Docker:
 
 ```bash
 docker compose up -d
@@ -12,10 +14,10 @@ docker compose up -d
 
 ## Database Setup
 
-Push the schema to your database (runs on first start, or run manually):
+Push the schema to your database:
 
 ```bash
-pnpm drizzle-kit push
+pnpm db:push
 ```
 
 ## Environment Variables
@@ -26,13 +28,24 @@ Copy `.env.example` to `.env` and fill in your values:
 cp .env.example .env
 ```
 
-Required variables:
+**Required:**
 
-- `OPENAI_API_KEY` — OpenAI API key
-- `OPEN_WEATHER_API` — OpenWeather API key
-- `NEWS_API_TOKEN` — NewsAPI token for news search
+- `OPENAI_API_KEY` — OpenAI API key for LLM calls
 - `DATABASE_URL` — PostgreSQL connection string (default: `postgresql://postgres:password@localhost:5432/tanstack_ai`)
-- `APP_URL` — Base URL of the web app (default: `http://localhost:3000`), used by the gateway
+- `SESSION_SECRET` — Random string ≥ 32 chars for session encryption. Generate: `openssl rand -base64 32`
+
+**Optional (features activate when set):**
+
+- `APP_URL` — Base URL of the web app (default: `http://localhost:3000`), used by gateway/cron workers
+- `ELASTICSEARCH_URL` — Elasticsearch URL (default: `http://localhost:9200`)
+- `NEWS_API_TOKEN` — [NewsAPI](https://newsapi.org/account) token for the news tool
+- `ZAPIER_MCP_URL` / `ZAPIER_MCP_TOKEN` — Zapier MCP integration
+- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_BOT_USERNAME` — Telegram gateway
+- `YAHOO_IMAP_USER` / `YAHOO_IMAP_PASSWORD` — Yahoo Mail IMAP ingestion
+- `OPENAI_ANALYSIS_MODEL` — Model for knowledge base document analysis (default: `gpt-4o-mini`)
+- `CHROME_EXECUTABLE_PATH` — Chrome path for PDF resume generation
+- `DISABLE_TOOLS` — Comma-separated tool groups to disable: `zapier`, `cronjob`, `news`, `ui`, `file`, `cmd`, `memory`, `knowledge_base`, `jira`, `notifications`
+- `DISABLE_SECTIONS` — Comma-separated UI sections to hide: `ai`, `jobs`, `mail`, `knowledge-base`, `cronjobs`, `notifications`
 
 ## Run the app
 
@@ -40,6 +53,22 @@ Required variables:
 pnpm install
 pnpm dev
 ```
+
+To run the app with the background job worker:
+
+```bash
+pnpm dev:all
+```
+
+## Workers
+
+The platform includes background workers that run as separate processes:
+
+| Worker | Command | Description |
+|--------|---------|-------------|
+| Jobs | `pnpm jobs:dev` | Polls for new job listings, processes them, and generates resumes |
+| Cron | `pnpm cron:dev` | Runs scheduled tasks (cronjobs) by calling `/api/chat-sync` on a timer |
+| Gateway | `pnpm gateway:dev` | Connects external chat platforms (Telegram) to the AI assistant |
 
 ## Communication Gateway
 
