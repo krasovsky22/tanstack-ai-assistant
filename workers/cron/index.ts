@@ -24,10 +24,12 @@ async function runCronjob(job: {
   userId: string | null;
 }) {
   const startTime = Date.now();
+  const url = `${APP_URL}/api/chat-sync`;
   console.log(`[cron] Firing job "${job.name}" (${job.id})`, job);
+  console.log(`[cron] POST ${url}`);
 
   try {
-    const res = await fetch(`${APP_URL}/api/chat-sync`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -113,8 +115,13 @@ async function runCronjob(job: {
       })
       .where(eq(cronjobs.id, job.id));
 
+    const cause = err instanceof Error ? (err as NodeJS.ErrnoException).cause : undefined;
     console.error(
       `[cron] Job "${job.name}" failed in ${durationMs}ms: ${errorMessage}`,
+      cause ? `\n  cause: ${cause instanceof Error ? cause.message : String(cause)}` : '',
+      cause instanceof Error && (cause as NodeJS.ErrnoException).code
+        ? `\n  code: ${(cause as NodeJS.ErrnoException).code}`
+        : '',
     );
   }
 }
