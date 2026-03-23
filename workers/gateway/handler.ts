@@ -6,7 +6,9 @@ const GENERATED_DIR = 'files/generated';
 
 // Extract generated file paths from LLM response text
 // Matches URLs like /api/files/report.csv
-function extractGeneratedFiles(text: string): { filename: string; filePath: string }[] {
+function extractGeneratedFiles(
+  text: string,
+): { filename: string; filePath: string }[] {
   const pattern = /\/api\/files\/([a-zA-Z0-9._-]+)/g;
   const files: { filename: string; filePath: string }[] = [];
   let match: RegExpExecArray | null;
@@ -25,9 +27,15 @@ export async function handleMessage(
 
   const chatIdStr = String(msg.chatId);
 
+  // Strip leading @botname mention so "/link CODE" works in group chats
+  // e.g. "@mybot /link F68F51" → "/link F68F51"
+  const normalizedText = (msg.text ?? '').trim().replace(/^@\S+\s*/, '');
+
   // 1. Link intercept — must happen before any LLM call
   const LINK_PATTERN = /^\/link\s+([A-Z0-9]{6})\s*$/i;
-  const linkMatch = (msg.text ?? '').trim().match(LINK_PATTERN);
+  const linkMatch = normalizedText.match(LINK_PATTERN);
+
+  console.log(`[${provider.name}] Link match:`, linkMatch, msg.text);
   if (linkMatch) {
     const res = await fetch(`${APP_URL}/api/gateway-link`, {
       method: 'PUT',
@@ -38,7 +46,9 @@ export async function handleMessage(
         chatId: chatIdStr,
       }),
     });
-    const { message } = await res.json() as { message: string };
+    const { message } = (await res.json()) as { message: string };
+
+    console.log(`[${provider.name}] Link response:`, message);
     await provider.send(msg.chatId, message);
     return;
   }
@@ -47,7 +57,7 @@ export async function handleMessage(
   const resolveRes = await fetch(
     `${APP_URL}/api/gateway-identities?provider=${encodeURIComponent(provider.name)}&chatId=${encodeURIComponent(chatIdStr)}`,
   );
-  const { userId } = await resolveRes.json() as { userId: string | null };
+  const { userId } = (await resolveRes.json()) as { userId: string | null };
 
   if (!userId) {
     await provider.send(
@@ -60,7 +70,10 @@ export async function handleMessage(
   // 3. Build message content (existing logic — unchanged)
   type ContentPart =
     | { type: 'text'; content: string }
-    | { type: 'image'; source: { type: 'data'; value: string; mimeType: string } };
+    | {
+        type: 'image';
+        source: { type: 'data'; value: string; mimeType: string };
+      };
 
   const messageContent: string | ContentPart[] =
     msg.images && msg.images.length > 0
@@ -68,7 +81,11 @@ export async function handleMessage(
           ...(msg.text ? [{ type: 'text' as const, content: msg.text }] : []),
           ...msg.images.map((img) => ({
             type: 'image' as const,
-            source: { type: 'data' as const, value: img.base64, mimeType: img.mimeType },
+            source: {
+              type: 'data' as const,
+              value: img.base64,
+              mimeType: img.mimeType,
+            },
           })),
         ]
       : msg.text;
@@ -99,9 +116,14 @@ export async function handleMessage(
   if (provider.sendFile) {
     const files = extractGeneratedFiles(text);
     for (const file of files) {
-      await provider.sendFile(msg.chatId, file.filePath, file.filename).catch(
-        (err) => console.error(`[${provider.name}] Failed to send file ${file.filename}:`, err),
-      );
+      await provider
+        .sendFile(msg.chatId, file.filePath, file.filename)
+        .catch((err) =>
+          console.error(
+            `[${provider.name}] Failed to send file ${file.filename}:`,
+            err,
+          ),
+        );
     }
   }
 }
