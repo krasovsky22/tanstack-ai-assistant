@@ -78,6 +78,13 @@
       "when": 1774000000100,
       "tag": "0010_add_user_id_to_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1774000001000,
+      "tag": "0011_add_gateway_identities",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, jsonb, integer, boolean, unique } from 'drizzle-orm/pg-core';
 export { JOB_STATUSES, type JobStatus } from '@/lib/job-constants';
 
 export const users = pgTable('users', {
@@ -133,3 +133,20 @@ export const jobEmails = pgTable('job_emails', {
   receivedAt: timestamp('received_at').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const linkingCodes = pgTable('linking_codes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  code: text('code').notNull().unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const gatewayIdentities = pgTable('gateway_identities', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  provider: text('provider').notNull(),
+  externalChatId: text('external_chat_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  linkedAt: timestamp('linked_at').defaultNow().notNull(),
+}, (t) => [unique().on(t.provider, t.externalChatId)]);
