@@ -58,4 +58,14 @@ Plans:
 - [ ] 04-03-PLAN.md — API user-scoping: filter jobs/cronjobs/conversations by session userId; /api/chat reads userId from session
 - [ ] 04-04-PLAN.md — Human verification: full E2E auth flow checkpoint
 
+### Phase 5: gateway-identity-linking
+
+**Goal:** Link Telegram (and future gateway) user IDs to internal users via a code-based flow. Block unlinked users at the gateway with a linking prompt. Add a Settings UI to view and manage linked gateway identities.
+**Requirements**: TBD
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 5 to break down)
+
 ---

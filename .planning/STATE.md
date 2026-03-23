@@ -42,6 +42,7 @@ Phase 04: [####] 4/4 plans complete
 - Phase 2 added: Add Elasticsearch to Docker stack for LLM memory - store generated files, conversations, and cronjob results
 - Phase 3 added: jira-integration
 - Phase 4 added: user authentication.
+- Phase 5 added: gateway-identity-linking — code-based Telegram→internal user mapping, block unlinked users, Settings UI for managing linked identities
 
 ### Decisions
 
