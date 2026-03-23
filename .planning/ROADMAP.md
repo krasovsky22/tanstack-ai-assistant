@@ -61,11 +61,15 @@ Plans:
 ### Phase 5: gateway-identity-linking
 
 **Goal:** Link Telegram (and future gateway) user IDs to internal users via a code-based flow. Block unlinked users at the gateway with a linking prompt. Add a Settings UI to view and manage linked gateway identities.
-**Requirements**: TBD
+**Requirements**: GID-01, GID-02, GID-03, GID-04, GID-05, GID-06, GID-07
 **Depends on:** Phase 4
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 5 to break down)
+- [ ] 05-01-PLAN.md — DB foundation: gatewayIdentities + linkingCodes schema, migration 0011, Wave 0 RED test stubs (GID-01–GID-07)
+- [ ] 05-02-PLAN.md — Service + API: gateway-identity.ts (6 functions), GET/DELETE /api/gateway-identities, POST/PUT /api/gateway-link
+- [ ] 05-03-PLAN.md — Gateway handler: /link CODE intercept, unlinked user blocking, userId propagation to chat-sync
+- [ ] 05-04-PLAN.md — Settings UI: GatewayIdentitiesCard with generate code + linked identities list
+- [ ] 05-05-PLAN.md — Human verification: full suite green + Settings UI card confirmed
 
 ---
