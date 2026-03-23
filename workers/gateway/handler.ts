@@ -23,6 +23,41 @@ export async function handleMessage(
 ): Promise<void> {
   console.log(`[${provider.name}] Received message:`, msg, APP_URL);
 
+  const chatIdStr = String(msg.chatId);
+
+  // 1. Link intercept — must happen before any LLM call
+  const LINK_PATTERN = /^\/link\s+([A-Z0-9]{6})\s*$/i;
+  const linkMatch = (msg.text ?? '').trim().match(LINK_PATTERN);
+  if (linkMatch) {
+    const res = await fetch(`${APP_URL}/api/gateway-link`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: linkMatch[1].toUpperCase(),
+        provider: provider.name,
+        chatId: chatIdStr,
+      }),
+    });
+    const { message } = await res.json() as { message: string };
+    await provider.send(msg.chatId, message);
+    return;
+  }
+
+  // 2. Identity resolve — block unlinked users
+  const resolveRes = await fetch(
+    `${APP_URL}/api/gateway-identities?provider=${encodeURIComponent(provider.name)}&chatId=${encodeURIComponent(chatIdStr)}`,
+  );
+  const { userId } = await resolveRes.json() as { userId: string | null };
+
+  if (!userId) {
+    await provider.send(
+      msg.chatId,
+      'Your Telegram account is not linked to an account.\n\nGo to Settings \u2192 Gateway Identities, generate a linking code, then send:\n/link YOURCODE',
+    );
+    return;
+  }
+
+  // 3. Build message content (existing logic — unchanged)
   type ContentPart =
     | { type: 'text'; content: string }
     | { type: 'image'; source: { type: 'data'; value: string; mimeType: string } };
@@ -38,6 +73,7 @@ export async function handleMessage(
         ]
       : msg.text;
 
+  // 4. Dispatch to chat-sync with resolved userId
   const res = await fetch(`${APP_URL}/api/chat-sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -45,7 +81,8 @@ export async function handleMessage(
       messages: [{ role: 'user', content: messageContent }],
       title: `${provider.name}: ${msg.text.slice(0, 60)}`,
       source: provider.name,
-      chatId: String(msg.chatId),
+      chatId: chatIdStr,
+      userId,
     }),
   });
 
@@ -58,7 +95,7 @@ export async function handleMessage(
   const { text } = (await res.json()) as { text: string };
   await provider.send(msg.chatId, text);
 
-  // Send any generated files as documents if the provider supports it
+  // 5. Send generated files (existing logic — unchanged)
   if (provider.sendFile) {
     const files = extractGeneratedFiles(text);
     for (const file of files) {
