@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import {
   Badge,
@@ -366,6 +366,201 @@ function BrowserNotificationsCard() {
   );
 }
 
+function GatewayIdentitiesCard() {
+  const queryClient = useQueryClient();
+  const [generatedCode, setGeneratedCode] = useState<{ code: string; expiresAt: string } | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { data: identities = [], isLoading } = useQuery<
+    { id: string; provider: string; externalChatId: string; linkedAt: string }[]
+  >({
+    queryKey: ['gateway-identities'],
+    queryFn: async () => {
+      const res = await fetch('/api/gateway-identities');
+      if (!res.ok) throw new Error('Failed to load identities');
+      return res.json();
+    },
+  });
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/gateway-link', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to generate code');
+      const data = (await res.json()) as { code: string; expiresAt: string };
+      setGeneratedCode(data);
+      toaster.create({
+        type: 'success',
+        title: 'Code generated',
+        description: `Your linking code: ${data.code}`,
+        duration: 8000,
+      });
+    } catch {
+      toaster.create({ type: 'error', title: 'Failed to generate code', duration: 4000 });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch('/api/gateway-identities', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      await queryClient.invalidateQueries({ queryKey: ['gateway-identities'] });
+      toaster.create({ type: 'success', title: 'Identity removed', duration: 3000 });
+    } catch {
+      toaster.create({ type: 'error', title: 'Failed to remove identity', duration: 4000 });
+    }
+  };
+
+  return (
+    <Box
+      bg="white"
+      borderRadius="lg"
+      borderWidth="1px"
+      borderColor="border.default"
+      shadow="sm"
+      overflow="hidden"
+      mt="6"
+    >
+      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="gray.50">
+        <Stack direction="row" align="center" justify="space-between">
+          <Box>
+            <Text fontWeight="semibold" color="text.primary" fontSize="md">
+              Gateway Identities
+            </Text>
+            <Text color="text.secondary" fontSize="sm" mt="0.5">
+              Link your Telegram account to use the assistant via bot
+            </Text>
+          </Box>
+          <Badge
+            colorPalette={identities.length > 0 ? 'green' : 'gray'}
+            variant="subtle"
+            borderRadius="full"
+            px="3"
+            py="1"
+            fontSize="xs"
+            fontWeight="medium"
+          >
+            {identities.length > 0 ? `${identities.length} linked` : 'None'}
+          </Badge>
+        </Stack>
+      </Box>
+
+      <Box px="6" py="5">
+        <Stack gap="5">
+          {/* Generate code section */}
+          <Box>
+            <Text fontSize="sm" fontWeight="medium" color="text.primary" mb="2">
+              Generate Linking Code
+            </Text>
+            <Button
+              onClick={handleGenerate}
+              loading={isGenerating}
+              loadingText="Generating..."
+              colorPalette="brand"
+              size="sm"
+            >
+              Generate Code
+            </Button>
+            {generatedCode && (
+              <Box
+                mt="3"
+                p="3"
+                bg="gray.50"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="border.default"
+              >
+                <Text fontSize="xs" color="text.secondary" mb="1">
+                  Your linking code (expires 10 minutes after generation):
+                </Text>
+                <Flex align="center" gap="2">
+                  <Text fontFamily="mono" fontWeight="bold" fontSize="xl" letterSpacing="widest">
+                    {generatedCode.code}
+                  </Text>
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    onClick={() =>
+                      navigator.clipboard
+                        .writeText(generatedCode.code)
+                        .then(() =>
+                          toaster.create({ type: 'success', title: 'Copied!', duration: 2000 }),
+                        )
+                    }
+                  >
+                    Copy
+                  </Button>
+                </Flex>
+                <Text fontSize="xs" color="text.secondary" mt="1">
+                  Send to bot:{' '}
+                  <Text as="span" fontFamily="mono">
+                    /link {generatedCode.code}
+                  </Text>
+                </Text>
+              </Box>
+            )}
+          </Box>
+
+          {/* Linked identities list */}
+          <Box>
+            <Text fontSize="sm" fontWeight="medium" color="text.primary" mb="2">
+              Linked Identities
+            </Text>
+            {isLoading ? (
+              <Text fontSize="sm" color="text.secondary">
+                Loading...
+              </Text>
+            ) : identities.length === 0 ? (
+              <Text fontSize="sm" color="text.secondary">
+                No linked identities yet.
+              </Text>
+            ) : (
+              <Stack gap="2">
+                {identities.map((identity) => (
+                  <Flex
+                    key={identity.id}
+                    align="center"
+                    justify="space-between"
+                    p="3"
+                    bg="gray.50"
+                    borderRadius="md"
+                  >
+                    <Flex align="center" gap="3">
+                      <Badge colorPalette="blue" variant="subtle" fontSize="xs">
+                        {identity.provider}
+                      </Badge>
+                      <Text fontSize="sm" fontFamily="mono">
+                        {identity.externalChatId}
+                      </Text>
+                      <Text fontSize="xs" color="text.secondary">
+                        {new Date(identity.linkedAt).toLocaleDateString()}
+                      </Text>
+                    </Flex>
+                    <Button
+                      size="xs"
+                      colorPalette="red"
+                      variant="subtle"
+                      onClick={() => handleDelete(identity.id)}
+                    >
+                      Remove
+                    </Button>
+                  </Flex>
+                ))}
+              </Stack>
+            )}
+          </Box>
+        </Stack>
+      </Box>
+    </Box>
+  );
+}
+
 function SettingsPage() {
   const { data: settings, isLoading } = useQuery<UserSettings>({
     queryKey: ['user-settings'],
@@ -404,6 +599,7 @@ function SettingsPage() {
       )}
 
       <BrowserNotificationsCard />
+      <GatewayIdentitiesCard />
     </PageContainer>
   );
 }
