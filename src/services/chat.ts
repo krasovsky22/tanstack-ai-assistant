@@ -42,10 +42,18 @@ export async function buildChatOptions(
     ...(enabled('cmd') ? getCmdTools() : []),
     ...(enabled('memory') ? getMemoryTools() : []),
     ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
-    ...(enabled('jira') && jiraSettings?.jiraBaseUrl && jiraSettings?.jiraEmail && jiraSettings?.jiraPat ? getJiraTools(jiraSettings) : []),
+    ...(enabled('jira') &&
+    jiraSettings?.jiraBaseUrl &&
+    jiraSettings?.jiraEmail &&
+    jiraSettings?.jiraPat
+      ? getJiraTools(jiraSettings)
+      : []),
   ];
   const userPromptSnippet = userId
     ? `\nThe authenticated user's id is: ${userId}.`
+    : '';
+  const jiraBaseUrlPromptSnippet = jiraSettings?.jiraBaseUrl
+    ? `\nThe authenticated user's Jira base URL is: ${jiraSettings.jiraBaseUrl}. Use this value when generating Jira issue links.`
     : '';
 
   return {
@@ -70,10 +78,12 @@ export async function buildChatOptions(
       Supplement with your own knowledge only when the knowledge base returns no relevant results. \
       Always cite the document filename when using knowledge base content. \
       When a tool call fails with an input validation error, read the error message carefully and retry the tool call with corrected arguments that satisfy the validation requirements — do NOT give up or report the error to the user unless retrying also fails. \
-      When working with Jira issues, always include a full clickable navigation link that opens new browser tab to each issue using the format: [PROJ-123](JIRA_BASE_URL/browse/PROJ-123) where JIRA_BASE_URL is the configured Jira instance URL. \
+      When working with Jira issues, always include a full clickable navigation link that opens new browser tab to each issue using the format: [PROJ-123](jiraBaseUrl/browse/PROJ-123) where jiraBaseUrl is the configured Jira instance URL from the user\'s settings. \
       For newly created issues, always show the link so the user can navigate directly to it. \
       Before searching Jira or answering questions about tickets, use search_memory with source_type "jira_ticket" to recall previously seen tickets from memory — this avoids redundant API calls and surfaces historical context. \
-      When Jira API results are returned, they are automatically stored in memory for future recall.' + userPromptSnippet,
+      When Jira API results are returned, they are automatically stored in memory for future recall.' +
+        userPromptSnippet +
+        jiraBaseUrlPromptSnippet,
     ],
     tools,
   };

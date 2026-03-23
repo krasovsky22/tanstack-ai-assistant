@@ -15,6 +15,8 @@ import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as ApiUserSettingsRouteImport } from './routes/api/user-settings'
 import { Route as ApiToolsRouteImport } from './routes/api/tools'
 import { Route as ApiSectionsRouteImport } from './routes/api/sections'
+import { Route as ApiGatewayLinkRouteImport } from './routes/api/gateway-link'
+import { Route as ApiGatewayIdentitiesRouteImport } from './routes/api/gateway-identities'
 import { Route as ApiChatSyncRouteImport } from './routes/api/chat-sync'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
@@ -95,6 +97,16 @@ const ApiToolsRoute = ApiToolsRouteImport.update({
 const ApiSectionsRoute = ApiSectionsRouteImport.update({
   id: '/api/sections',
   path: '/api/sections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGatewayLinkRoute = ApiGatewayLinkRouteImport.update({
+  id: '/api/gateway-link',
+  path: '/api/gateway-link',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGatewayIdentitiesRoute = ApiGatewayIdentitiesRouteImport.update({
+  id: '/api/gateway-identities',
+  path: '/api/gateway-identities',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatSyncRoute = ApiChatSyncRouteImport.update({
@@ -380,6 +392,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
+  '/api/gateway-identities': typeof ApiGatewayIdentitiesRoute
+  '/api/gateway-link': typeof ApiGatewayLinkRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
   '/api/user-settings': typeof ApiUserSettingsRoute
@@ -432,6 +446,8 @@ export interface FileRoutesByTo {
   '/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
+  '/api/gateway-identities': typeof ApiGatewayIdentitiesRoute
+  '/api/gateway-link': typeof ApiGatewayLinkRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
   '/api/user-settings': typeof ApiUserSettingsRoute
@@ -492,6 +508,8 @@ export interface FileRoutesById {
   '/_protected/settings': typeof ProtectedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/chat-sync': typeof ApiChatSyncRoute
+  '/api/gateway-identities': typeof ApiGatewayIdentitiesRoute
+  '/api/gateway-link': typeof ApiGatewayLinkRoute
   '/api/sections': typeof ApiSectionsRoute
   '/api/tools': typeof ApiToolsRoute
   '/api/user-settings': typeof ApiUserSettingsRoute
@@ -554,6 +572,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/chat'
     | '/api/chat-sync'
+    | '/api/gateway-identities'
+    | '/api/gateway-link'
     | '/api/sections'
     | '/api/tools'
     | '/api/user-settings'
@@ -606,6 +626,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/chat'
     | '/api/chat-sync'
+    | '/api/gateway-identities'
+    | '/api/gateway-link'
     | '/api/sections'
     | '/api/tools'
     | '/api/user-settings'
@@ -665,6 +687,8 @@ export interface FileRouteTypes {
     | '/_protected/settings'
     | '/api/chat'
     | '/api/chat-sync'
+    | '/api/gateway-identities'
+    | '/api/gateway-link'
     | '/api/sections'
     | '/api/tools'
     | '/api/user-settings'
@@ -719,6 +743,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiChatSyncRoute: typeof ApiChatSyncRoute
+  ApiGatewayIdentitiesRoute: typeof ApiGatewayIdentitiesRoute
+  ApiGatewayLinkRoute: typeof ApiGatewayLinkRoute
   ApiSectionsRoute: typeof ApiSectionsRoute
   ApiToolsRoute: typeof ApiToolsRoute
   ApiUserSettingsRoute: typeof ApiUserSettingsRoute
@@ -791,6 +817,20 @@ declare module '@tanstack/react-router' {
       path: '/api/sections'
       fullPath: '/api/sections'
       preLoaderRoute: typeof ApiSectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gateway-link': {
+      id: '/api/gateway-link'
+      path: '/api/gateway-link'
+      fullPath: '/api/gateway-link'
+      preLoaderRoute: typeof ApiGatewayLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gateway-identities': {
+      id: '/api/gateway-identities'
+      path: '/api/gateway-identities'
+      fullPath: '/api/gateway-identities'
+      preLoaderRoute: typeof ApiGatewayIdentitiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat-sync': {
@@ -1311,6 +1351,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ApiChatRoute: ApiChatRoute,
   ApiChatSyncRoute: ApiChatSyncRoute,
+  ApiGatewayIdentitiesRoute: ApiGatewayIdentitiesRoute,
+  ApiGatewayLinkRoute: ApiGatewayLinkRoute,
   ApiSectionsRoute: ApiSectionsRoute,
   ApiToolsRoute: ApiToolsRoute,
   ApiUserSettingsRoute: ApiUserSettingsRoute,
