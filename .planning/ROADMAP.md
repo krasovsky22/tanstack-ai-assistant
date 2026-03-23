@@ -63,7 +63,7 @@ Plans:
 **Goal:** Link Telegram (and future gateway) user IDs to internal users via a code-based flow. Block unlinked users at the gateway with a linking prompt. Add a Settings UI to view and manage linked gateway identities.
 **Requirements**: GID-01, GID-02, GID-03, GID-04, GID-05, GID-06, GID-07
 **Depends on:** Phase 4
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 - [ ] 05-01-PLAN.md — DB foundation: gatewayIdentities + linkingCodes schema, migration 0011, Wave 0 RED test stubs (GID-01–GID-07)

@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-23T09:43:26.742Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-03-23T09:47:00.705Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-23T09:43:26.739Z
-- **Stopped At:** Completed 05-02-PLAN.md
+- **Last session:** 2026-03-23T09:47:00.701Z
+- **Stopped At:** Completed 05-04-PLAN.md
 
 ## Progress
 
@@ -87,6 +87,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 05-03]: LINK_PATTERN evaluated before identity resolve — avoids wasted API call for linking messages
 - [Phase 05]: redeemLinkingCode uses single UPDATE WHERE isNull+gt returning() — atomic claim prevents double-redemption without explicit transaction
 - [Phase 05]: PUT /api/gateway-link is public — gateway worker has no user session; security is enforced by one-time code expiry
+- [Phase 05-04]: Text fontFamily=mono used for code display instead of Chakra Code component — safer Chakra v3 compatibility
+- [Phase 05-04]: generatedCode stored in local state only — not persisted; user must regenerate on page refresh (per plan spec)
 
 ### Performance Metrics
 
@@ -110,4 +112,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 05 P05-01 | 8min | 2 tasks | 6 files |
 | Phase 05 P05-03 | 1min | 1 tasks | 1 files |
 | Phase 05 P05-02 | 3 | 2 tasks | 3 files |
+| Phase 05 P05-04 | 3min | 1 tasks | 1 files |
 
