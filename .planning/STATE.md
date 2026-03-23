@@ -4,24 +4,24 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-03-18T10:05:53.748Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-23T09:38:20.891Z"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 9
+  completed_plans: 5
 ---
 
 # Project State
 
 ## Current Status
 
-- **Active Phase:** 4 — user-authentication
+- **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-18T10:00:00.000Z
-- **Stopped At:** Completed 04-04-PLAN.md
+- **Last session:** 2026-03-23T09:38:20.887Z
+- **Stopped At:** Completed 05-01-PLAN.md
 
 ## Progress
 
@@ -80,6 +80,9 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 04]: Ownership guards fire only when both session userId and record userId are non-null — avoids locking legacy unowned records
 - [Phase 04]: userId excluded from onConflictDoUpdate set clause in conversations/index.tsx to preserve original owner on upsert
 - [Phase 04-04]: Phase 4 auth system verified end-to-end by Playwright QA agent — all 6 browser scenarios (redirect, invalid login, valid login, persistence, protected routes, logout) passed
+- [Phase 05]: Drizzle 0.45.1 array syntax for table extras: (t) => [unique().on(...)]
+- [Phase 05]: Wave 0 schema tests (GID-01/02) immediately GREEN since schema added in Task 1 before test file in Task 2
+- [Phase 05]: handler.test.ts mockProvider includes start/stop to satisfy Provider interface — plan stub omitted these
 
 ### Performance Metrics
 
@@ -100,4 +103,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 04 P04-02 | 11min | 2 tasks | 25 files |
 | Phase 04 P04-03 | 3min | 2 tasks | 8 files |
 | Phase 04 P04-04 | 0min | 1 task | 0 files |
+| Phase 05 P05-01 | 8min | 2 tasks | 6 files |
 
