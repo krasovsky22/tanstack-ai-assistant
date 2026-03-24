@@ -77,7 +77,7 @@ Plans:
 **Goal:** Add a persistent top header bar to all protected pages with a "Report Issue" entry point. Users fill in a title and description; the system silently classifies the request (Bug/Feature/Other) via LLM and automatically creates a Jira ticket. Success state shows the category label and a link to the created ticket.
 **Requirements**: RPT-01, RPT-02, RPT-03, RPT-04, RPT-05, RPT-06
 **Depends on:** Phase 5
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — TDD: src/lib/report-issue.ts helpers (buildReportPrompt + parseTicketResponse) with unit tests (RPT-01–04)
