@@ -18,6 +18,8 @@ import { useAppSession } from '@/services/session';
 
 import IconRail from '@/components/IconRail';
 import ChatSidebar from '@/components/ChatSidebar';
+import { AppHeader } from '@/components/AppHeader';
+import { ReportIssueModal } from '@/components/ReportIssueModal';
 
 import appCss from '../styles.css?url';
 
@@ -83,6 +85,7 @@ export const Route = createRootRoute({
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isLoginPage = pathname === '/login';
   const showSidebar = pathname.startsWith('/conversations');
@@ -104,9 +107,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           onToggle={() => setIsSidebarOpen((v) => !v)}
         />
       )}
+      {!isLoginPage && <AppHeader onOpen={() => setIsReportOpen(true)} />}
+      {!isLoginPage && (
+        <ReportIssueModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+        />
+      )}
       <Box
         flex="1"
         ml={mainMargin}
+        pt={isLoginPage ? '0' : '56px'}
         minH="100vh"
         overflowY="auto"
         transition="margin-left 0.2s"
