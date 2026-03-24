@@ -72,4 +72,17 @@ Plans:
 - [ ] 05-04-PLAN.md — Settings UI: GatewayIdentitiesCard with generate code + linked identities list
 - [ ] 05-05-PLAN.md — Human verification: full suite green + Settings UI card confirmed
 
+### Phase 6: Add a persistent Report Bug button on every page that lets users submit an issue; the system uses an LLM to categorize the request (Bug / Feature / etc.) and then automatically creates a Jira ticket
+
+**Goal:** Add a persistent top header bar to all protected pages with a "Report Issue" entry point. Users fill in a title and description; the system silently classifies the request (Bug/Feature/Other) via LLM and automatically creates a Jira ticket. Success state shows the category label and a link to the created ticket.
+**Requirements**: RPT-01, RPT-02, RPT-03, RPT-04, RPT-05, RPT-06
+**Depends on:** Phase 5
+**Plans:** 4 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — TDD: src/lib/report-issue.ts helpers (buildReportPrompt + parseTicketResponse) with unit tests (RPT-01–04)
+- [ ] 06-02-PLAN.md — AppHeader component: fixed top bar with Flag icon "Report Issue" button + user avatar (RPT-05)
+- [ ] 06-03-PLAN.md — ReportIssueModal (TanStack Form, 3 states) + wire AppHeader + modal into __root.tsx AppLayout (RPT-06)
+- [ ] 06-04-PLAN.md — Human verification: full test suite green + Playwright QA + E2E flow confirmed
+
 ---
