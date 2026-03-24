@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-03-24T08:49:19.775Z"
+stopped_at: "Checkpoint 06-04 Task 3: awaiting human sign-off on Report Issue feature"
+last_updated: "2026-03-24T12:09:19.695Z"
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-24T08:49:12.150Z
-- **Stopped At:** Completed 06-03-PLAN.md
+- **Last session:** 2026-03-24T12:09:19.691Z
+- **Stopped At:** Checkpoint 06-04 Task 3: awaiting human sign-off on Report Issue feature
 
 ## Progress
 
@@ -96,6 +96,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 06-01]: Code fence stripping regex mirrors parseGatewayDecision in chat-sync.tsx for consistent LLM output handling
 - [Phase 06-03]: ReportIssueModal accesses user via useRouteContext internally — avoids prop drilling from AppLayout
 - [Phase 06-03]: Error state preserves form values (no form.reset()) on Try Again — only clears error state
+- [Phase 06-04]: login() helper uses waitForURL with 20s timeout (not waitForResponse) — TanStack Start serverFn navigation timing varies across tests
+- [Phase 06-04]: e2e-test user created in DB via pnpm create-user — avoids hardcoding unknown user credentials in Playwright tests
 
 ### Performance Metrics
 
@@ -124,4 +126,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 06 P06-02 | 3min | 1 tasks | 1 files |
 | Phase 06 P06-01 | 2min | 2 tasks | 2 files |
 | Phase 06 P06-03 | 2min | 2 tasks | 2 files |
+| Phase 06 P06-04 | 15min | 2 tasks | 2 files |
 
