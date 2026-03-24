@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 06-02-PLAN.md — AppHeader component built
-last_updated: "2026-03-24T08:44:25.748Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-24T08:45:12.768Z"
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-24T08:44:25.743Z
-- **Stopped At:** Completed 06-02-PLAN.md — AppHeader component built
+- **Last session:** 2026-03-24T08:45:12.763Z
+- **Stopped At:** Completed 06-01-PLAN.md
 
 ## Progress
 
@@ -92,6 +92,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 05-04]: generatedCode stored in local state only — not persisted; user must regenerate on page refresh (per plan spec)
 - [Phase 06-02]: Flag icon (lucide-react) chosen for report button over Bell — avoids confusion with IconRail notifications bell
 - [Phase 06-02]: useRouteContext({ from: '__root__' }) used inside AppHeader to read user — avoids prop-drilling from AppLayout
+- [Phase 06-01]: ticketUrl allowed as empty string — valid outcome when Jira doesn't return a browse URL
+- [Phase 06-01]: Code fence stripping regex mirrors parseGatewayDecision in chat-sync.tsx for consistent LLM output handling
 
 ### Performance Metrics
 
@@ -118,4 +120,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 05 P05-04 | 3min | 1 tasks | 1 files |
 | Phase 05 P05-05 | 2min | 1 tasks | 4 files |
 | Phase 06 P06-02 | 3min | 1 tasks | 1 files |
+| Phase 06 P06-01 | 2min | 2 tasks | 2 files |
 
