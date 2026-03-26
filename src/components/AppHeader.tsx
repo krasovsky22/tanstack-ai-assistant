@@ -1,5 +1,5 @@
 import { useRouteContext } from '@tanstack/react-router';
-import { Box, Button, Flex, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Image, Text } from '@chakra-ui/react';
 import { Flag, User } from 'lucide-react';
 import { ICON_RAIL_WIDTH } from '@/components/IconRail';
 
@@ -30,9 +30,12 @@ export function AppHeader({ onOpen }: AppHeaderProps) {
       justify="space-between"
     >
       {/* Left: App name */}
-      <Text fontWeight="semibold" fontSize="sm" color="text.primary">
-        Orin AI
-      </Text>
+      <Flex align="center" gap="2">
+        <Image src="/sparky-logo.svg" h="28px" w="28px" />
+        <Text fontWeight="semibold" fontSize="sm" color="text.primary">
+          Sparky AI
+        </Text>
+      </Flex>
 
       {/* Right: Report Issue button + User avatar */}
       <Flex align="center" gap="3">

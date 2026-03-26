@@ -13,6 +13,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { ChatInput } from '@/components/ChatInput';
+import { useDisabledSections } from '@/lib/sections';
+import type { Section } from '@/lib/sections';
 import { Bell, MessageSquare, List, Briefcase, Clock, Settings } from 'lucide-react';
 
 export const Route = createFileRoute('/_protected/')({ component: HomePage });
@@ -536,66 +538,93 @@ function NotificationsPanel() {
 
 function HomePage() {
   const navigate = useNavigate();
+  const { data: sectionsData } = useDisabledSections();
+  const isDisabled = (s: Section) => sectionsData?.disabled.includes(s) ?? false;
+
+  const quickActionCards = [
+    !isDisabled('ai') && (
+      <QuickActionCard
+        key="new-chat"
+        icon={<MessageSquare size={32} />}
+        label="New Chat"
+        subtitle="Start a conversation"
+        onClick={() => navigate({ to: '/conversations/new' } as never)}
+      />
+    ),
+    !isDisabled('ai') && (
+      <QuickActionCard
+        key="conversations"
+        icon={<List size={32} />}
+        label="Conversations"
+        subtitle="View history"
+        onClick={() => navigate({ to: '/conversations' } as never)}
+      />
+    ),
+    !isDisabled('jobs') && (
+      <QuickActionCard
+        key="jobs"
+        icon={<Briefcase size={32} />}
+        label="Jobs"
+        subtitle="Track applications"
+        onClick={() => navigate({ to: '/jobs' } as never)}
+      />
+    ),
+    !isDisabled('cronjobs') && (
+      <QuickActionCard
+        key="automations"
+        icon={<Clock size={32} />}
+        label="Automations"
+        subtitle="Schedule AI tasks"
+        onClick={() => navigate({ to: '/cronjobs' } as never)}
+      />
+    ),
+    <QuickActionCard
+      key="settings"
+      icon={<Settings size={32} />}
+      label="Settings"
+      subtitle="Configure account"
+      onClick={() => navigate({ to: '/settings' } as never)}
+    />,
+  ].filter(Boolean);
+
+  const showConversations = !isDisabled('ai');
+  const showJobs = !isDisabled('jobs');
+  const dashboardPanelCount = (showConversations ? 1 : 0) + (showJobs ? 1 : 0);
 
   return (
     <Flex direction="column" minH="100vh" bg="bg.page" p="6" gap="4">
       {/* Zone 1: Chat Input Card */}
-      <Box
-        bg="bg.surface"
-        borderRadius="16px"
-        border="1px solid"
-        borderColor="border.default"
-        p="6"
-      >
-        <Heading size="md" color="text.primary" mb="4">
-          What can I help with today?
-        </Heading>
-        <HomePageChatInput />
-      </Box>
+      {!isDisabled('ai') && (
+        <Box
+          bg="bg.surface"
+          borderRadius="16px"
+          border="1px solid"
+          borderColor="border.default"
+          p="6"
+        >
+          <Heading size="md" color="text.primary" mb="4">
+            What can I help with today?
+          </Heading>
+          <HomePageChatInput />
+        </Box>
+      )}
 
       {/* Zone 2: Quick Actions Row */}
-      <Grid templateColumns="repeat(5, 1fr)" gap="3">
-        <QuickActionCard
-          icon={<MessageSquare size={32} />}
-          label="New Chat"
-          subtitle="Start a conversation"
-          onClick={() => navigate({ to: '/conversations/new' } as never)}
-        />
-        <QuickActionCard
-          icon={<List size={32} />}
-          label="Conversations"
-          subtitle="View history"
-          onClick={() => navigate({ to: '/conversations' } as never)}
-        />
-        <QuickActionCard
-          icon={<Briefcase size={32} />}
-          label="Jobs"
-          subtitle="Track applications"
-          onClick={() => navigate({ to: '/jobs' } as never)}
-        />
-        <QuickActionCard
-          icon={<Clock size={32} />}
-          label="Automations"
-          subtitle="Schedule AI tasks"
-          onClick={() => navigate({ to: '/cronjobs' } as never)}
-        />
-        <QuickActionCard
-          icon={<Settings size={32} />}
-          label="Settings"
-          subtitle="Configure account"
-          onClick={() => navigate({ to: '/settings' } as never)}
-        />
+      <Grid templateColumns={`repeat(${quickActionCards.length}, 1fr)`} gap="3">
+        {quickActionCards}
       </Grid>
 
       {/* Zone 3: Activity Dashboard */}
-      <Grid templateColumns="repeat(2, 1fr)" gap="4">
-        <RecentConversationsPanel />
-        <JobsOverviewPanel />
-      </Grid>
+      {dashboardPanelCount > 0 && (
+        <Grid templateColumns={dashboardPanelCount === 2 ? 'repeat(2, 1fr)' : '1fr'} gap="4">
+          {showConversations && <RecentConversationsPanel />}
+          {showJobs && <JobsOverviewPanel />}
+        </Grid>
+      )}
 
-      <AutomationsPanel />
+      {!isDisabled('cronjobs') && <AutomationsPanel />}
 
-      <NotificationsPanel />
+      {!isDisabled('notifications') && <NotificationsPanel />}
     </Flex>
   );
 }

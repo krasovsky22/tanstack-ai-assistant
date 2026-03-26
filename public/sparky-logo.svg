@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <!-- Front face gradient: coral/red -->
+    <linearGradient id="frontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B6B"/>
+      <stop offset="100%" stop-color="#FF4757"/>
+    </linearGradient>
+    <!-- Left side gradient: orange -->
+    <linearGradient id="leftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFA502"/>
+      <stop offset="100%" stop-color="#FF7F50"/>
+    </linearGradient>
+    <!-- Top face gradient: slightly lighter coral -->
+    <linearGradient id="topGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF8E8E"/>
+      <stop offset="100%" stop-color="#FF6B6B"/>
+    </linearGradient>
+    <!-- Chat bubble gradient: teal -->
+    <linearGradient id="bubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ED573"/>
+      <stop offset="100%" stop-color="#1ABC9C"/>
+    </linearGradient>
+    <!-- White highlight for 3D depth -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#00000033"/>
+    </filter>
+  </defs>
+
+  <!-- Chat bubble tail (teal, bottom-right pointing right) -->
+  <path
+    d="M62 88 Q62 96 70 96 L88 96 Q96 96 96 88 L96 78 Q94 82 88 84 L70 84 Q64 84 62 88 Z"
+    fill="url(#bubbleGrad)"
+    rx="4"
+  />
+  <!-- Chat bubble tail pointer pointing right -->
+  <path
+    d="M88 90 L100 95 L88 96 Z"
+    fill="url(#bubbleGrad)"
+  />
+
+  <!-- === ISOMETRIC CUBE === -->
+  <g filter="url(#softShadow)">
+
+    <!-- Left side face (orange) -->
+    <!-- Isometric left: from top-left edge down to bottom-left -->
+    <path
+      d="M20 42 L20 80 L52 98 L52 60 Z"
+      fill="url(#leftGrad)"
+    />
+
+    <!-- Front face (coral/red) with folder tab notch at top-center -->
+    <!-- Main front face rectangle with rounded bottom corners -->
+    <path
+      d="M52 22 L52 22 Q68 14 68 14 L68 14 L84 22 L84 60 Q84 64 80 66 L52 60 Z"
+      fill="url(#frontGrad)"
+    />
+    <!-- Actual front face: rectangle from x=52 to x=84, y=22 to y=60 -->
+    <path
+      d="M52 24 C52 22 54 20 56 20
+         L63 20 L64 17 Q66 14 68 14 Q70 14 71 17 L72 20
+         L80 20 C82 20 84 22 84 24
+         L84 60 L52 60 Z"
+      fill="url(#frontGrad)"
+    />
+
+    <!-- Top face (lighter, isometric top) -->
+    <path
+      d="M20 42 L52 24 L84 42 L52 60 Z"
+      fill="url(#topGrad)"
+    />
+
+    <!-- White highlight edge on top-left -->
+    <path
+      d="M20 42 L52 24 L53 25 L21 43 Z"
+      fill="white"
+      opacity="0.3"
+    />
+    <!-- White highlight edge on top-right -->
+    <path
+      d="M52 24 L84 42 L83 43 L51 25 Z"
+      fill="white"
+      opacity="0.15"
+    />
+
+    <!-- Face: two square eyes on front face -->
+    <!-- Eye positions on the front face (centered around x=68, offset left/right) -->
+    <rect x="60" y="33" width="5" height="5" rx="1" fill="#2C3E50"/>
+    <rect x="71" y="33" width="5" height="5" rx="1" fill="#2C3E50"/>
+
+    <!-- Face: curved smile -->
+    <path
+      d="M62 45 Q68 51 74 45"
+      stroke="#2C3E50"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      fill="none"
+    />
+
+  </g>
+</svg>
