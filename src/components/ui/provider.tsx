@@ -1,9 +1,11 @@
 import {
   ChakraProvider,
+  Theme,
   createSystem,
   defaultConfig,
   defineConfig,
 } from '@chakra-ui/react';
+import { ColorModeProvider, useColorMode } from '@/lib/color-mode';
 
 const customConfig = defineConfig({
   globalCss: {},
@@ -33,15 +35,68 @@ const customConfig = defineConfig({
     semanticTokens: {
       colors: {
         // Background tokens
-        'bg.page': { value: '{colors.gray.50}' },
-        'bg.surface': { value: '{colors.white}' },
+        'bg.page': {
+          value: {
+            _light: '{colors.gray.50}',
+            _dark: '{colors.gray.900}',
+          },
+        },
+        'bg.surface': {
+          value: {
+            _light: '{colors.white}',
+            _dark: '{colors.gray.800}',
+          },
+        },
+        'bg.subtle': {
+          value: {
+            _light: '{colors.gray.100}',
+            _dark: '{colors.gray.700}',
+          },
+        },
+        'bg.panel': {
+          value: {
+            _light: '{colors.white}',
+            _dark: '{colors.gray.800}',
+          },
+        },
         // Border tokens
-        'border.default': { value: '{colors.gray.200}' },
+        'border.default': {
+          value: {
+            _light: '{colors.gray.200}',
+            _dark: '{colors.gray.700}',
+          },
+        },
+        'border.subtle': {
+          value: {
+            _light: '{colors.gray.200}',
+            _dark: '{colors.gray.700}',
+          },
+        },
         // Text tokens
-        'text.primary': { value: '{colors.gray.900}' },
-        'text.secondary': { value: '{colors.gray.500}' },
-        'text.muted': { value: '{colors.gray.400}' },
-        'text.subtle': { value: '{colors.gray.700}' },
+        'text.primary': {
+          value: {
+            _light: '{colors.gray.900}',
+            _dark: '{colors.gray.50}',
+          },
+        },
+        'text.secondary': {
+          value: {
+            _light: '{colors.gray.500}',
+            _dark: '{colors.gray.400}',
+          },
+        },
+        'text.muted': {
+          value: {
+            _light: '{colors.gray.400}',
+            _dark: '{colors.gray.500}',
+          },
+        },
+        'text.subtle': {
+          value: {
+            _light: '{colors.gray.700}',
+            _dark: '{colors.gray.300}',
+          },
+        },
         // Brand semantic tokens
         'brand.primary': { value: '{colors.brand.600}' },
         'brand.hover': { value: '{colors.brand.500}' },
@@ -89,6 +144,21 @@ const customConfig = defineConfig({
 
 const system = createSystem(defaultConfig, customConfig);
 
+function ThemedContent({ children }: { children: React.ReactNode }) {
+  const { colorMode } = useColorMode();
+  return (
+    <Theme appearance={colorMode} suppressHydrationWarning>
+      {children}
+    </Theme>
+  );
+}
+
 export function Provider({ children }: { children: React.ReactNode }) {
-  return <ChakraProvider value={system}>{children}</ChakraProvider>;
+  return (
+    <ChakraProvider value={system}>
+      <ColorModeProvider>
+        <ThemedContent>{children}</ThemedContent>
+      </ColorModeProvider>
+    </ChakraProvider>
+  );
 }

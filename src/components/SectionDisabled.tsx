@@ -11,8 +11,8 @@ export default function SectionDisabled({ name }: { name: string }) {
       p="8"
     >
       <Text fontSize="4xl" mb="4">🚫</Text>
-      <Heading size="lg" color="gray.800" mb="2">{name} is disabled</Heading>
-      <Text color="gray.500" fontSize="sm">
+      <Heading size="lg" color="text.primary" mb="2">{name} is disabled</Heading>
+      <Text color="text.secondary" fontSize="sm">
         This section has been disabled via the{' '}
         <Code px="1" borderRadius="sm">DISABLE_SECTIONS</Code>{' '}
         environment variable.

@@ -126,20 +126,20 @@ function AssistantMeta({
       </Box>
       <Box px="2" pb="2" spaceY="2" mt="1">
         {thinkingParts.map((part, idx) => (
-          <Box key={`thinking-${idx}`} borderRadius="md" borderWidth="1px" borderColor="gray.200" bg="white" px="2" py="1">
-            <Text fontWeight="semibold" color="gray.500" mb="0.5" fontSize="xs">Thinking</Text>
-            <Text whiteSpace="pre-wrap" color="gray.600" fontSize="xs">{part.content}</Text>
+          <Box key={`thinking-${idx}`} borderRadius="md" borderWidth="1px" borderColor="border.default" bg="bg.surface" px="2" py="1">
+            <Text fontWeight="semibold" color="text.secondary" mb="0.5" fontSize="xs">Thinking</Text>
+            <Text whiteSpace="pre-wrap" color="text.subtle" fontSize="xs">{part.content}</Text>
           </Box>
         ))}
         {parts.map((part, idx) => {
           if (part.type === 'tool-call') {
             return (
-              <Box key={`tool-call-${part.id}-${idx}`} borderRadius="md" borderWidth="1px" borderColor="blue.100" bg="white" px="2" py="1">
+              <Box key={`tool-call-${part.id}-${idx}`} borderRadius="md" borderWidth="1px" borderColor="blue.100" bg="bg.surface" px="2" py="1">
                 <Text fontWeight="semibold" color="blue.700" fontSize="xs">
                   Tool: {part.name}{' '}
-                  <Text as="span" fontWeight="normal" color="gray.400">({formatToolCallState(part.state ?? '')})</Text>
+                  <Text as="span" fontWeight="normal" color="text.muted">({formatToolCallState(part.state ?? '')})</Text>
                 </Text>
-                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="gray.600" fontSize="xs">
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="text.subtle" fontSize="xs">
                   {prettifyJsonString(part.arguments ?? '')}
                 </Box>
               </Box>
@@ -147,12 +147,12 @@ function AssistantMeta({
           }
           if (part.type === 'tool-result') {
             return (
-              <Box key={`tool-result-${part.toolCallId}-${idx}`} borderRadius="md" borderWidth="1px" borderColor="green.100" bg="white" px="2" py="1">
+              <Box key={`tool-result-${part.toolCallId}-${idx}`} borderRadius="md" borderWidth="1px" borderColor="green.100" bg="bg.surface" px="2" py="1">
                 <Text fontWeight="semibold" color="green.700" fontSize="xs">
                   Result{' '}
-                  <Text as="span" fontWeight="normal" color="gray.400">({formatToolResultState(part.state ?? '')})</Text>
+                  <Text as="span" fontWeight="normal" color="text.muted">({formatToolResultState(part.state ?? '')})</Text>
                 </Text>
-                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="gray.600" fontSize="xs">
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="text.subtle" fontSize="xs">
                   {prettifyJsonString(part.content ?? '')}
                 </Box>
                 {part.error && (

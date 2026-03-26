@@ -116,7 +116,7 @@ function CronjobsDashboard() {
           </Button>
         </VStack>
       ) : (
-        <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
+        <Box borderRadius="lg" borderWidth="1px" bg="bg.surface" shadow="sm" overflow="hidden">
           <Table.Root size="sm">
             <Table.Header bg="gray.50">
               <Table.Row>
@@ -131,7 +131,7 @@ function CronjobsDashboard() {
               {jobs.map((job) => (
                 <React.Fragment key={job.id}>
                   <Table.Row _hover={{ bg: 'gray.50' }} transition="all 0.15s ease">
-                    <Table.Cell fontWeight="medium" color="gray.900">{job.name}</Table.Cell>
+                    <Table.Cell fontWeight="medium" color="text.primary">{job.name}</Table.Cell>
                     <Table.Cell fontFamily="mono" color="gray.600" fontSize="xs">{job.cronExpression}</Table.Cell>
                     <Table.Cell>
                       <Button

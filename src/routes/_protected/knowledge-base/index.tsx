@@ -95,7 +95,7 @@ function TagEditor({
       py="1.5"
       minH="9"
       _focusWithin={{ ring: '2px', ringColor: 'purple.400' }}
-      bg="white"
+      bg="bg.surface"
     >
       {value.map((tag) => (
         <Badge key={tag} colorPalette={categoryColorPalette(tag)} variant="subtle" borderRadius="full" fontSize="xs">
@@ -476,7 +476,7 @@ function KnowledgeBaseDashboard() {
           <NativeSelect.Field
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            bg="white"
+            bg="bg.surface"
           >
             <option value="">All categories</option>
             {allCategories.map((c) => (
@@ -528,7 +528,7 @@ function KnowledgeBaseDashboard() {
           )}
         </VStack>
       ) : (
-        <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
+        <Box borderRadius="lg" borderWidth="1px" bg="bg.surface" shadow="sm" overflow="hidden">
           <Table.Root size="sm">
             <Table.Header bg="gray.50">
               <Table.Row>
@@ -549,7 +549,7 @@ function KnowledgeBaseDashboard() {
                         <Box color="text.muted" flexShrink="0">
                           <MimeIcon mimeType={file.mimeType} />
                         </Box>
-                        <Text fontWeight="medium" color="gray.900" truncate maxW="200px" title={file.originalName}>
+                        <Text fontWeight="medium" color="text.primary" truncate maxW="200px" title={file.originalName}>
                           {file.originalName}
                         </Text>
                       </HStack>

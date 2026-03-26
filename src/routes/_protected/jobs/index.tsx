@@ -134,13 +134,13 @@ function JobCard({
   const emailCount = emailCountData?.count ?? 0;
 
   return (
-    <Box borderWidth="1px" borderRadius="lg" bg="white" shadow="sm" overflow="hidden" transition="all 0.15s ease" _hover={{ shadow: 'md' }}>
+    <Box borderWidth="1px" borderRadius="lg" bg="bg.surface" shadow="sm" overflow="hidden" transition="all 0.15s ease" _hover={{ shadow: 'md' }}>
       <Box p="4">
         <Flex align="flex-start" justify="space-between" gap="3">
           <Box flex="1" minW="0">
             <HStack gap="2" flexWrap="wrap">
               {job.title && (
-                <Text fontWeight="semibold" color="gray.900" truncate>{job.title}</Text>
+                <Text fontWeight="semibold" color="text.primary" truncate>{job.title}</Text>
               )}
               <StatusBadge status={job.status} />
               {emailCount > 0 && (
@@ -202,7 +202,7 @@ function JobCard({
             <NativeSelect.Field
               value={job.status}
               onChange={(e) => onStatusChange(job.id, e.target.value)}
-              bg="white"
+              bg="bg.surface"
               color="gray.700"
             >
               {JOB_STATUSES.map((s) => (
@@ -460,7 +460,7 @@ function JobsDashboard() {
           <NativeSelect.Field
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            bg="white"
+            bg="bg.surface"
           >
             <option value="all">All statuses</option>
             {JOB_STATUSES.map((s) => (

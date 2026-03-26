@@ -1,7 +1,8 @@
 import { useRouteContext } from '@tanstack/react-router';
-import { Box, Button, Flex, Image, Text } from '@chakra-ui/react';
-import { Flag, User } from 'lucide-react';
+import { Box, Button, Flex, IconButton, Image, Text } from '@chakra-ui/react';
+import { Flag, Moon, Sun, User } from 'lucide-react';
 import { ICON_RAIL_WIDTH } from '@/components/IconRail';
+import { useColorMode } from '@/lib/color-mode';
 
 export interface AppHeaderProps {
   onOpen: () => void;
@@ -9,6 +10,7 @@ export interface AppHeaderProps {
 
 export function AppHeader({ onOpen }: AppHeaderProps) {
   const { user } = useRouteContext({ from: '__root__' });
+  const { colorMode, toggleColorMode } = useColorMode();
 
   const initials = user?.username
     ? user.username.slice(0, 2).toUpperCase()
@@ -37,8 +39,19 @@ export function AppHeader({ onOpen }: AppHeaderProps) {
         </Text>
       </Flex>
 
-      {/* Right: Report Issue button + User avatar */}
+      {/* Right: Color mode toggle + Report Issue button + User avatar */}
       <Flex align="center" gap="3">
+        <IconButton
+          aria-label={colorMode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          variant="ghost"
+          size="sm"
+          color="text.secondary"
+          _hover={{ bg: 'bg.subtle', color: 'text.primary' }}
+          onClick={toggleColorMode}
+        >
+          {colorMode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+        </IconButton>
+
         <Button variant="ghost" size="sm" onClick={onOpen}>
           <Flag size={14} />
           Report Issue

@@ -113,14 +113,14 @@ function JiraIntegrationCard({ settings }: { settings: UserSettings | undefined 
 
   return (
     <Box
-      bg="white"
+      bg="bg.surface"
       borderRadius="lg"
       borderWidth="1px"
       borderColor="border.default"
       shadow="sm"
       overflow="hidden"
     >
-      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="gray.50">
+      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="bg.subtle">
         <Stack direction="row" align="center" justify="space-between">
           <Box>
             <Text fontWeight="semibold" color="text.primary" fontSize="md">
@@ -299,7 +299,7 @@ function BrowserNotificationsCard() {
 
   return (
     <Box
-      bg="white"
+      bg="bg.surface"
       borderRadius="lg"
       borderWidth="1px"
       borderColor="border.default"
@@ -307,7 +307,7 @@ function BrowserNotificationsCard() {
       overflow="hidden"
       mt="6"
     >
-      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="gray.50">
+      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="bg.subtle">
         <Stack direction="row" align="center" justify="space-between">
           <Box>
             <Text fontWeight="semibold" color="text.primary" fontSize="md">
@@ -419,7 +419,7 @@ function GatewayIdentitiesCard() {
 
   return (
     <Box
-      bg="white"
+      bg="bg.surface"
       borderRadius="lg"
       borderWidth="1px"
       borderColor="border.default"
@@ -427,7 +427,7 @@ function GatewayIdentitiesCard() {
       overflow="hidden"
       mt="6"
     >
-      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="gray.50">
+      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="bg.subtle">
         <Stack direction="row" align="center" justify="space-between">
           <Box>
             <Text fontWeight="semibold" color="text.primary" fontSize="md">
@@ -471,7 +471,7 @@ function GatewayIdentitiesCard() {
               <Box
                 mt="3"
                 p="3"
-                bg="gray.50"
+                bg="bg.subtle"
                 borderRadius="md"
                 borderWidth="1px"
                 borderColor="border.default"
@@ -528,7 +528,7 @@ function GatewayIdentitiesCard() {
                     align="center"
                     justify="space-between"
                     p="3"
-                    bg="gray.50"
+                    bg="bg.subtle"
                     borderRadius="md"
                   >
                     <Flex align="center" gap="3">
@@ -580,7 +580,7 @@ function SettingsPage() {
 
       {isLoading ? (
         <Box
-          bg="white"
+          bg="bg.surface"
           borderRadius="lg"
           borderWidth="1px"
           borderColor="border.default"

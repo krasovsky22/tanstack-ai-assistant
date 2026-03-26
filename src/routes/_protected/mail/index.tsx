@@ -70,7 +70,7 @@ function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) =>
             </Box>
             <Box flex="1" minW="0">
               <HStack justify="space-between" gap="2" flexWrap="wrap">
-                <Text fontWeight="medium" color="gray.900" truncate>{email.subject || '(no subject)'}</Text>
+                <Text fontWeight="medium" color="text.primary" truncate>{email.subject || '(no subject)'}</Text>
                 <Text fontSize="xs" color="gray.400" flexShrink="0">{dateStr} {timeStr}</Text>
               </HStack>
               <HStack gap="2" mt="0.5" flexWrap="wrap">
@@ -145,7 +145,7 @@ function EmailRow({ email, onDelete }: { email: Email; onDelete: (id: string) =>
               as="pre"
               fontSize="xs"
               color="gray.600"
-              bg="white"
+              bg="bg.surface"
               borderWidth="1px"
               borderColor="gray.200"
               borderRadius="md"
@@ -211,7 +211,7 @@ function MailDashboard() {
     <Container maxW="4xl" py="6" px="6">
       <Flex justify="space-between" align="flex-start" mb="6">
         <Box>
-          <Heading size="xl" color="gray.900">Mail Inbox</Heading>
+          <Heading size="xl" color="text.primary">Mail Inbox</Heading>
           <Text fontSize="sm" color="gray.500" mt="0.5">
             {isLoading ? 'Loading...' : `${emails.length} email${emails.length === 1 ? '' : 's'} ingested`}
           </Text>

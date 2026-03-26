@@ -120,7 +120,7 @@ function CronjobLogsPage() {
           <Text color="gray.500">No logs yet. This job hasn't run yet.</Text>
         </Flex>
       ) : (
-        <Box borderRadius="lg" borderWidth="1px" bg="white" shadow="sm" overflow="hidden">
+        <Box borderRadius="lg" borderWidth="1px" bg="bg.surface" shadow="sm" overflow="hidden">
           <Table.Root size="sm">
             <Table.Header bg="gray.50">
               <Table.Row>
