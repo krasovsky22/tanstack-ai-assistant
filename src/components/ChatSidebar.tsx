@@ -263,10 +263,10 @@ export default function ChatSidebar({ isOpen, onToggle }: ChatSidebarProps) {
       <Box px="3" mb="3">
         <Button
           w="full"
-          bg={isNewChatActive ? 'brand.600' : 'text.primary'}
+          bg={isNewChatActive ? 'brand.700' : 'brand.600'}
           color="white"
           borderRadius="10px"
-          _hover={{ bg: isNewChatActive ? 'brand.700' : 'gray.700' }}
+          _hover={{ bg: 'brand.700' }}
           fontSize="sm"
           fontWeight="semibold"
           gap="1.5"
