@@ -50,11 +50,26 @@ export async function upsertUserSettings(
 }
 
 export function toJiraSettings(record: UserSettingsRecord | null): UserJiraSettings | null {
-  if (!record) return null;
-  return {
-    jiraBaseUrl: record.jiraBaseUrl,
-    jiraEmail: record.jiraEmail,
-    jiraPat: record.jiraPat,
-    jiraDefaultProject: record.jiraDefaultProject,
-  };
+  // Use user settings if they have Jira credentials configured
+  if (record?.jiraBaseUrl && record?.jiraEmail && record?.jiraPat) {
+    return {
+      jiraBaseUrl: record.jiraBaseUrl,
+      jiraEmail: record.jiraEmail,
+      jiraPat: record.jiraPat,
+      jiraDefaultProject: record.jiraDefaultProject,
+    };
+  }
+  // Fall back to environment variables (used for system-level flows like bug reports)
+  const envBaseUrl = process.env.JIRA_BASE_URL ?? null;
+  const envEmail = process.env.JIRA_EMAIL ?? null;
+  const envPat = process.env.JIRA_PAT ?? null;
+  if (envBaseUrl && envEmail && envPat) {
+    return {
+      jiraBaseUrl: envBaseUrl,
+      jiraEmail: envEmail,
+      jiraPat: envPat,
+      jiraDefaultProject: process.env.JIRA_DEFAULT_PROJECT ?? null,
+    };
+  }
+  return null;
 }

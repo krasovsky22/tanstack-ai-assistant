@@ -77,6 +77,10 @@ Package manager is **pnpm**.
 - `DISABLE_SECTIONS` — (optional) comma-separated UI sections to hide/disable. Valid keys: `ai`, `jobs`, `mail`, `knowledge-base`, `cronjobs`
 - `ZAPIER_MCP_URL` — Zapier MCP server URL (required when mcp tool group is enabled)
 - `ZAPIER_MCP_TOKEN` — Zapier MCP bearer token (required when mcp tool group is enabled)
+- `JIRA_BASE_URL` — (optional) Jira instance base URL; used as system-level fallback for bug/feature reports when no user has Jira configured
+- `JIRA_EMAIL` — (optional) Atlassian account email for the system Jira PAT
+- `JIRA_PAT` — (optional) Jira Personal Access Token for system-level ticket creation
+- `JIRA_DEFAULT_PROJECT` — (optional) default Jira project key for new tickets (e.g. `KAN`)
 
 ## Workflow Rules
 
