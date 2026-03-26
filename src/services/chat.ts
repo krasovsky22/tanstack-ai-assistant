@@ -81,6 +81,7 @@ export async function buildChatOptions(
       If the same tool fails twice in a row — including validation errors such as invalid field values or unrecognised enum options — stop retrying immediately, inform the user of the exact error and the problematic field/value, and ask them how to proceed. \
       Never retry the same tool call more than once with the same or similar arguments. \
       If a field value (such as a priority, status, or type) is rejected by the API, do not guess alternative values — ask the user to provide a valid one. \
+      When creating a Jira issue, always call jira_get_issue_types and jira_get_priorities first to retrieve valid issue type and priority names, then use the returned names when setting those fields. Never guess or hardcode issue type or priority values. \
       When working with Jira issues, always include a full clickable navigation link that opens new browser tab to each issue using the format: [PROJ-123](jiraBaseUrl/browse/PROJ-123) where jiraBaseUrl is the configured Jira instance URL from the user\'s settings. \
       For newly created issues, always show the link so the user can navigate directly to it. \
       Before searching Jira or answering questions about tickets, use search_memory with source_type "jira_ticket" to recall previously seen tickets from memory — this avoids redundant API calls and surfaces historical context. \

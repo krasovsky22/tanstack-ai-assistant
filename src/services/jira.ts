@@ -343,6 +343,37 @@ export async function transitionIssue(
   }
 }
 
+export async function getIssueTypes(config: JiraConfig) {
+  const res = await jiraFetch(config, '/issuetype');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err.errorMessages ?? []).join('; ') ||
+        `Jira returned status ${res.status}`,
+    );
+  }
+  const data: any[] = await res.json();
+  return data.map((t) => ({
+    id: t.id,
+    name: t.name,
+    description: t.description ?? null,
+    subtask: t.subtask ?? false,
+  }));
+}
+
+export async function getPriorities(config: JiraConfig) {
+  const res = await jiraFetch(config, '/priority');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err.errorMessages ?? []).join('; ') ||
+        `Jira returned status ${res.status}`,
+    );
+  }
+  const data: any[] = await res.json();
+  return data.map((p) => ({ id: p.id, name: p.name, description: p.description ?? null }));
+}
+
 export async function createIssue(
   config: JiraConfig,
   params: CreateIssueParams,

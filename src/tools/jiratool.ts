@@ -12,6 +12,8 @@ import {
   createIssue,
   getTransitions,
   transitionIssue,
+  getPriorities,
+  getIssueTypes,
   type UserJiraSettings,
 } from '@/services/jira';
 
@@ -284,6 +286,38 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
         }
       },
     ),
+    toolDefinition({
+      name: 'jira_get_issue_types',
+      description:
+        'Fetch the list of available issue types from Jira (e.g. "Bug", "Task", "Story", "Epic"). Call this before creating an issue to obtain valid issue type names.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
+      try {
+        const issueTypes = await getIssueTypes(config);
+        return { issueTypes };
+      } catch (err: any) {
+        return { success: false, error: err.message ?? 'Unknown error' };
+      }
+    }),
+
+    toolDefinition({
+      name: 'jira_get_priorities',
+      description:
+        'Fetch the list of available issue priorities from Jira (e.g. "Highest", "High", "Medium", "Low", "Lowest"). Call this before creating an issue to obtain valid priority names.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const { config, error } = cfg();
+      if (!config) return { success: false, error };
+      try {
+        const priorities = await getPriorities(config);
+        return { priorities };
+      } catch (err: any) {
+        return { success: false, error: err.message ?? 'Unknown error' };
+      }
+    }),
+
     toolDefinition({
       name: 'jira_transition_issue',
       description:
