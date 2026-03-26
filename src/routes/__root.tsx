@@ -166,21 +166,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <QueryClientProvider client={queryClient}>
             <AppLayout>{children}</AppLayout>
             <Toaster />
-            <TanStackDevtools
-              config={{
-                position: 'bottom-left',
-              }}
-              eventBusConfig={{
-                connectToServerBus: true,
-              }}
-              plugins={[
-                {
-                  name: 'Tanstack Router',
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                aiDevtoolsPlugin(),
-              ]}
-            />
+            {import.meta.env.DEV && (
+              <TanStackDevtools
+                config={{
+                  position: 'bottom-left',
+                }}
+                eventBusConfig={{
+                  connectToServerBus: true,
+                }}
+                plugins={[
+                  {
+                    name: 'Tanstack Router',
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  aiDevtoolsPlugin(),
+                ]}
+              />
+            )}
           </QueryClientProvider>
         </Provider>
         <Scripts />
