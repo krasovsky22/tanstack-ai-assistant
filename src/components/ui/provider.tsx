@@ -131,11 +131,17 @@ const customConfig = defineConfig({
       input: {
         base: {
           borderRadius: '8px',
+          _dark: {
+            bg: 'gray.700',
+          },
         },
       },
       textarea: {
         base: {
           borderRadius: '8px',
+          _dark: {
+            bg: 'gray.700',
+          },
         },
       },
     },

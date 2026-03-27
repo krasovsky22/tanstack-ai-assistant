@@ -21,18 +21,22 @@ export function buildReportPrompt(
   return `You are a software issue triage assistant. A user has submitted a report from the application.
 
 Classify the issue as one of:
-- Bug (use Jira issueType: "Bug")
-- Feature (use Jira issueType: "Story")
-- Other (use Jira issueType: "Task")
+- Bug (use type: "Bug")
+- Feature (use type: "Story")
+- Other (use type: "Task")
 
-Then create a Jira ticket using the create_jira_issue tool with the appropriate issueType.
+Then call the contact_me tool with:
+- subject: the issue title
+- body: the description plus the page URL
+- type: the mapped type above
+- priority: "Medium"
 
 Issue Details:
 - Title: ${title}
 - Description: ${description}
 - Page URL: ${pageUrl}
 
-Respond with ONLY valid JSON, no markdown, no code blocks:
+After calling contact_me, respond with ONLY valid JSON, no markdown, no code blocks, using the ticketKey and ticketUrl fields from the tool result:
 {"category":"<Bug|Feature|Other>","ticketKey":"<PROJ-NNN>","ticketUrl":"<url>"}`;
 }
 

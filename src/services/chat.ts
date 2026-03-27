@@ -19,6 +19,7 @@ export async function buildChatOptions(
     getMemoryTools,
     getKnowledgeBaseTools,
     getJiraTools,
+    getContactMeTools,
   } = await import('@/tools');
   const disabledTools = new Set(
     (process.env.DISABLE_TOOLS ?? '')
@@ -48,6 +49,7 @@ export async function buildChatOptions(
     jiraSettings?.jiraPat
       ? getJiraTools(jiraSettings)
       : []),
+    ...(enabled('contact_me') ? getContactMeTools() : []),
   ];
   const userPromptSnippet = userId
     ? `\nThe authenticated user's id is: ${userId}.`
