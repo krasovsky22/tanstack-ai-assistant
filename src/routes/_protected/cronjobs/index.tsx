@@ -130,7 +130,7 @@ function CronjobsDashboard() {
             <Table.Body>
               {jobs.map((job) => (
                 <React.Fragment key={job.id}>
-                  <Table.Row _hover={{ bg: 'gray.50' }} transition="all 0.15s ease">
+                  <Table.Row _hover={{ bg: 'whiteAlpha.50' }} transition="all 0.15s ease">
                     <Table.Cell fontWeight="medium" color="text.primary">{job.name}</Table.Cell>
                     <Table.Cell fontFamily="mono" color="gray.600" fontSize="xs">{job.cronExpression}</Table.Cell>
                     <Table.Cell>
