@@ -7,6 +7,8 @@ export interface IncomingMessage {
   text: string;
   chatId: number | string;
   provider: string;
+  name?: string;
+  rawChat?: Record<string, unknown>;
   images?: IncomingImage[];
 }
 

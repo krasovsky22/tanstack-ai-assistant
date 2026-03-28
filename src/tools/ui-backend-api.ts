@@ -429,5 +429,65 @@ export function getUiBackendApiTools(userId: string | null) {
         createdAt: r.createdAt.toISOString(),
       }));
     }),
+
+    toolDefinition({
+      name: 'list_remote_chats',
+      description:
+        'List remote chat sources (e.g. Telegram chats) the user has messaged from. Returns chat names and IDs needed to send messages back.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const uid = requireUserId(userId, 'list_remote_chats');
+      const { db } = await import('@/db');
+      const { remoteChats } = await import('@/db/schema');
+      const { eq, desc } = await import('drizzle-orm');
+
+      const rows = await db
+        .select()
+        .from(remoteChats)
+        .where(eq(remoteChats.userId, uid))
+        .orderBy(desc(remoteChats.updatedAt));
+
+      return rows.map((r) => ({
+        id: r.id,
+        chatId: r.chatId,
+        provider: r.provider,
+        name: r.name,
+        metadata: r.metadata,
+        updatedAt: r.updatedAt.toISOString(),
+      }));
+    }),
+
+    toolDefinition({
+      name: 'send_remote_message',
+      description:
+        'Send a message to a remote chat (e.g. a Telegram user). Use list_remote_chats first to get the remoteChatId. The message is queued and delivered by the gateway.',
+      inputSchema: z.object({
+        remoteChatId: z
+          .string()
+          .uuid()
+          .describe('UUID of the remote chat from list_remote_chats'),
+        text: z.string().describe('The message text to send'),
+      }),
+    }).server(async ({ remoteChatId, text }) => {
+      const uid = requireUserId(userId, 'send_remote_message');
+      const { db } = await import('@/db');
+      const { remoteChats, outboundMessages } = await import('@/db/schema');
+      const { eq } = await import('drizzle-orm');
+
+      const [chat] = await db
+        .select()
+        .from(remoteChats)
+        .where(eq(remoteChats.id, remoteChatId));
+
+      if (!chat) throw new Error('Remote chat not found');
+      if (chat.userId !== uid) throw new Error('Forbidden');
+
+      const [inserted] = await db
+        .insert(outboundMessages)
+        .values({ remoteChatId, text })
+        .returning({ id: outboundMessages.id });
+
+      return { ok: true, messageId: inserted.id };
+    }),
   ];
 }

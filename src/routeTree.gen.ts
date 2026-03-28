@@ -26,6 +26,7 @@ import { Route as ProtectedKnowledgeBaseRouteImport } from './routes/_protected/
 import { Route as ProtectedJobsRouteImport } from './routes/_protected/jobs'
 import { Route as ProtectedCronjobsRouteImport } from './routes/_protected/cronjobs'
 import { Route as ProtectedConversationsRouteImport } from './routes/_protected/conversations'
+import { Route as ApiRemoteChatsIndexRouteImport } from './routes/api/remote-chats/index'
 import { Route as ApiNotificationsIndexRouteImport } from './routes/api/notifications/index'
 import { Route as ApiKnowledgeBaseIndexRouteImport } from './routes/api/knowledge-base/index'
 import { Route as ApiJobsIndexRouteImport } from './routes/api/jobs/index'
@@ -39,6 +40,7 @@ import { Route as ProtectedJobsIndexRouteImport } from './routes/_protected/jobs
 import { Route as ProtectedCronjobsIndexRouteImport } from './routes/_protected/cronjobs/index'
 import { Route as ProtectedConversationsIndexRouteImport } from './routes/_protected/conversations/index'
 import { Route as ApiReportsScrapeJobsRouteImport } from './routes/api/reports/scrape-jobs'
+import { Route as ApiRemoteChatsSendRouteImport } from './routes/api/remote-chats/send'
 import { Route as ApiNotificationsUnreadCountRouteImport } from './routes/api/notifications/unread-count'
 import { Route as ApiNotificationsMarkAllReadRouteImport } from './routes/api/notifications/mark-all-read'
 import { Route as ApiNotificationsIdRouteImport } from './routes/api/notifications/$id'
@@ -65,7 +67,9 @@ import { Route as ProtectedCronjobsNewRouteImport } from './routes/_protected/cr
 import { Route as ProtectedCronjobsIdRouteImport } from './routes/_protected/cronjobs/$id'
 import { Route as ProtectedConversationsNewRouteImport } from './routes/_protected/conversations/new'
 import { Route as ProtectedConversationsIdRouteImport } from './routes/_protected/conversations/$id'
+import { Route as ApiRemoteChatsOutboundIndexRouteImport } from './routes/api/remote-chats/outbound/index'
 import { Route as ProtectedCronjobsIdIndexRouteImport } from './routes/_protected/cronjobs/$id/index'
+import { Route as ApiRemoteChatsOutboundIdRouteImport } from './routes/api/remote-chats/outbound/$id'
 import { Route as ApiCronjobsIdTestRouteImport } from './routes/api/cronjobs/$id/test'
 import { Route as ApiCronjobsIdLogsRouteImport } from './routes/api/cronjobs/$id/logs'
 import { Route as ProtectedCronjobsIdLogsRouteImport } from './routes/_protected/cronjobs/$id/logs'
@@ -154,6 +158,11 @@ const ProtectedConversationsRoute = ProtectedConversationsRouteImport.update({
   path: '/conversations',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ApiRemoteChatsIndexRoute = ApiRemoteChatsIndexRouteImport.update({
+  id: '/api/remote-chats/',
+  path: '/api/remote-chats/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiNotificationsIndexRoute = ApiNotificationsIndexRouteImport.update({
   id: '/api/notifications/',
   path: '/api/notifications/',
@@ -220,6 +229,11 @@ const ProtectedConversationsIndexRoute =
 const ApiReportsScrapeJobsRoute = ApiReportsScrapeJobsRouteImport.update({
   id: '/api/reports/scrape-jobs',
   path: '/api/reports/scrape-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRemoteChatsSendRoute = ApiRemoteChatsSendRouteImport.update({
+  id: '/api/remote-chats/send',
+  path: '/api/remote-chats/send',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNotificationsUnreadCountRoute =
@@ -358,11 +372,23 @@ const ProtectedConversationsIdRoute =
     path: '/$id',
     getParentRoute: () => ProtectedConversationsRoute,
   } as any)
+const ApiRemoteChatsOutboundIndexRoute =
+  ApiRemoteChatsOutboundIndexRouteImport.update({
+    id: '/api/remote-chats/outbound/',
+    path: '/api/remote-chats/outbound/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProtectedCronjobsIdIndexRoute =
   ProtectedCronjobsIdIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => ProtectedCronjobsIdRoute,
+  } as any)
+const ApiRemoteChatsOutboundIdRoute =
+  ApiRemoteChatsOutboundIdRouteImport.update({
+    id: '/api/remote-chats/outbound/$id',
+    path: '/api/remote-chats/outbound/$id',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const ApiCronjobsIdTestRoute = ApiCronjobsIdTestRouteImport.update({
   id: '/test',
@@ -423,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/notifications/mark-all-read': typeof ApiNotificationsMarkAllReadRoute
   '/api/notifications/unread-count': typeof ApiNotificationsUnreadCountRoute
+  '/api/remote-chats/send': typeof ApiRemoteChatsSendRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/conversations/': typeof ProtectedConversationsIndexRoute
   '/cronjobs/': typeof ProtectedCronjobsIndexRoute
@@ -436,10 +463,13 @@ export interface FileRoutesByFullPath {
   '/api/jobs/': typeof ApiJobsIndexRoute
   '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
+  '/api/remote-chats/': typeof ApiRemoteChatsIndexRoute
   '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/api/remote-chats/outbound/$id': typeof ApiRemoteChatsOutboundIdRoute
   '/cronjobs/$id/': typeof ProtectedCronjobsIdIndexRoute
+  '/api/remote-chats/outbound/': typeof ApiRemoteChatsOutboundIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -477,6 +507,7 @@ export interface FileRoutesByTo {
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/notifications/mark-all-read': typeof ApiNotificationsMarkAllReadRoute
   '/api/notifications/unread-count': typeof ApiNotificationsUnreadCountRoute
+  '/api/remote-chats/send': typeof ApiRemoteChatsSendRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/conversations': typeof ProtectedConversationsIndexRoute
   '/cronjobs': typeof ProtectedCronjobsIndexRoute
@@ -490,10 +521,13 @@ export interface FileRoutesByTo {
   '/api/jobs': typeof ApiJobsIndexRoute
   '/api/knowledge-base': typeof ApiKnowledgeBaseIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
+  '/api/remote-chats': typeof ApiRemoteChatsIndexRoute
   '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/api/remote-chats/outbound/$id': typeof ApiRemoteChatsOutboundIdRoute
   '/cronjobs/$id': typeof ProtectedCronjobsIdIndexRoute
+  '/api/remote-chats/outbound': typeof ApiRemoteChatsOutboundIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -540,6 +574,7 @@ export interface FileRoutesById {
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/notifications/mark-all-read': typeof ApiNotificationsMarkAllReadRoute
   '/api/notifications/unread-count': typeof ApiNotificationsUnreadCountRoute
+  '/api/remote-chats/send': typeof ApiRemoteChatsSendRoute
   '/api/reports/scrape-jobs': typeof ApiReportsScrapeJobsRoute
   '/_protected/conversations/': typeof ProtectedConversationsIndexRoute
   '/_protected/cronjobs/': typeof ProtectedCronjobsIndexRoute
@@ -553,10 +588,13 @@ export interface FileRoutesById {
   '/api/jobs/': typeof ApiJobsIndexRoute
   '/api/knowledge-base/': typeof ApiKnowledgeBaseIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
+  '/api/remote-chats/': typeof ApiRemoteChatsIndexRoute
   '/_protected/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/api/remote-chats/outbound/$id': typeof ApiRemoteChatsOutboundIdRoute
   '/_protected/cronjobs/$id/': typeof ProtectedCronjobsIdIndexRoute
+  '/api/remote-chats/outbound/': typeof ApiRemoteChatsOutboundIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -603,6 +641,7 @@ export interface FileRouteTypes {
     | '/api/notifications/$id'
     | '/api/notifications/mark-all-read'
     | '/api/notifications/unread-count'
+    | '/api/remote-chats/send'
     | '/api/reports/scrape-jobs'
     | '/conversations/'
     | '/cronjobs/'
@@ -616,10 +655,13 @@ export interface FileRouteTypes {
     | '/api/jobs/'
     | '/api/knowledge-base/'
     | '/api/notifications/'
+    | '/api/remote-chats/'
     | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/api/remote-chats/outbound/$id'
     | '/cronjobs/$id/'
+    | '/api/remote-chats/outbound/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -657,6 +699,7 @@ export interface FileRouteTypes {
     | '/api/notifications/$id'
     | '/api/notifications/mark-all-read'
     | '/api/notifications/unread-count'
+    | '/api/remote-chats/send'
     | '/api/reports/scrape-jobs'
     | '/conversations'
     | '/cronjobs'
@@ -670,10 +713,13 @@ export interface FileRouteTypes {
     | '/api/jobs'
     | '/api/knowledge-base'
     | '/api/notifications'
+    | '/api/remote-chats'
     | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/api/remote-chats/outbound/$id'
     | '/cronjobs/$id'
+    | '/api/remote-chats/outbound'
   id:
     | '__root__'
     | '/_protected'
@@ -719,6 +765,7 @@ export interface FileRouteTypes {
     | '/api/notifications/$id'
     | '/api/notifications/mark-all-read'
     | '/api/notifications/unread-count'
+    | '/api/remote-chats/send'
     | '/api/reports/scrape-jobs'
     | '/_protected/conversations/'
     | '/_protected/cronjobs/'
@@ -732,10 +779,13 @@ export interface FileRouteTypes {
     | '/api/jobs/'
     | '/api/knowledge-base/'
     | '/api/notifications/'
+    | '/api/remote-chats/'
     | '/_protected/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/api/remote-chats/outbound/$id'
     | '/_protected/cronjobs/$id/'
+    | '/api/remote-chats/outbound/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -766,6 +816,7 @@ export interface RootRouteChildren {
   ApiNotificationsIdRoute: typeof ApiNotificationsIdRoute
   ApiNotificationsMarkAllReadRoute: typeof ApiNotificationsMarkAllReadRoute
   ApiNotificationsUnreadCountRoute: typeof ApiNotificationsUnreadCountRoute
+  ApiRemoteChatsSendRoute: typeof ApiRemoteChatsSendRoute
   ApiReportsScrapeJobsRoute: typeof ApiReportsScrapeJobsRoute
   ApiConversationsIndexRoute: typeof ApiConversationsIndexRoute
   ApiCronjobsIndexRoute: typeof ApiCronjobsIndexRoute
@@ -773,6 +824,9 @@ export interface RootRouteChildren {
   ApiJobsIndexRoute: typeof ApiJobsIndexRoute
   ApiKnowledgeBaseIndexRoute: typeof ApiKnowledgeBaseIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
+  ApiRemoteChatsIndexRoute: typeof ApiRemoteChatsIndexRoute
+  ApiRemoteChatsOutboundIdRoute: typeof ApiRemoteChatsOutboundIdRoute
+  ApiRemoteChatsOutboundIndexRoute: typeof ApiRemoteChatsOutboundIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -896,6 +950,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConversationsRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/api/remote-chats/': {
+      id: '/api/remote-chats/'
+      path: '/api/remote-chats'
+      fullPath: '/api/remote-chats/'
+      preLoaderRoute: typeof ApiRemoteChatsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/notifications/': {
       id: '/api/notifications/'
       path: '/api/notifications'
@@ -985,6 +1046,13 @@ declare module '@tanstack/react-router' {
       path: '/api/reports/scrape-jobs'
       fullPath: '/api/reports/scrape-jobs'
       preLoaderRoute: typeof ApiReportsScrapeJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/remote-chats/send': {
+      id: '/api/remote-chats/send'
+      path: '/api/remote-chats/send'
+      fullPath: '/api/remote-chats/send'
+      preLoaderRoute: typeof ApiRemoteChatsSendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/notifications/unread-count': {
@@ -1169,12 +1237,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConversationsIdRouteImport
       parentRoute: typeof ProtectedConversationsRoute
     }
+    '/api/remote-chats/outbound/': {
+      id: '/api/remote-chats/outbound/'
+      path: '/api/remote-chats/outbound'
+      fullPath: '/api/remote-chats/outbound/'
+      preLoaderRoute: typeof ApiRemoteChatsOutboundIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected/cronjobs/$id/': {
       id: '/_protected/cronjobs/$id/'
       path: '/'
       fullPath: '/cronjobs/$id/'
       preLoaderRoute: typeof ProtectedCronjobsIdIndexRouteImport
       parentRoute: typeof ProtectedCronjobsIdRoute
+    }
+    '/api/remote-chats/outbound/$id': {
+      id: '/api/remote-chats/outbound/$id'
+      path: '/api/remote-chats/outbound/$id'
+      fullPath: '/api/remote-chats/outbound/$id'
+      preLoaderRoute: typeof ApiRemoteChatsOutboundIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/cronjobs/$id/test': {
       id: '/api/cronjobs/$id/test'
@@ -1374,6 +1456,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNotificationsIdRoute: ApiNotificationsIdRoute,
   ApiNotificationsMarkAllReadRoute: ApiNotificationsMarkAllReadRoute,
   ApiNotificationsUnreadCountRoute: ApiNotificationsUnreadCountRoute,
+  ApiRemoteChatsSendRoute: ApiRemoteChatsSendRoute,
   ApiReportsScrapeJobsRoute: ApiReportsScrapeJobsRoute,
   ApiConversationsIndexRoute: ApiConversationsIndexRoute,
   ApiCronjobsIndexRoute: ApiCronjobsIndexRoute,
@@ -1381,6 +1464,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsIndexRoute: ApiJobsIndexRoute,
   ApiKnowledgeBaseIndexRoute: ApiKnowledgeBaseIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
+  ApiRemoteChatsIndexRoute: ApiRemoteChatsIndexRoute,
+  ApiRemoteChatsOutboundIdRoute: ApiRemoteChatsOutboundIdRoute,
+  ApiRemoteChatsOutboundIndexRoute: ApiRemoteChatsOutboundIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

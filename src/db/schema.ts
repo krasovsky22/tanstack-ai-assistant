@@ -150,3 +150,24 @@ export const gatewayIdentities = pgTable('gateway_identities', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   linkedAt: timestamp('linked_at').defaultNow().notNull(),
 }, (t) => [unique().on(t.provider, t.externalChatId)]);
+
+export const remoteChats = pgTable('remote_chats', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  chatId: text('chat_id').notNull(),
+  provider: text('provider').notNull(),
+  name: text('name').notNull(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (t) => [unique('remote_chats_chat_provider_key').on(t.chatId, t.provider)]);
+
+export const outboundMessages = pgTable('outbound_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  remoteChatId: uuid('remote_chat_id').notNull().references(() => remoteChats.id, { onDelete: 'cascade' }),
+  text: text('text').notNull(),
+  status: text('status').notNull().default('pending'),
+  error: text('error'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  sentAt: timestamp('sent_at'),
+});

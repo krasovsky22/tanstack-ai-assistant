@@ -59,6 +59,19 @@ export async function handleMessage(
   );
   const { userId } = (await resolveRes.json()) as { userId: string | null };
 
+  // Upsert remote chat (fire-and-forget, happens even if userId is null)
+  fetch(`${APP_URL}/api/remote-chats`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chatId: chatIdStr,
+      provider: provider.name,
+      name: msg.name ?? chatIdStr,
+      metadata: msg.rawChat ?? {},
+      userId,
+    }),
+  }).catch((err) => console.error('[gateway] Failed to upsert remote chat:', err));
+
   if (!userId) {
     await provider.send(
       msg.chatId,

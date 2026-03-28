@@ -10,9 +10,18 @@ interface TelegramPhotoSize {
   file_size?: number;
 }
 
+interface TelegramChat {
+  id: number;
+  type: string;
+  title?: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+}
+
 interface TelegramMessage {
   message_id: number;
-  chat: { id: number; type: string };
+  chat: TelegramChat;
   text?: string;
   caption?: string;
   photo?: TelegramPhotoSize[];
@@ -232,10 +241,19 @@ export class TelegramProvider implements Provider {
             if (img) images.push(img);
           }
 
+          const chat = post.chat;
+          const chatName =
+            chat.title ??
+            ([chat.first_name, chat.last_name].filter(Boolean).join(' ') ||
+              chat.username ||
+              String(chat.id));
+
           const msg: IncomingMessage = {
             text: postText,
-            chatId: post.chat.id,
+            chatId: chat.id,
             provider: this.name,
+            name: chatName,
+            rawChat: chat as unknown as Record<string, unknown>,
             ...(images.length > 0 ? { images } : {}),
           };
           console.log('message to handle', msg);

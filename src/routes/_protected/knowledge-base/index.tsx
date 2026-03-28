@@ -460,7 +460,7 @@ function KnowledgeBaseDashboard() {
       {/* Filters */}
       <HStack gap="3" mb="4">
         <Box position="relative" flex="1" maxW="xs">
-          <Box position="absolute" left="3" top="50%" transform="translateY(-50%)" color="gray.400" pointerEvents="none">
+          <Box position="absolute" left="3" top="50%" transform="translateY(-50%)" color={{ base: "gray.500", _dark: "gray.300" }} pointerEvents="none">
             <Search size={16} />
           </Box>
           <Input
