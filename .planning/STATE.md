@@ -4,10 +4,10 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: "Checkpoint 06-04 Task 3: awaiting human sign-off on Report Issue feature"
-last_updated: "2026-03-24T12:09:19.695Z"
+stopped_at: Phase 8 context gathered
+last_updated: "2026-03-29T01:36:07.599Z"
 progress:
-  total_phases: 6
+  total_phases: 8
   completed_phases: 3
   total_plans: 13
   completed_plans: 13
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-24T12:09:19.691Z
-- **Stopped At:** Checkpoint 06-04 Task 3: awaiting human sign-off on Report Issue feature
+- **Last session:** 2026-03-29T01:36:07.594Z
+- **Stopped At:** Phase 8 context gathered
 
 ## Progress
 
@@ -44,6 +44,7 @@ Phase 04: [####] 4/4 plans complete
 - Phase 4 added: user authentication.
 - Phase 5 added: gateway-identity-linking — code-based Telegram→internal user mapping, block unlinked users, Settings UI for managing linked identities
 - Phase 6 added: Report Bug button — persistent UI entry point on every page, modal form, LLM classification, automatic Jira ticket creation
+- Phase 8 added: GitHub MCP Tool Integration — fetch open/closed PRs, search code, analyze PR changes via GitHub MCP; PAT configured per user in settings
 
 ### Decisions
 
