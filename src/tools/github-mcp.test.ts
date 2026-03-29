@@ -55,7 +55,7 @@ describe('getGitHubMcpTools', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('each returned tool has a .server property that is a function', async () => {
+  it('each returned tool is a server-side tool with an execute handler', async () => {
     mockConnect.mockResolvedValueOnce(undefined);
     mockListTools.mockResolvedValueOnce({
       tools: [
@@ -75,7 +75,10 @@ describe('getGitHubMcpTools', () => {
     const result = await getGitHubMcpTools('fake-pat');
 
     for (const tool of result) {
-      expect(typeof (tool as any).server).toBe('function');
+      // ServerTool produced by toolDefinition().server() has __toolSide: 'server'
+      // and an execute function for the agent loop to invoke
+      expect((tool as any).__toolSide).toBe('server');
+      expect(typeof (tool as any).execute).toBe('function');
     }
   });
 });
