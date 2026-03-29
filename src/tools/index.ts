@@ -8,3 +8,4 @@ export { getMemoryTools } from './memory';
 export { getKnowledgeBaseTools } from './knowledgebasetool';
 export { getJiraTools } from './jiratool';
 export { getContactMeTools } from './contactme';
+export { getGitHubMcpTools } from './github-mcp';

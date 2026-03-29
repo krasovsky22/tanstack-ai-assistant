@@ -25,14 +25,16 @@ export const Route = createFileRoute('/api/chat')({
         const { messages, conversationId } = await request.json();
 
         let jiraSettings = null;
+        let githubPat: string | null = null;
         if (userId) {
           const { getUserSettings, toJiraSettings } = await import('@/services/user-settings');
           const settings = await getUserSettings(userId);
           jiraSettings = toJiraSettings(settings);
+          githubPat = settings?.githubPat ?? null;
         }
 
         try {
-          const options = await buildChatOptions(messages, conversationId, userId, jiraSettings);
+          const options = await buildChatOptions(messages, conversationId, userId, jiraSettings, githubPat);
           const stream = chat(options);
           return toHttpResponse(stream);
         } catch (error) {

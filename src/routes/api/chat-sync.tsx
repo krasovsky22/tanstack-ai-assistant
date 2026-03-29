@@ -100,7 +100,8 @@ export const Route = createFileRoute('/api/chat-sync')({
             const resolvedUserId = userId ? String(userId) : null;
             const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
             const jiraSettings = toJiraSettings(userSettingsRecord);
-            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings);
+            const githubPat = userSettingsRecord?.githubPat ?? null;
+            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubPat);
             const { text } = await runChatWithToolCollection(options);
 
             // Cronjob source: do not persist — only return the response for cronjob logs
@@ -158,7 +159,8 @@ export const Route = createFileRoute('/api/chat-sync')({
           const resolvedUserId = userId ? String(userId) : null;
           const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
           const jiraSettings = toJiraSettings(userSettingsRecord);
-          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings);
+          const githubPatForGateway = userSettingsRecord?.githubPat ?? null;
+          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubPatForGateway);
           const { text: rawDecision, assistantParts } =
             await runChatWithToolCollection(gatewayOptions, [
               GATEWAY_SYSTEM_PROMPT,

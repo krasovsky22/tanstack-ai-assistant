@@ -10,7 +10,6 @@ describe('UserSettingsRecord interface', () => {
       jiraEmail: null,
       jiraPat: null,
       jiraDefaultProject: null,
-      // @ts-expect-error — githubPat not yet present on interface (RED phase)
       githubPat: null,
     };
     // If the above compiles without error, the field exists

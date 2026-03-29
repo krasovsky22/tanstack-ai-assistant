@@ -8,6 +8,7 @@ export async function buildChatOptions(
   conversationId?: string,
   userId?: string | null,
   jiraSettings?: UserJiraSettings | null,
+  githubPat?: string | null,
 ) {
   const {
     getZapierMcpToolDefinitions,
@@ -20,6 +21,7 @@ export async function buildChatOptions(
     getKnowledgeBaseTools,
     getJiraTools,
     getContactMeTools,
+    getGitHubMcpTools,
   } = await import('@/tools');
   const disabledTools = new Set(
     (process.env.DISABLE_TOOLS ?? '')
@@ -29,15 +31,19 @@ export async function buildChatOptions(
   );
   const enabled = (key: string) => !disabledTools.has(key);
 
-  const [zapierTools, cronjobTools, newsApiTools] = await Promise.all([
+  const [zapierTools, cronjobTools, newsApiTools, githubTools] = await Promise.all([
     enabled('zapier') ? getZapierMcpToolDefinitions() : Promise.resolve([]),
     Promise.resolve(enabled('cronjob') ? getCronjobTools(userId) : []),
     Promise.resolve(enabled('news') ? getNewsApiTools() : []),
+    enabled('github') && githubPat
+      ? getGitHubMcpTools(githubPat)
+      : Promise.resolve([]),
   ]);
   const tools = [
     ...zapierTools,
     ...cronjobTools,
     ...newsApiTools,
+    ...githubTools,
     ...(enabled('ui') ? getUiBackendApiTools(userId ?? null) : []),
     ...(enabled('file') ? getFileTools() : []),
     ...(enabled('cmd') ? getCmdTools() : []),
