@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-29T06:00:19.827Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-29T06:08:02.304Z"
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-29T06:00:19.821Z
-- **Stopped At:** Completed 08-01-PLAN.md
+- **Last session:** 2026-03-29T06:08:02.300Z
+- **Stopped At:** Completed 08-02-PLAN.md
 
 ## Progress
 
@@ -102,6 +102,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 08]: getGitHubMcpTools creates a fresh Client per call — GitHub PAT is per-user unlike Zapier singleton
 - [Phase 08]: ServerTool assertion checks __toolSide === 'server' not .server property (exists on ToolDefinition builder, not ServerTool result)
 - [Phase 08]: Migration 0011 tracking entry backfilled in drizzle.__drizzle_migrations — same pattern as 01-01
+- [Phase 08]: PUT /api/user-settings validates PAT via GitHub REST API but never returns 4xx on network failure — save PAT regardless, connectedAs is null if unreachable
+- [Phase 08]: buildChatOptions() loads GitHub tools only when githubPat is non-null AND 'github' not in DISABLE_TOOLS
 
 ### Performance Metrics
 
@@ -132,4 +134,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 06 P06-03 | 2min | 2 tasks | 2 files |
 | Phase 06 P06-04 | 15min | 2 tasks | 2 files |
 | Phase 08 P08-01 | 7min | 3 tasks | 6 files |
+| Phase 08 P08-02 | 6min | 2 tasks | 7 files |
 
