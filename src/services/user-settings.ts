@@ -8,6 +8,7 @@ export interface UserSettingsRecord {
   jiraEmail: string | null;
   jiraPat: string | null;
   jiraDefaultProject: string | null;
+  githubPat: string | null;
 }
 
 export async function getUserSettings(userId: string): Promise<UserSettingsRecord | null> {
@@ -35,6 +36,7 @@ export async function upsertUserSettings(
       jiraEmail: updated.jiraEmail,
       jiraPat: updated.jiraPat,
       jiraDefaultProject: updated.jiraDefaultProject,
+      githubPat: updated.githubPat ?? null,
     };
   }
   const [inserted] = await db
@@ -46,6 +48,7 @@ export async function upsertUserSettings(
     jiraEmail: inserted.jiraEmail,
     jiraPat: inserted.jiraPat,
     jiraDefaultProject: inserted.jiraDefaultProject,
+    githubPat: inserted.githubPat ?? null,
   };
 }
 
