@@ -31,6 +31,8 @@ type UserSettings = {
   jiraPat: string | null;
   jiraDefaultProject: string | null;
   hasJiraPat: boolean;
+  githubPat: string | null;
+  hasGithubPat: boolean;
 };
 
 const MASKED_PAT = '••••••••';
@@ -250,6 +252,167 @@ function JiraIntegrationCard({ settings }: { settings: UserSettings | undefined 
                       Save
                     </Button>
                   </Box>
+                </Stack>
+              )}
+            </form.Subscribe>
+          </Stack>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+function GitHubStatusBadge({ settings }: { settings: UserSettings | undefined }) {
+  if (!settings) return null;
+
+  return (
+    <Badge
+      colorPalette={settings.hasGithubPat ? 'green' : 'gray'}
+      variant="subtle"
+      borderRadius="full"
+      px="3"
+      py="1"
+      fontSize="xs"
+      fontWeight="medium"
+    >
+      {settings.hasGithubPat ? 'GitHub tools active' : 'Not configured'}
+    </Badge>
+  );
+}
+
+function GitHubSettingsCard({ settings }: { settings: UserSettings | undefined }) {
+  const [connectedAs, setConnectedAs] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const form = useForm({
+    defaultValues: {
+      githubPat: settings?.githubPat ?? '',
+    },
+    onSubmit: async ({ value }) => {
+      setSubmitError(null);
+      try {
+        const res = await fetch('/api/user-settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ githubPat: value.githubPat }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          setSubmitError(data.error ?? 'Failed to save settings');
+          toaster.create({
+            type: 'error',
+            title: 'Failed to save settings',
+            description: data.error ?? 'An unexpected error occurred',
+            duration: 6000,
+          });
+          return;
+        }
+
+        const data = await res.json();
+        setConnectedAs(data.connectedAs ?? null);
+        toaster.create({
+          type: 'success',
+          title: 'GitHub PAT saved',
+          description: data.connectedAs
+            ? `Connected as @${data.connectedAs}`
+            : 'PAT saved successfully',
+          duration: 4000,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        setSubmitError(message);
+        toaster.create({
+          type: 'error',
+          title: 'Failed to save settings',
+          description: message,
+          duration: 6000,
+        });
+      }
+    },
+  });
+
+  return (
+    <Box
+      bg="bg.surface"
+      borderRadius="lg"
+      borderWidth="1px"
+      borderColor="border.default"
+      shadow="sm"
+      overflow="hidden"
+      mt="6"
+    >
+      <Box px="6" py="4" borderBottomWidth="1px" borderColor="border.default" bg="bg.subtle">
+        <Stack direction="row" align="center" justify="space-between">
+          <Box>
+            <Text fontWeight="semibold" color="text.primary" fontSize="md">
+              GitHub Integration
+            </Text>
+            <Text color="text.secondary" fontSize="sm" mt="0.5">
+              Connect your GitHub account to enable AI-powered repository tools
+            </Text>
+          </Box>
+          <GitHubStatusBadge settings={settings} />
+        </Stack>
+      </Box>
+
+      <Box px="6" py="5">
+        <Box
+          as="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <Stack gap="5">
+            <form.Field name="githubPat">
+              {(field) => (
+                <FormField
+                  label="Personal Access Token"
+                  helperText={
+                    settings?.hasGithubPat
+                      ? 'A token is currently set. Enter a new value to replace it, or leave as-is.'
+                      : undefined
+                  }
+                >
+                  <Input
+                    type="password"
+                    placeholder={MASKED_PAT}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </FormField>
+              )}
+            </form.Field>
+            <Text fontSize="xs" color="text.secondary" mt="-3">
+              Requires: repo, read:user scopes
+            </Text>
+
+            <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+              {([canSubmit, isSubmitting]) => (
+                <Stack gap="3">
+                  {submitError && (
+                    <Text fontSize="sm" color="red.600">
+                      {submitError}
+                    </Text>
+                  )}
+                  <Box>
+                    <Button
+                      type="submit"
+                      disabled={!canSubmit}
+                      colorPalette="brand"
+                      loading={isSubmitting as boolean}
+                      loadingText="Saving..."
+                    >
+                      Save
+                    </Button>
+                  </Box>
+                  {connectedAs && (
+                    <Text fontSize="sm" color="green.600">
+                      Connected as @{connectedAs}
+                    </Text>
+                  )}
                 </Stack>
               )}
             </form.Subscribe>
@@ -598,6 +761,7 @@ function SettingsPage() {
         <JiraIntegrationCard settings={settings} />
       )}
 
+      <GitHubSettingsCard settings={settings} />
       <BrowserNotificationsCard />
       <GatewayIdentitiesCard />
     </PageContainer>
