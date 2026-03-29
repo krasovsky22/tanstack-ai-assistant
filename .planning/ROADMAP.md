@@ -85,4 +85,26 @@ Plans:
 - [ ] 06-03-PLAN.md — ReportIssueModal (TanStack Form, 3 states) + wire AppHeader + modal into __root.tsx AppLayout (RPT-06)
 - [ ] 06-04-PLAN.md — Human verification: full test suite green + Playwright QA + E2E flow confirmed
 
+### Phase 7: github-mcp-tool
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 7 to break down)
+
+### Phase 8: GitHub MCP Tool Integration
+
+**Goal:** Integrate the GitHub-hosted MCP server into the AI assistant via streamable HTTP transport. Store per-user GitHub PATs in the userSettings table, dynamically load all GitHub tools into buildChatOptions(), and add a GitHubSettingsCard to the Settings page for PAT entry and connection validation.
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Wave 0 test stubs + DB migration (0012_add_github_pat) + github-mcp.ts tool factory
+- [ ] 08-02-PLAN.md — Service wiring: UserSettingsRecord extension, API route PAT masking + validation, buildChatOptions() + chat routes
+- [ ] 08-03-PLAN.md — Settings UI: GitHubSettingsCard + SettingsPage wiring + human verification checkpoint
+
 ---
