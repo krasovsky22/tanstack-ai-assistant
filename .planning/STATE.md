@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-29T01:36:07.599Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-29T06:00:19.827Z"
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 16
+  completed_plans: 14
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-29T01:36:07.594Z
-- **Stopped At:** Phase 8 context gathered
+- **Last session:** 2026-03-29T06:00:19.821Z
+- **Stopped At:** Completed 08-01-PLAN.md
 
 ## Progress
 
@@ -99,6 +99,9 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 06-03]: Error state preserves form values (no form.reset()) on Try Again — only clears error state
 - [Phase 06-04]: login() helper uses waitForURL with 20s timeout (not waitForResponse) — TanStack Start serverFn navigation timing varies across tests
 - [Phase 06-04]: e2e-test user created in DB via pnpm create-user — avoids hardcoding unknown user credentials in Playwright tests
+- [Phase 08]: getGitHubMcpTools creates a fresh Client per call — GitHub PAT is per-user unlike Zapier singleton
+- [Phase 08]: ServerTool assertion checks __toolSide === 'server' not .server property (exists on ToolDefinition builder, not ServerTool result)
+- [Phase 08]: Migration 0011 tracking entry backfilled in drizzle.__drizzle_migrations — same pattern as 01-01
 
 ### Performance Metrics
 
@@ -128,4 +131,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 06 P06-01 | 2min | 2 tasks | 2 files |
 | Phase 06 P06-03 | 2min | 2 tasks | 2 files |
 | Phase 06 P06-04 | 15min | 2 tasks | 2 files |
+| Phase 08 P08-01 | 7min | 3 tasks | 6 files |
 

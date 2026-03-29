@@ -100,7 +100,7 @@ Plans:
 **Goal:** Integrate the GitHub-hosted MCP server into the AI assistant via streamable HTTP transport. Store per-user GitHub PATs in the userSettings table, dynamically load all GitHub tools into buildChatOptions(), and add a GitHubSettingsCard to the Settings page for PAT entry and connection validation.
 **Requirements**: TBD
 **Depends on:** Phase 7
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 08-01-PLAN.md — Wave 0 test stubs + DB migration (0012_add_github_pat) + github-mcp.ts tool factory
