@@ -106,6 +106,7 @@ export const userSettings = pgTable('user_settings', {
   jiraEmail: text('jira_email'),
   jiraPat: text('jira_pat'),
   jiraDefaultProject: text('jira_default_project'),
+  githubPat: text('github_pat'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

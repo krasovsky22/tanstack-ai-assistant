@@ -85,6 +85,13 @@
       "when": 1774000001000,
       "tag": "0011_add_gateway_identities",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1774000002000,
+      "tag": "0012_add_github_pat",
+      "breakpoints": true
     }
   ]
 }
