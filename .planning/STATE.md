@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 09-01-PLAN.md (Phase 9 foundation + Wave 0 test stubs)
-last_updated: "2026-03-30T09:15:06.009Z"
+stopped_at: Completed 09-02-PLAN.md (WebWidgetProvider implementation)
+last_updated: "2026-03-30T09:22:12.978Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 21
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-30T09:15:06.004Z
-- **Stopped At:** Completed 09-01-PLAN.md (Phase 9 foundation + Wave 0 test stubs)
+- **Last session:** 2026-03-30T09:22:12.973Z
+- **Stopped At:** Completed 09-02-PLAN.md (WebWidgetProvider implementation)
 
 ## Progress
 
@@ -107,6 +107,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 08]: buildChatOptions() loads GitHub tools only when githubPat is non-null AND 'github' not in DISABLE_TOOLS
 - [Phase 09-01]: Wave 0 test stubs import non-existent ./index and ./web-widget — runtime import failure is the intentional RED signal until Plans 02-04 create implementations
 - [Phase 09-01]: packages/* glob added to pnpm-workspace.yaml before packages/ directory exists — pnpm tolerates missing directories in workspace config
+- [Phase 09-02]: WebWidgetProvider.start() accepts but ignores onMessage callback — calls /api/chat-sync directly, not through handleMessage(); no-op passed on registration
+- [Phase 09-02]: POST /jobs responds 200 immediately then fires fetch async — widget clients not blocked on LLM response time; poll via GET /jobs/:jobId
 
 ### Performance Metrics
 
@@ -139,4 +141,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 08 P08-01 | 7min | 3 tasks | 6 files |
 | Phase 08 P08-02 | 6min | 2 tasks | 7 files |
 | Phase 09 P09-01 | 2min | 2 tasks | 5 files |
+| Phase 09 P09-02 | 3min | 2 tasks | 3 files |
 
