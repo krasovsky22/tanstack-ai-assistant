@@ -112,7 +112,7 @@ Plans:
 **Goal:** Build an embeddable chat widget distributed as an IIFE bundle (`packages/chat-widget/`). The widget renders a floating button + chat panel on any external website, communicates with the LLM via proxy routes (`/api/gateway/widget`), and the gateway routes messages through `/api/chat-sync` — the same path as Telegram. Conversation state is persisted in DB with `source='widget'`.
 **Requirements**: TBD
 **Depends on:** Phase 8
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
 - [ ] 09-01-PLAN.md — Foundation: pnpm workspace extension, CONVERSATION_SOURCES.WIDGET, Wave 0 RED test stubs (W9-01–W9-05)
