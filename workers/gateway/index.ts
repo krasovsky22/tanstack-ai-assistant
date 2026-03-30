@@ -14,6 +14,17 @@ for (const provider of providers) {
   });
 }
 
+// WebWidgetProvider calls /api/chat-sync directly — does not use handleMessage()
+if (process.env.WIDGET_API_KEY) {
+  const { WebWidgetProvider } = await import('./providers/web-widget.js');
+  const widgetProvider = new WebWidgetProvider();
+  providers.push(widgetProvider);
+  widgetProvider.start(() => Promise.resolve()).catch((err) => {
+    console.error('[WebWidget] Fatal error:', err);
+    process.exit(1);
+  });
+}
+
 async function processOutboundMessages() {
   try {
     const res = await fetch(`${APP_URL}/api/remote-chats/outbound`);
