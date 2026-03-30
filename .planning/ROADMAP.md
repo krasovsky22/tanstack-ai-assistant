@@ -62,7 +62,7 @@ Plans:
 
 **Goal:** Link Telegram (and future gateway) user IDs to internal users via a code-based flow. Block unlinked users at the gateway with a linking prompt. Add a Settings UI to view and manage linked gateway identities.
 **Requirements**: GID-01, GID-02, GID-03, GID-04, GID-05, GID-06, GID-07
-**Depends on:** Phase 4
+**Depends on:** Phase 5
 **Plans:** 5/5 plans complete
 
 Plans:
@@ -106,5 +106,19 @@ Plans:
 - [ ] 08-01-PLAN.md — Wave 0 test stubs + DB migration (0012_add_github_pat) + github-mcp.ts tool factory
 - [ ] 08-02-PLAN.md — Service wiring: UserSettingsRecord extension, API route PAT masking + validation, buildChatOptions() + chat routes
 - [ ] 08-03-PLAN.md — Settings UI: GitHubSettingsCard + SettingsPage wiring + human verification checkpoint
+
+### Phase 9: Embeddable chat widget npm package with gateway integration
+
+**Goal:** Build an embeddable chat widget distributed as an IIFE bundle (`packages/chat-widget/`). The widget renders a floating button + chat panel on any external website, communicates with the LLM via proxy routes (`/api/gateway/widget`), and the gateway routes messages through `/api/chat-sync` — the same path as Telegram. Conversation state is persisted in DB with `source='widget'`.
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 5 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Foundation: pnpm workspace extension, CONVERSATION_SOURCES.WIDGET, Wave 0 RED test stubs (W9-01–W9-05)
+- [ ] 09-02-PLAN.md — WebWidgetProvider: internal HTTP server, in-memory job Map, direct /api/chat-sync call, conditional gateway registration
+- [ ] 09-03-PLAN.md — Proxy API routes: POST /api/gateway/widget (submit+jobId) + GET /api/gateway/widget/$jobId (poll), API key auth, CORS
+- [ ] 09-04-PLAN.md — Widget package: React components, useChat polling hook, Vite IIFE build config, pnpm build:widget
+- [ ] 09-05-PLAN.md — Human verification: full suite GREEN + browser end-to-end widget flow confirmed
 
 ---
