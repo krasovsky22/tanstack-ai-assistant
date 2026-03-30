@@ -4,10 +4,10 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-29T06:08:02.304Z"
+stopped_at: Phase 9 context gathered
+last_updated: "2026-03-30T08:46:14.910Z"
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 3
   total_plans: 16
   completed_plans: 15
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-29T06:08:02.300Z
-- **Stopped At:** Completed 08-02-PLAN.md
+- **Last session:** 2026-03-30T08:46:14.905Z
+- **Stopped At:** Phase 9 context gathered
 
 ## Progress
 
@@ -45,6 +45,7 @@ Phase 04: [####] 4/4 plans complete
 - Phase 5 added: gateway-identity-linking — code-based Telegram→internal user mapping, block unlinked users, Settings UI for managing linked identities
 - Phase 6 added: Report Bug button — persistent UI entry point on every page, modal form, LLM classification, automatic Jira ticket creation
 - Phase 8 added: GitHub MCP Tool Integration — fetch open/closed PRs, search code, analyze PR changes via GitHub MCP; PAT configured per user in settings
+- Phase 9 added: Embeddable chat widget npm package with gateway integration — importable JS package that renders a chat window on any website, communicates with LLM via a dedicated gateway endpoint
 
 ### Decisions
 
