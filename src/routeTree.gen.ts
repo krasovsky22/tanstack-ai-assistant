@@ -68,8 +68,10 @@ import { Route as ProtectedCronjobsIdRouteImport } from './routes/_protected/cro
 import { Route as ProtectedConversationsNewRouteImport } from './routes/_protected/conversations/new'
 import { Route as ProtectedConversationsIdRouteImport } from './routes/_protected/conversations/$id'
 import { Route as ApiRemoteChatsOutboundIndexRouteImport } from './routes/api/remote-chats/outbound/index'
+import { Route as ApiGatewayWidgetIndexRouteImport } from './routes/api/gateway/widget/index'
 import { Route as ProtectedCronjobsIdIndexRouteImport } from './routes/_protected/cronjobs/$id/index'
 import { Route as ApiRemoteChatsOutboundIdRouteImport } from './routes/api/remote-chats/outbound/$id'
+import { Route as ApiGatewayWidgetJobIdRouteImport } from './routes/api/gateway/widget/$jobId'
 import { Route as ApiCronjobsIdTestRouteImport } from './routes/api/cronjobs/$id/test'
 import { Route as ApiCronjobsIdLogsRouteImport } from './routes/api/cronjobs/$id/logs'
 import { Route as ProtectedCronjobsIdLogsRouteImport } from './routes/_protected/cronjobs/$id/logs'
@@ -378,6 +380,11 @@ const ApiRemoteChatsOutboundIndexRoute =
     path: '/api/remote-chats/outbound/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiGatewayWidgetIndexRoute = ApiGatewayWidgetIndexRouteImport.update({
+  id: '/api/gateway/widget/',
+  path: '/api/gateway/widget/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtectedCronjobsIdIndexRoute =
   ProtectedCronjobsIdIndexRouteImport.update({
     id: '/',
@@ -390,6 +397,11 @@ const ApiRemoteChatsOutboundIdRoute =
     path: '/api/remote-chats/outbound/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiGatewayWidgetJobIdRoute = ApiGatewayWidgetJobIdRouteImport.update({
+  id: '/api/gateway/widget/$jobId',
+  path: '/api/gateway/widget/$jobId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronjobsIdTestRoute = ApiCronjobsIdTestRouteImport.update({
   id: '/test',
   path: '/test',
@@ -467,8 +479,10 @@ export interface FileRoutesByFullPath {
   '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/api/gateway/widget/$jobId': typeof ApiGatewayWidgetJobIdRoute
   '/api/remote-chats/outbound/$id': typeof ApiRemoteChatsOutboundIdRoute
   '/cronjobs/$id/': typeof ProtectedCronjobsIdIndexRoute
+  '/api/gateway/widget/': typeof ApiGatewayWidgetIndexRoute
   '/api/remote-chats/outbound/': typeof ApiRemoteChatsOutboundIndexRoute
 }
 export interface FileRoutesByTo {
@@ -525,8 +539,10 @@ export interface FileRoutesByTo {
   '/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/api/gateway/widget/$jobId': typeof ApiGatewayWidgetJobIdRoute
   '/api/remote-chats/outbound/$id': typeof ApiRemoteChatsOutboundIdRoute
   '/cronjobs/$id': typeof ProtectedCronjobsIdIndexRoute
+  '/api/gateway/widget': typeof ApiGatewayWidgetIndexRoute
   '/api/remote-chats/outbound': typeof ApiRemoteChatsOutboundIndexRoute
 }
 export interface FileRoutesById {
@@ -592,8 +608,10 @@ export interface FileRoutesById {
   '/_protected/cronjobs/$id/logs': typeof ProtectedCronjobsIdLogsRoute
   '/api/cronjobs/$id/logs': typeof ApiCronjobsIdLogsRoute
   '/api/cronjobs/$id/test': typeof ApiCronjobsIdTestRoute
+  '/api/gateway/widget/$jobId': typeof ApiGatewayWidgetJobIdRoute
   '/api/remote-chats/outbound/$id': typeof ApiRemoteChatsOutboundIdRoute
   '/_protected/cronjobs/$id/': typeof ProtectedCronjobsIdIndexRoute
+  '/api/gateway/widget/': typeof ApiGatewayWidgetIndexRoute
   '/api/remote-chats/outbound/': typeof ApiRemoteChatsOutboundIndexRoute
 }
 export interface FileRouteTypes {
@@ -659,8 +677,10 @@ export interface FileRouteTypes {
     | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/api/gateway/widget/$jobId'
     | '/api/remote-chats/outbound/$id'
     | '/cronjobs/$id/'
+    | '/api/gateway/widget/'
     | '/api/remote-chats/outbound/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -717,8 +737,10 @@ export interface FileRouteTypes {
     | '/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/api/gateway/widget/$jobId'
     | '/api/remote-chats/outbound/$id'
     | '/cronjobs/$id'
+    | '/api/gateway/widget'
     | '/api/remote-chats/outbound'
   id:
     | '__root__'
@@ -783,8 +805,10 @@ export interface FileRouteTypes {
     | '/_protected/cronjobs/$id/logs'
     | '/api/cronjobs/$id/logs'
     | '/api/cronjobs/$id/test'
+    | '/api/gateway/widget/$jobId'
     | '/api/remote-chats/outbound/$id'
     | '/_protected/cronjobs/$id/'
+    | '/api/gateway/widget/'
     | '/api/remote-chats/outbound/'
   fileRoutesById: FileRoutesById
 }
@@ -825,7 +849,9 @@ export interface RootRouteChildren {
   ApiKnowledgeBaseIndexRoute: typeof ApiKnowledgeBaseIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
   ApiRemoteChatsIndexRoute: typeof ApiRemoteChatsIndexRoute
+  ApiGatewayWidgetJobIdRoute: typeof ApiGatewayWidgetJobIdRoute
   ApiRemoteChatsOutboundIdRoute: typeof ApiRemoteChatsOutboundIdRoute
+  ApiGatewayWidgetIndexRoute: typeof ApiGatewayWidgetIndexRoute
   ApiRemoteChatsOutboundIndexRoute: typeof ApiRemoteChatsOutboundIndexRoute
 }
 
@@ -1244,6 +1270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRemoteChatsOutboundIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/gateway/widget/': {
+      id: '/api/gateway/widget/'
+      path: '/api/gateway/widget'
+      fullPath: '/api/gateway/widget/'
+      preLoaderRoute: typeof ApiGatewayWidgetIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected/cronjobs/$id/': {
       id: '/_protected/cronjobs/$id/'
       path: '/'
@@ -1256,6 +1289,13 @@ declare module '@tanstack/react-router' {
       path: '/api/remote-chats/outbound/$id'
       fullPath: '/api/remote-chats/outbound/$id'
       preLoaderRoute: typeof ApiRemoteChatsOutboundIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gateway/widget/$jobId': {
+      id: '/api/gateway/widget/$jobId'
+      path: '/api/gateway/widget/$jobId'
+      fullPath: '/api/gateway/widget/$jobId'
+      preLoaderRoute: typeof ApiGatewayWidgetJobIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cronjobs/$id/test': {
@@ -1465,7 +1505,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKnowledgeBaseIndexRoute: ApiKnowledgeBaseIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
   ApiRemoteChatsIndexRoute: ApiRemoteChatsIndexRoute,
+  ApiGatewayWidgetJobIdRoute: ApiGatewayWidgetJobIdRoute,
   ApiRemoteChatsOutboundIdRoute: ApiRemoteChatsOutboundIdRoute,
+  ApiGatewayWidgetIndexRoute: ApiGatewayWidgetIndexRoute,
   ApiRemoteChatsOutboundIndexRoute: ApiRemoteChatsOutboundIndexRoute,
 }
 export const routeTree = rootRouteImport

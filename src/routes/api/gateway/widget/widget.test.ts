@@ -1,9 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
+import { handleWidgetPost } from './index';
+import { handleWidgetPoll } from './$jobId';
 
-// @ts-expect-error — implementation not yet created (Wave 0 RED stub)
-import { handleWidgetPost, handleWidgetPoll } from './index';
+// Mock global fetch to avoid real HTTP calls to gateway during tests
+const mockFetch = vi.fn();
+vi.stubGlobal('fetch', mockFetch);
 
 describe('Widget API: key validation (W9-01)', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
   it('rejects request with missing api key', async () => {
     const req = new Request('http://localhost/api/gateway/widget', {
       method: 'POST',
@@ -26,7 +33,16 @@ describe('Widget API: key validation (W9-01)', () => {
 });
 
 describe('Widget API: job polling (W9-02)', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
   it('POST /api/gateway/widget returns { jobId: string }', async () => {
+    // Mock gateway POST /jobs accepting the job
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+
     const req = new Request('http://localhost/api/gateway/widget', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-widget-api-key': 'test-key' },
@@ -39,6 +55,11 @@ describe('Widget API: job polling (W9-02)', () => {
   });
 
   it('GET /api/gateway/widget/{jobId} returns { status: "pending" } before completion', async () => {
+    // Mock gateway GET /jobs/:jobId returning pending state
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ status: 'pending' }), { status: 200 }),
+    );
+
     const req = new Request('http://localhost/api/gateway/widget/unknown-job-id', {
       method: 'GET',
     });
@@ -49,8 +70,11 @@ describe('Widget API: job polling (W9-02)', () => {
   });
 
   it('GET /api/gateway/widget/{jobId} returns { status: "done", text: string } after completion', async () => {
-    // This test requires full end-to-end flow — stub for W9-02
-    // Will be verified in Plan 03 integration tests
+    // Mock gateway GET /jobs/:jobId returning done state with LLM reply
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ status: 'done', text: 'LLM reply' }), { status: 200 }),
+    );
+
     const req = new Request('http://localhost/api/gateway/widget/completed-job', {
       method: 'GET',
     });
@@ -63,6 +87,18 @@ describe('Widget API: job polling (W9-02)', () => {
 });
 
 describe('Widget API: CORS headers (W9-03)', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+    // Mock gateway accepting the job for POST CORS test
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+  });
+
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('POST response includes Access-Control-Allow-Origin header', async () => {
     const req = new Request('http://localhost/api/gateway/widget', {
       method: 'POST',
