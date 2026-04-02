@@ -3,6 +3,10 @@ import { userSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import type { UserJiraSettings } from '@/services/jira';
 
+export interface GitHubSettings {
+  githubPat: string;
+}
+
 export interface UserSettingsRecord {
   jiraBaseUrl: string | null;
   jiraEmail: string | null;
@@ -11,7 +15,9 @@ export interface UserSettingsRecord {
   githubPat: string | null;
 }
 
-export async function getUserSettings(userId: string): Promise<UserSettingsRecord | null> {
+export async function getUserSettings(
+  userId: string,
+): Promise<UserSettingsRecord | null> {
   const rows = await db
     .select()
     .from(userSettings)
@@ -52,7 +58,19 @@ export async function upsertUserSettings(
   };
 }
 
-export function toJiraSettings(record: UserSettingsRecord | null): UserJiraSettings | null {
+export function toGitHubSettings(
+  record: UserSettingsRecord | null,
+): GitHubSettings | null {
+  console.log('user settings record in toGitHubSettings:', record);
+  if (record?.githubPat) {
+    return { githubPat: record.githubPat };
+  }
+  return null;
+}
+
+export function toJiraSettings(
+  record: UserSettingsRecord | null,
+): UserJiraSettings | null {
   // Use user settings if they have Jira credentials configured
   if (record?.jiraBaseUrl && record?.jiraEmail && record?.jiraPat) {
     return {

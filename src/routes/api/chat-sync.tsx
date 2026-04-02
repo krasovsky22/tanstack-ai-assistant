@@ -1,13 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import {
-  buildChatOptions,
-  runChatWithToolCollection,
-  saveConversationToDb,
-  getOpenConversationByChatId,
-  closeConversation,
-  appendMessagesToConversation,
-} from '@/services/chat';
-import { getUserSettings, toJiraSettings, toGitHubSettings } from '@/services/user-settings';
 // import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
 type GatewayAction = 'continue' | 'new_conversation' | 'close_conversation';
@@ -58,6 +49,16 @@ export const Route = createFileRoute('/api/chat-sync')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const {
+          buildChatOptions,
+          runChatWithToolCollection,
+          saveConversationToDb,
+          getOpenConversationByChatId,
+          closeConversation,
+          appendMessagesToConversation,
+        } = await import('@/services/chat');
+        const { getUserSettings, toJiraSettings, toGitHubSettings } = await import('@/services/user-settings');
+
         const { messages, title, source, chatId, userId } =
           await request.json();
 

@@ -68,10 +68,18 @@ export async function getGitHubMcpTools(githubPat: string) {
       },
     );
 
-    const client = new Client({ name: 'tanstack-ai-assistant', version: '1.0.0' });
+    const client = new Client({
+      name: 'tanstack-ai-assistant',
+      version: '1.0.0',
+    });
     await client.connect(transport);
 
     const { tools } = await client.listTools();
+
+    console.log(
+      '[GitHub MCP] Available tools:',
+      tools.map((t) => t.name).join(', '),
+    );
 
     return tools.map((tool) => {
       const schema = tool.inputSchema as Record<string, unknown>;
@@ -80,7 +88,7 @@ export async function getGitHubMcpTools(githubPat: string) {
       ) as z.ZodObject<z.ZodRawShape>;
 
       return toolDefinition({
-        name: tool.name,
+        name: `github_${tool.name}`,
         description: tool.description ?? '',
         inputSchema,
       }).server(async (input) => {
@@ -93,7 +101,10 @@ export async function getGitHubMcpTools(githubPat: string) {
       });
     });
   } catch (error) {
-    console.warn('[GitHub MCP] Not available, skipping tools:', (error as Error).message);
+    console.warn(
+      '[GitHub MCP] Not available, skipping tools:',
+      (error as Error).message,
+    );
     return [];
   }
 }

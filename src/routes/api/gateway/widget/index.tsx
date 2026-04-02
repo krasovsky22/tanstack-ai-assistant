@@ -1,15 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import {
-  buildChatOptions,
-  runChatWithToolCollection,
-  getOpenConversationByChatId,
-  saveConversationToDb,
-  appendMessagesToConversation,
-} from '@/services/chat';
-import { getUserSettings, toJiraSettings, toGitHubSettings } from '@/services/user-settings';
 import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
 
 const CORS_HEADERS = {
@@ -26,6 +15,9 @@ function corsJson(body: unknown, status = 200): Response {
 }
 
 async function resolveUserId(username: string): Promise<string | null> {
+  const { db } = await import('@/db');
+  const { users } = await import('@/db/schema');
+  const { eq } = await import('drizzle-orm');
   const rows = await db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1);
   return rows[0]?.id ?? null;
 }
@@ -55,6 +47,15 @@ export async function handleWidgetPost(request: Request, configuredKey: string):
   const { chatId, message, username } = body;
 
   try {
+    const {
+      buildChatOptions,
+      runChatWithToolCollection,
+      getOpenConversationByChatId,
+      saveConversationToDb,
+      appendMessagesToConversation,
+    } = await import('@/services/chat');
+    const { getUserSettings, toJiraSettings, toGitHubSettings } = await import('@/services/user-settings');
+
     // Resolve username → userId (UUID) if provided
     const userId = username ? await resolveUserId(username) : null;
 

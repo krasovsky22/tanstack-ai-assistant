@@ -25,7 +25,6 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
   }
 
   const { config } = cfg();
-  console.log('user settings in jira tool config:', config);
   return [
     toolDefinition({
       name: 'jira_search',

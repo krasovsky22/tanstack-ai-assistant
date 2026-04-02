@@ -1,6 +1,4 @@
-import { chat, toHttpResponse } from '@tanstack/ai';
 import { createFileRoute } from '@tanstack/react-router';
-import { buildChatOptions } from '@/services/chat';
 
 export const Route = createFileRoute('/api/chat')({
   server: {
@@ -25,16 +23,18 @@ export const Route = createFileRoute('/api/chat')({
         const { messages, conversationId } = await request.json();
 
         let jiraSettings = null;
-        let githubPat: string | null = null;
+        let githubSettings = null;
         if (userId) {
-          const { getUserSettings, toJiraSettings } = await import('@/services/user-settings');
+          const { getUserSettings, toJiraSettings, toGitHubSettings } = await import('@/services/user-settings');
           const settings = await getUserSettings(userId);
           jiraSettings = toJiraSettings(settings);
-          githubPat = settings?.githubPat ?? null;
+          githubSettings = toGitHubSettings(settings);
         }
 
         try {
-          const options = await buildChatOptions(messages, conversationId, userId, jiraSettings, githubPat);
+          const { chat, toHttpResponse } = await import('@tanstack/ai');
+          const { buildChatOptions } = await import('@/services/chat');
+          const options = await buildChatOptions(messages, conversationId, userId, jiraSettings, githubSettings);
           const stream = chat(options);
           return toHttpResponse(stream);
         } catch (error) {

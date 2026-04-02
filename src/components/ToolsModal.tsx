@@ -24,6 +24,7 @@ interface ToolsModalProps {
 const GROUP_RULES: Array<{ label: string; match: (name: string) => boolean }> =
   [
     { label: 'Jira', match: (n) => n.startsWith('jira_') },
+    { label: 'GitHub', match: (n) => n.startsWith('github_') || n.includes('github') },
     { label: 'Cronjobs', match: (n) => n.includes('cronjob') },
     { label: 'Jobs', match: (n) => n.includes('_job') || n === 'list_jobs' },
     {

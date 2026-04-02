@@ -2,19 +2,13 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   type ReactNode,
 } from 'react';
 
 type ColorMode = 'light' | 'dark';
 
 const STORAGE_KEY = 'chakra-color-mode';
-
-function getStoredColorMode(): ColorMode {
-  if (typeof window === 'undefined') return 'light';
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') return stored;
-  return 'light';
-}
 
 interface ColorModeContextValue {
   colorMode: ColorMode;
@@ -27,7 +21,15 @@ const ColorModeContext = createContext<ColorModeContextValue>({
 });
 
 export function ColorModeProvider({ children }: { children: ReactNode }) {
-  const [colorMode, setColorMode] = useState<ColorMode>(getStoredColorMode);
+  // Always start with 'light' to match SSR — sync from localStorage after hydration
+  const [colorMode, setColorMode] = useState<ColorMode>('light');
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'dark' || stored === 'light') {
+      setColorMode(stored);
+    }
+  }, []);
 
   function toggleColorMode() {
     setColorMode((prev) => {
