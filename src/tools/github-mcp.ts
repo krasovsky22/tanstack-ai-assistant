@@ -92,9 +92,15 @@ export async function getGitHubMcpTools(githubPat: string) {
         description: tool.description ?? '',
         inputSchema,
       }).server(async (input) => {
+        const safeArgs =
+          input !== null &&
+          typeof input === 'object' &&
+          !Array.isArray(input)
+            ? (input as Record<string, unknown>)
+            : {};
         const result = await client.callTool({
           name: tool.name,
-          arguments: input as Record<string, unknown>,
+          arguments: safeArgs,
         });
         console.log('[GitHub MCP] Tool call result:', result);
         return result;

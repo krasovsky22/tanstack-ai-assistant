@@ -1,7 +1,20 @@
 import { chat, maxIterations, StreamProcessor } from '@tanstack/ai';
 import { openaiText } from '@tanstack/ai-openai';
+import { bedrockText } from '@/lib/bedrock';
 import type { UserJiraSettings } from '@/services/jira';
 import type { GitHubSettings } from '@/services/user-settings';
+
+function resolveAdapter() {
+  const hasAwsCreds =
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY &&
+    process.env.AWS_REGION;
+  if (hasAwsCreds) {
+    const model = process.env.BEDROCK_MODEL ?? 'amazon.nova-pro-v1:0';
+    return bedrockText(model);
+  }
+  return openaiText('gpt-5.2');
+}
 
 export async function buildChatOptions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,7 +80,7 @@ export async function buildChatOptions(
     : '';
 
   return {
-    adapter: openaiText('gpt-5.2'),
+    adapter: resolveAdapter(),
     messages,
     conversationId,
     userId,

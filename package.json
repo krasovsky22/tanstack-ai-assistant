@@ -27,6 +27,7 @@
     "docker:down": "docker compose down"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1022.0",
     "@chakra-ui/react": "^3.34.0",
     "@elastic/elasticsearch": "^8.19.1",
     "@emotion/react": "^11.14.0",
