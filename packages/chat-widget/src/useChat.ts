@@ -1,7 +1,15 @@
 import { useState, useCallback } from 'react';
 
 // chatId resets on page refresh — accepted behavior (per spec)
-const CHAT_ID = crypto.randomUUID();
+// Fallback for non-secure contexts (e.g. http:// in dev) where crypto.randomUUID is unavailable
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+const CHAT_ID = generateId();
 const POLL_INTERVAL_MS = 1000;
 const POLL_TIMEOUT_MS = 60_000;
 
@@ -18,11 +26,12 @@ async function submitAndPoll(
   endpoint: string,
   apiKey: string,
   message: string,
+  username?: string,
 ): Promise<string> {
   const res = await fetch(`${endpoint}/api/gateway/widget`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-widget-api-key': apiKey },
-    body: JSON.stringify({ chatId: CHAT_ID, message }),
+    body: JSON.stringify({ chatId: CHAT_ID, message, username }),
   });
   if (!res.ok) throw new Error(`Submit failed: ${res.status}`);
   const { jobId } = await res.json() as { jobId: string };
@@ -42,7 +51,7 @@ async function submitAndPoll(
   throw new Error('Response timeout after 60s');
 }
 
-export function useChat(endpoint: string, apiKey: string) {
+export function useChat(endpoint: string, apiKey: string, username?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +59,7 @@ export function useChat(endpoint: string, apiKey: string) {
     setMessages((m) => [...m, { role: 'user', text }]);
     setLoading(true);
     try {
-      const reply = await submitAndPoll(endpoint, apiKey, text);
+      const reply = await submitAndPoll(endpoint, apiKey, text, username);
       setMessages((m) => [...m, { role: 'assistant', text: reply }]);
     } catch (err) {
       setMessages((m) => [...m, { role: 'error', text: String(err) }]);

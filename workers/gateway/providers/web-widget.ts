@@ -79,10 +79,11 @@ export class WebWidgetProvider implements Provider {
     });
     req.on('end', () => {
       try {
-        const { jobId, chatId, message } = JSON.parse(body) as {
+        const { jobId, chatId, message, username } = JSON.parse(body) as {
           jobId: string;
           chatId: string;
           message: string;
+          username?: string;
         };
 
         this.jobs.set(jobId, { status: 'pending' });
@@ -100,7 +101,7 @@ export class WebWidgetProvider implements Provider {
             title: `widget: ${message.slice(0, 60)}`,
             source: 'widget',
             chatId,
-            userId: null,
+            userId: username ?? null,
           }),
         })
           .then(async (fetchRes) => {

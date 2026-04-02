@@ -28,9 +28,9 @@ export async function handleWidgetPost(request: Request, configuredKey: string):
     return corsJson({ error: 'Unauthorized' }, 401);
   }
 
-  let body: { chatId?: string; message?: string };
+  let body: { chatId?: string; message?: string; username?: string };
   try {
-    body = await request.json() as { chatId?: string; message?: string };
+    body = await request.json() as { chatId?: string; message?: string; username?: string };
   } catch {
     return corsJson({ error: 'Invalid JSON body' }, 400);
   }
@@ -46,7 +46,7 @@ export async function handleWidgetPost(request: Request, configuredKey: string):
     const res = await fetch(`${WIDGET_GATEWAY_URL}/jobs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobId, chatId: body.chatId, message: body.message }),
+      body: JSON.stringify({ jobId, chatId: body.chatId, message: body.message, username: body.username }),
     });
     if (!res.ok) {
       return corsJson({ error: 'Gateway error' }, 502);

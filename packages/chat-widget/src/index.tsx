@@ -8,6 +8,7 @@ import { Widget } from './Widget';
 interface ChatWidgetConfig {
   endpoint: string;
   apiKey: string;
+  username?: string;
 }
 
 declare global {
@@ -22,7 +23,7 @@ window.ChatWidget = {
     container.id = 'chat-widget-root';
     document.body.appendChild(container);
     createRoot(container).render(
-      <Widget endpoint={config.endpoint} apiKey={config.apiKey} />
+      <Widget endpoint={config.endpoint} apiKey={config.apiKey} username={config.username} />
     );
   },
 };

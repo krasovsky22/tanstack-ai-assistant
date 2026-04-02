@@ -4,11 +4,12 @@ import { useChat } from './useChat';
 interface ChatPanelProps {
   endpoint: string;
   apiKey: string;
+  username?: string;
   onClose: () => void;
 }
 
-export function ChatPanel({ endpoint, apiKey, onClose }: ChatPanelProps) {
-  const { messages, loading, sendMessage } = useChat(endpoint, apiKey);
+export function ChatPanel({ endpoint, apiKey, username, onClose }: ChatPanelProps) {
+  const { messages, loading, sendMessage } = useChat(endpoint, apiKey, username);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

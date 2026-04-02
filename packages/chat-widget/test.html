@@ -1,15 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Widget Test</title></head>
-<body>
-  <h1>Widget Smoke Test</h1>
-  <p>You should see a blue chat button in the bottom-right corner.</p>
-  <script src="./dist/chat-widget.js"></script>
-  <script>
-    ChatWidget.init({
-      endpoint: 'http://localhost:3000',
-      apiKey: 'your-widget-api-key-here'
-    });
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Widget Test</title>
+  </head>
+  <body>
+    <h1>Widget Smoke Test</h1>
+    <p>You should see a blue chat button in the bottom-right corner.</p>
+    <script src="./dist/chat-widget.js"></script>
+    <script>
+      ChatWidget.init({
+        endpoint: 'http://localhost:3000',
+        apiKey: 'test123',
+      });
+    </script>
+  </body>
 </html>
