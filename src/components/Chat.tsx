@@ -99,6 +99,7 @@ function AssistantMeta({
       bg="bg.surface"
       fontSize="11px"
       color="text.primary"
+      // @ts-expect-error Chakra Box types don't expose HTML open attribute for details element
       open={isStreaming}
     >
       <Box
@@ -139,7 +140,7 @@ function AssistantMeta({
                   Tool: {part.name}{' '}
                   <Text as="span" fontWeight="normal" color="text.muted">({formatToolCallState(part.state ?? '')})</Text>
                 </Text>
-                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="text.subtle" fontSize="xs">
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="text.subtle" fontSize="xs" maxH="200px" overflowY="auto">
                   {prettifyJsonString(part.arguments ?? '')}
                 </Box>
               </Box>
@@ -152,7 +153,7 @@ function AssistantMeta({
                   Result{' '}
                   <Text as="span" fontWeight="normal" color="text.muted">({formatToolResultState(part.state ?? '')})</Text>
                 </Text>
-                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="text.subtle" fontSize="xs">
+                <Box as="pre" mt="1" whiteSpace="pre-wrap" wordBreak="break-word" color="text.subtle" fontSize="xs" maxH="200px" overflowY="auto">
                   {prettifyJsonString(part.content ?? '')}
                 </Box>
                 {part.error && (
@@ -534,6 +535,14 @@ export function Chat({
                           </Text>
                         );
                       }
+                      const isStreaming = showAgentStatus && message.id === latestAssistantMessage?.id;
+                      if (isStreaming) {
+                        return (
+                          <Text key={idx} fontSize="sm" whiteSpace="pre-wrap">
+                            {part.content}
+                          </Text>
+                        );
+                      }
                       // Assistant text — check for fenced code blocks first
                       const hasFencedCode = /```[\s\S]*?```/.test(part.content);
                       if (hasFencedCode) {
@@ -584,18 +593,11 @@ export function Chat({
                       if (imgPart.source?.type === 'data' && imgPart.source.value) {
                         const mimeType = imgPart.source.mimeType ?? 'image/jpeg';
                         return (
-                          <Box
+                          <img
                             key={idx}
-                            as="img"
                             src={`data:${mimeType};base64,${imgPart.source.value}`}
                             alt="attached image"
-                            maxW="24rem"
-                            maxH="16rem"
-                            borderRadius="6px"
-                            border="1px solid"
-                            borderColor="border.default"
-                            mt="1"
-                            display="block"
+                            style={{ maxWidth: '24rem', maxHeight: '16rem', borderRadius: '6px', border: '1px solid var(--chakra-colors-border-default)', marginTop: '4px', display: 'block' }}
                           />
                         );
                       }
@@ -635,17 +637,10 @@ export function Chat({
           <HStack gap="2" flexWrap="wrap">
             {pendingImages.map((img, i) => (
               <Box key={`img-${i}`} position="relative">
-                <Box
-                  as="img"
+                <img
                   src={img.previewUrl}
                   alt="pending"
-                  w="16"
-                  h="16"
-                  objectFit="cover"
-                  borderRadius="6px"
-                  border="1px solid"
-                  borderColor="border.default"
-                  display="block"
+                  style={{ width: '4rem', height: '4rem', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--chakra-colors-border-default)', display: 'block' }}
                 />
                 <Button
                   type="button"
