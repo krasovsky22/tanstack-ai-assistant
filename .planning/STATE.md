@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 09-04-PLAN.md (chat widget IIFE bundle)
-last_updated: "2026-04-02T07:55:52.153Z"
+stopped_at: "Checkpoint: 09-05 awaiting human browser verification of widget end-to-end flow"
+last_updated: "2026-04-02T08:00:50.197Z"
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-02T07:55:52.149Z
-- **Stopped At:** Completed 09-04-PLAN.md (chat widget IIFE bundle)
+- **Last session:** 2026-04-02T08:00:50.191Z
+- **Stopped At:** Checkpoint: 09-05 awaiting human browser verification of widget end-to-end flow
 
 ## Progress
 
@@ -112,6 +112,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 09]: vite.config.widget.ts sets root: __dirname and resolve(__dirname, entry) — required for monorepo builds called from repo root
 - [Phase 09]: React bundled into IIFE (not externalized) — widget must be self-contained for script tag embed
 - [Phase 09]: fileName: () => 'chat-widget.js' explicit extension required — Vite IIFE format omits extension without it
+- [Phase 09-05]: vitest exclude e2e/** in vite.config.ts — Playwright specs conflict with Vitest runner
+- [Phase 09-05]: GID-07 test: mock fire-and-forget remote-chat upsert fetch; assert chat-sync not called rather than fetch count of 1
 
 ### Performance Metrics
 
@@ -146,4 +148,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 09 P09-01 | 2min | 2 tasks | 5 files |
 | Phase 09 P09-02 | 3min | 2 tasks | 3 files |
 | Phase 09 P09-04 | 8min | 2 tasks | 9 files |
+| Phase 09 P09-05 | 4min | 1 tasks | 4 files |
 
