@@ -21,6 +21,7 @@
     "cron:dev": "tsx watch --tsconfig tsconfig.worker.json workers/cron/index.ts",
     "dev:all": "pnpm dev & pnpm jobs:dev",
     "create-user": "node --env-file=.env scripts/create-user.mjs",
+    "build:widget": "vite build --config packages/chat-widget/vite.config.widget.ts",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up",
     "docker:down": "docker compose down"
