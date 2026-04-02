@@ -48,7 +48,7 @@ Package manager is **pnpm**.
 
 **Workers**: `workers/`
 
-- `gateway/` — Telegram long-polling (`getUpdates`), routes messages to `/api/chat-sync`, sends replies; filters for bot mentions
+- `gateway/` — Telegram long-polling (`getUpdates`), routes messages to `/api/chat-sync`, sends replies; filters for bot mentions; also starts `WebWidgetProvider` (HTTP server on port 3001) when `WIDGET_API_KEY` is set
 - `cron/` — polls DB every 5 minutes for active cronjobs, schedules them with `node-cron`, calls `/api/chat-sync` with the cronjob's prompt, logs results to `cronjobLogs`
 - `jobs/` — polls every 30s for `new` jobs, processes them, then generates resumes for `processed` jobs (up to 3 retries)
 
@@ -81,6 +81,9 @@ Package manager is **pnpm**.
 - `JIRA_EMAIL` — (optional) Atlassian account email for the system Jira PAT
 - `JIRA_PAT` — (optional) Jira Personal Access Token for system-level ticket creation
 - `JIRA_DEFAULT_PROJECT` — (optional) default Jira project key for new tickets (e.g. `KAN`)
+- `WIDGET_API_KEY` — shared secret for the embeddable chat widget; widget passes this as `x-widget-api-key` header; when set, gateway worker starts the `WebWidgetProvider` HTTP server
+- `WIDGET_GATEWAY_URL` — internal URL of the WebWidgetProvider HTTP server (default: `http://localhost:3001`)
+- `WIDGET_INTERNAL_PORT` — port the gateway's WebWidgetProvider HTTP server listens on (default: `3001`)
 
 ## Workflow Rules
 

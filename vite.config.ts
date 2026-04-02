@@ -13,6 +13,10 @@ const config = defineConfig({
     host: process.env.HOST || 'localhost',
     allowedHosts: ['host.docker.internal'],
   },
+  test: {
+    // Exclude Playwright e2e specs — they use @playwright/test, not Vitest
+    exclude: ['e2e/**', 'node_modules/**'],
+  },
   plugins: [
     devtools(),
     nitro({

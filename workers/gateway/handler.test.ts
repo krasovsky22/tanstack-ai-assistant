@@ -49,11 +49,17 @@ describe('Gateway handler blocks unlinked users (GID-07)', () => {
       ok: true,
       json: async () => ({ userId: null }),
     });
+    // fire-and-forget remote-chat upsert (happens even for unlinked users)
+    mockFetch.mockResolvedValueOnce({ ok: true });
 
     await handleMessage({ ...baseMsg, text: 'tell me the weather' }, mockProvider);
 
-    // Only one fetch call (resolve), not two (resolve + chat-sync)
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    // Two fetch calls: identity resolve + remote-chat upsert (NOT chat-sync)
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    const urls = mockFetch.mock.calls.map(
+      (call) => (call as [string, ...unknown[]])[0],
+    );
+    expect(urls.some((u) => u.includes('/api/chat-sync'))).toBe(false);
     expect(mockProvider.send).toHaveBeenCalledWith(
       99999,
       expect.stringContaining('/link'),
