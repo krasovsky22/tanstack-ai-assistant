@@ -1,16 +1,31 @@
 import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { handleWidgetPost } from './index';
-import { handleWidgetPoll } from './$jobId';
 
-// Mock global fetch to avoid real HTTP calls to gateway during tests
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+// Mock DB and chat services — widget route runs these server-side
+vi.mock('@/db', () => ({
+  db: {
+    select: () => ({ from: () => ({ where: () => ({ limit: () => Promise.resolve([]) }) }) }),
+  },
+}));
+
+vi.mock('@/services/chat', () => ({
+  buildChatOptions: vi.fn().mockResolvedValue({}),
+  runChatWithToolCollection: vi.fn().mockResolvedValue({
+    text: 'Hello from LLM',
+    assistantParts: [{ type: 'text', content: 'Hello from LLM' }],
+  }),
+  getOpenConversationByChatId: vi.fn().mockResolvedValue(null),
+  saveConversationToDb: vi.fn().mockResolvedValue(undefined),
+  appendMessagesToConversation: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/services/user-settings', () => ({
+  getUserSettings: vi.fn().mockResolvedValue(null),
+  toJiraSettings: vi.fn().mockReturnValue(null),
+  toGitHubSettings: vi.fn().mockReturnValue(null),
+}));
 
 describe('Widget API: key validation (W9-01)', () => {
-  beforeEach(() => {
-    mockFetch.mockReset();
-  });
-
   it('rejects request with missing api key', async () => {
     const req = new Request('http://localhost/api/gateway/widget', {
       method: 'POST',
@@ -32,17 +47,12 @@ describe('Widget API: key validation (W9-01)', () => {
   });
 });
 
-describe('Widget API: job polling (W9-02)', () => {
+describe('Widget API: direct conversation creation (W9-02)', () => {
   beforeEach(() => {
-    mockFetch.mockReset();
+    vi.clearAllMocks();
   });
 
-  it('POST /api/gateway/widget returns { jobId: string }', async () => {
-    // Mock gateway POST /jobs accepting the job
-    mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
-    );
-
+  it('POST /api/gateway/widget returns { conversationId, text }', async () => {
     const req = new Request('http://localhost/api/gateway/widget', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-widget-api-key': 'test-key' },
@@ -50,53 +60,27 @@ describe('Widget API: job polling (W9-02)', () => {
     });
     const res = await handleWidgetPost(req, 'test-key');
     expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(typeof body.jobId).toBe('string');
+    const body = await res.json() as { conversationId: string; text: string };
+    expect(typeof body.conversationId).toBe('string');
+    expect(typeof body.text).toBe('string');
   });
 
-  it('GET /api/gateway/widget/{jobId} returns { status: "pending" } before completion', async () => {
-    // Mock gateway GET /jobs/:jobId returning pending state
-    mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ status: 'pending' }), { status: 200 }),
-    );
-
-    const req = new Request('http://localhost/api/gateway/widget/unknown-job-id', {
-      method: 'GET',
+  it('POST with username resolves userId before chat', async () => {
+    const { getOpenConversationByChatId } = await import('@/services/chat');
+    const req = new Request('http://localhost/api/gateway/widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-widget-api-key': 'test-key' },
+      body: JSON.stringify({ chatId: 'abc', message: 'hello', username: 'alice' }),
     });
-    const res = await handleWidgetPoll(req, 'unknown-job-id');
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.status).toBe('pending');
-  });
-
-  it('GET /api/gateway/widget/{jobId} returns { status: "done", text: string } after completion', async () => {
-    // Mock gateway GET /jobs/:jobId returning done state with LLM reply
-    mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ status: 'done', text: 'LLM reply' }), { status: 200 }),
-    );
-
-    const req = new Request('http://localhost/api/gateway/widget/completed-job', {
-      method: 'GET',
-    });
-    const res = await handleWidgetPoll(req, 'completed-job');
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    // Either pending or done is valid depending on timing
-    expect(['pending', 'done']).toContain(body.status);
+    await handleWidgetPost(req, 'test-key');
+    // getOpenConversationByChatId should have been called (userId resolved to null since mock returns no user)
+    expect(getOpenConversationByChatId).toHaveBeenCalledWith('abc', null);
   });
 });
 
 describe('Widget API: CORS headers (W9-03)', () => {
-  beforeEach(() => {
-    mockFetch.mockReset();
-    // Mock gateway accepting the job for POST CORS test
-    mockFetch.mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
-    );
-  });
-
   afterAll(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('POST response includes Access-Control-Allow-Origin header', async () => {

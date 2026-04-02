@@ -1,44 +1,14 @@
-import { chat, maxIterations, StreamProcessor } from '@tanstack/ai';
 import { createFileRoute } from '@tanstack/react-router';
 import {
   buildChatOptions,
+  runChatWithToolCollection,
   saveConversationToDb,
   getOpenConversationByChatId,
   closeConversation,
   appendMessagesToConversation,
 } from '@/services/chat';
-import { getUserSettings, toJiraSettings } from '@/services/user-settings';
+import { getUserSettings, toJiraSettings, toGitHubSettings } from '@/services/user-settings';
 // import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
-
-/**
- * Run chat with streaming and collect full messages including tool calls.
- * Returns the final text response and the assistant UIMessage with all parts.
- */
-async function runChatWithToolCollection(
-  options: Awaited<ReturnType<typeof buildChatOptions>>,
-  systemPrompts?: string[],
-) {
-  const processor = new StreamProcessor();
-
-  const stream = chat({
-    ...options,
-    ...(systemPrompts ? { systemPrompts } : {}),
-    agentLoopStrategy: maxIterations(10),
-  });
-
-  const result = await processor.process(stream);
-  const messages = processor.getMessages();
-
-  // Get the assistant message (last message from the processor)
-  const assistantMessage = messages.find((m) => m.role === 'assistant');
-
-  return {
-    text: result.content,
-    assistantParts: assistantMessage?.parts ?? [
-      { type: 'text' as const, content: result.content },
-    ],
-  };
-}
 
 type GatewayAction = 'continue' | 'new_conversation' | 'close_conversation';
 
@@ -100,8 +70,8 @@ export const Route = createFileRoute('/api/chat-sync')({
             const resolvedUserId = userId ? String(userId) : null;
             const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
             const jiraSettings = toJiraSettings(userSettingsRecord);
-            const githubPat = userSettingsRecord?.githubPat ?? null;
-            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubPat);
+            const githubSettings = toGitHubSettings(userSettingsRecord);
+            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubSettings);
             const { text } = await runChatWithToolCollection(options);
 
             // Cronjob source: do not persist — only return the response for cronjob logs
@@ -159,8 +129,8 @@ export const Route = createFileRoute('/api/chat-sync')({
           const resolvedUserId = userId ? String(userId) : null;
           const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
           const jiraSettings = toJiraSettings(userSettingsRecord);
-          const githubPatForGateway = userSettingsRecord?.githubPat ?? null;
-          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubPatForGateway);
+          const githubSettings = toGitHubSettings(userSettingsRecord);
+          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubSettings);
           const { text: rawDecision, assistantParts } =
             await runChatWithToolCollection(gatewayOptions, [
               GATEWAY_SYSTEM_PROMPT,

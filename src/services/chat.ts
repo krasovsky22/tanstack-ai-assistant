@@ -1,6 +1,7 @@
-import { maxIterations } from '@tanstack/ai';
+import { chat, maxIterations, StreamProcessor } from '@tanstack/ai';
 import { openaiText } from '@tanstack/ai-openai';
 import type { UserJiraSettings } from '@/services/jira';
+import type { GitHubSettings } from '@/services/user-settings';
 
 export async function buildChatOptions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -8,7 +9,7 @@ export async function buildChatOptions(
   conversationId?: string,
   userId?: string | null,
   jiraSettings?: UserJiraSettings | null,
-  githubPat?: string | null,
+  githubSettings?: GitHubSettings | null,
 ) {
   const {
     getZapierMcpToolDefinitions,
@@ -31,14 +32,15 @@ export async function buildChatOptions(
   );
   const enabled = (key: string) => !disabledTools.has(key);
 
-  const [zapierTools, cronjobTools, newsApiTools, githubTools] = await Promise.all([
-    enabled('zapier') ? getZapierMcpToolDefinitions() : Promise.resolve([]),
-    Promise.resolve(enabled('cronjob') ? getCronjobTools(userId) : []),
-    Promise.resolve(enabled('news') ? getNewsApiTools() : []),
-    enabled('github') && githubPat
-      ? getGitHubMcpTools(githubPat)
-      : Promise.resolve([]),
-  ]);
+  const [zapierTools, cronjobTools, newsApiTools, githubTools] =
+    await Promise.all([
+      enabled('zapier') ? getZapierMcpToolDefinitions() : Promise.resolve([]),
+      Promise.resolve(enabled('cronjob') ? getCronjobTools(userId) : []),
+      Promise.resolve(enabled('news') ? getNewsApiTools() : []),
+      enabled('github') && githubSettings?.githubPat
+        ? getGitHubMcpTools(githubSettings.githubPat)
+        : Promise.resolve([]),
+    ]);
   const tools = [
     ...zapierTools,
     ...cronjobTools,
@@ -224,4 +226,29 @@ export async function appendMessagesToConversation(
   // title not available in append context; use ID as fallback
   const { indexConversationMemory } = await import('@/services/memory');
   void indexConversationMemory(conversationId, conversationId, null, messages);
+}
+
+export async function runChatWithToolCollection(
+  options: Awaited<ReturnType<typeof buildChatOptions>>,
+  systemPrompts?: string[],
+) {
+  const processor = new StreamProcessor();
+
+  const stream = chat({
+    ...options,
+    ...(systemPrompts ? { systemPrompts } : {}),
+    agentLoopStrategy: maxIterations(10),
+  });
+
+  const result = await processor.process(stream);
+  const messages = processor.getMessages();
+
+  const assistantMessage = messages.find((m) => m.role === 'assistant');
+
+  return {
+    text: result.content,
+    assistantParts: assistantMessage?.parts ?? [
+      { type: 'text' as const, content: result.content },
+    ],
+  };
 }
