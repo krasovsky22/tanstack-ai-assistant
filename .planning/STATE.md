@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 09-02-PLAN.md (WebWidgetProvider implementation)
-last_updated: "2026-03-30T09:22:12.978Z"
+stopped_at: Completed 09-04-PLAN.md (chat widget IIFE bundle)
+last_updated: "2026-04-02T07:55:52.153Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 21
-  completed_plans: 17
+  completed_plans: 19
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-03-30T09:22:12.973Z
-- **Stopped At:** Completed 09-02-PLAN.md (WebWidgetProvider implementation)
+- **Last session:** 2026-04-02T07:55:52.149Z
+- **Stopped At:** Completed 09-04-PLAN.md (chat widget IIFE bundle)
 
 ## Progress
 
@@ -109,6 +109,9 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 09-01]: packages/* glob added to pnpm-workspace.yaml before packages/ directory exists — pnpm tolerates missing directories in workspace config
 - [Phase 09-02]: WebWidgetProvider.start() accepts but ignores onMessage callback — calls /api/chat-sync directly, not through handleMessage(); no-op passed on registration
 - [Phase 09-02]: POST /jobs responds 200 immediately then fires fetch async — widget clients not blocked on LLM response time; poll via GET /jobs/:jobId
+- [Phase 09]: vite.config.widget.ts sets root: __dirname and resolve(__dirname, entry) — required for monorepo builds called from repo root
+- [Phase 09]: React bundled into IIFE (not externalized) — widget must be self-contained for script tag embed
+- [Phase 09]: fileName: () => 'chat-widget.js' explicit extension required — Vite IIFE format omits extension without it
 
 ### Performance Metrics
 
@@ -142,4 +145,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 08 P08-02 | 6min | 2 tasks | 7 files |
 | Phase 09 P09-01 | 2min | 2 tasks | 5 files |
 | Phase 09 P09-02 | 3min | 2 tasks | 3 files |
+| Phase 09 P09-04 | 8min | 2 tasks | 9 files |
 
