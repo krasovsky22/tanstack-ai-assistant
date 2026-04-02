@@ -1,6 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useLiveQuery } from '@tanstack/react-db';
 import { useEffect, useRef, useState } from 'react';
+
+// useLiveQuery uses useSyncExternalStore without getServerSnapshot — client-only
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? <>{children}</> : null;
+}
 import { conversationsCollection } from '@/collections/conversations';
 import { queryClient } from '@/lib/queryClient';
 import {
@@ -35,7 +42,9 @@ function ConversationsDashboard() {
       <Flex justify="space-between" align="center" mb="6">
         <Heading size="xl">Conversations</Heading>
       </Flex>
-      <ConversationList />
+      <ClientOnly>
+        <ConversationList />
+      </ClientOnly>
     </Container>
   );
 }
