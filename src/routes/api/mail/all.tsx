@@ -1,7 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { db } from '@/db';
-import { jobEmails, jobs } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -10,6 +7,9 @@ export const Route = createFileRoute('/api/mail/all')({
     handlers: {
       GET: async () => {
         try {
+          const { db } = await import('@/db');
+          const { jobEmails, jobs } = await import('@/db/schema');
+          const { desc, eq } = await import('drizzle-orm');
           const emails = await db
             .select({
               id: jobEmails.id,

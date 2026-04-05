@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { runIngestion } from '@/services/mail-ingestion';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -8,6 +7,7 @@ export const Route = createFileRoute('/api/mail/ingest')({
     handlers: {
       POST: async ({ request: _request }) => {
         try {
+          const { runIngestion } = await import('@/services/mail-ingestion');
           const emails = await runIngestion();
           return new Response(JSON.stringify(emails), { headers: JSON_HEADERS });
         } catch (err) {

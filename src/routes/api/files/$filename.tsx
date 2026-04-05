@@ -1,6 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { readFile } from 'fs/promises';
-import { join, extname, basename } from 'path';
 
 const GENERATED_DIR = 'files/generated';
 
@@ -20,6 +18,9 @@ export const Route = createFileRoute('/api/files/$filename')({
         if (filename.includes('..') || filename.includes('/')) {
           return new Response('Not found', { status: 404 });
         }
+
+        const { readFile } = await import('fs/promises');
+        const { join, extname, basename } = await import('path');
 
         const safeFilename = basename(filename);
         const filePath = join(GENERATED_DIR, safeFilename);

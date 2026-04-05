@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { indexConversationMemory } from '@/services/memory';
 
 export const Route = createFileRoute('/api/conversations/')({
   server: {
@@ -55,7 +54,9 @@ export const Route = createFileRoute('/api/conversations/')({
           }
         });
 
-        void indexConversationMemory(id, title, 'ui', msgs);
+        void import('@/services/memory').then(({ indexConversationMemory }) =>
+          indexConversationMemory(id, title, 'ui', msgs),
+        );
 
         return new Response(JSON.stringify({ ok: true }), {
           headers: { 'Content-Type': 'application/json' },

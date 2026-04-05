@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { unlink } from 'fs/promises';
 
 export const Route = createFileRoute('/api/generated-files/$id')({
   server: {
@@ -44,6 +43,7 @@ export const Route = createFileRoute('/api/generated-files/$id')({
         }
 
         // Delete from filesystem (ignore if already gone)
+        const { unlink } = await import('fs/promises');
         await unlink(row.filePath).catch(() => {});
 
         await db

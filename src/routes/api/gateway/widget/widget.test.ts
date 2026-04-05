@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
-import { handleWidgetPost } from './index';
+import { handleWidgetPost } from '@/services/widget';
 
 // Mock DB and chat services — widget route runs these server-side
 vi.mock('@/db', () => ({

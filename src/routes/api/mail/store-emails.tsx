@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { storeClassifiedEmails, ClassifiedEmail } from '@/services/mail-ingestion';
+import type { ClassifiedEmail } from '@/services/mail-ingestion';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -8,6 +8,7 @@ export const Route = createFileRoute('/api/mail/store-emails')({
     handlers: {
       POST: async ({ request }) => {
         try {
+          const { storeClassifiedEmails } = await import('@/services/mail-ingestion');
           const emails: ClassifiedEmail[] = await request.json();
           const summary = await storeClassifiedEmails(emails);
           return new Response(JSON.stringify(summary), { headers: JSON_HEADERS });

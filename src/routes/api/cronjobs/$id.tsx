@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { validate } from 'node-cron';
 
 export const Route = createFileRoute('/api/cronjobs/$id')({
   server: {
@@ -13,6 +12,7 @@ export const Route = createFileRoute('/api/cronjobs/$id')({
         const userId = session.data.userId ?? null;
         const body = await request.json();
 
+        const { validate } = await import('node-cron');
         if (body.cronExpression !== undefined && !validate(body.cronExpression)) {
           return new Response(JSON.stringify({ error: 'Invalid cron expression' }), {
             status: 400,
