@@ -1,126 +1,48 @@
 import 'dotenv/config';
+import { Worker } from 'node:worker_threads';
+import { fileURLToPath } from 'node:url';
 import { db } from '@/db';
-import { indexCronjobResult } from '@/services/memory';
-import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
-import { cronjobs, cronjobLogs } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { schedule, validate } from 'node-cron';
-import type { ScheduledTask } from 'node-cron';
+import { cronjobs } from '@/db/schema';
+import { validate } from 'node-cron';
+import type { JobWorkerData } from './job-worker.ts';
 
-const APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
 const SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+// Bootstrap .mjs registers tsx/esm hooks before importing the .ts worker
+const WORKER_PATH = fileURLToPath(new URL('./job-worker-bootstrap.mjs', import.meta.url));
 
-// Map of job ID → { task, cronExpression } for change detection
-const scheduledTasks = new Map<
-  string,
-  { task: ScheduledTask; cronExpression: string }
->();
+// Map of job ID → { worker, cronExpression } for change detection
+const activeWorkers = new Map<string, { worker: Worker; cronExpression: string }>();
 
-async function runCronjob(job: {
-  id: string;
-  name: string;
-  prompt: string;
-  userId: string | null;
-}) {
-  const startTime = Date.now();
-  const url = `${APP_URL}/api/chat-sync`;
-  console.log(`[cron] Firing job "${job.name}" (${job.id})`, job);
-  console.log(`[cron] POST ${url}`);
+function spawnWorker(data: JobWorkerData): Worker {
+  const worker = new Worker(WORKER_PATH, {
+    execArgv: [], // prevent inheriting parent tsx loader flags
+    workerData: data,
+    env: { ...process.env },
+  });
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: job.prompt }],
-        title: `Cronjob: ${job.name}`,
-        source: CONVERSATION_SOURCES.CRONJOB,
-        userId: job.userId ?? undefined,
-      }),
-    });
+  worker.on('error', (err) => {
+    console.error(`[cron] Worker error for job "${data.name}" (${data.id}):`, err);
+  });
 
-    const durationMs = Date.now() - startTime;
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`HTTP ${res.status}: ${errText}`);
+  worker.on('exit', (code) => {
+    if (code !== 0) {
+      console.warn(`[cron] Worker for job "${data.name}" (${data.id}) exited with code ${code}`);
     }
+    // Clean up the map entry if the worker exits unexpectedly
+    const entry = activeWorkers.get(data.id);
+    if (entry?.worker === worker) {
+      activeWorkers.delete(data.id);
+    }
+  });
 
-    const data = (await res.json()) as { text?: string; error?: string };
-    const resultText = data.text ?? '';
+  return worker;
+}
 
-    const [logRow] = await db
-      .insert(cronjobLogs)
-      .values({
-        cronjobId: job.id,
-        status: 'success',
-        result: resultText,
-        durationMs,
-      })
-      .returning();
-
-    // Index into Elasticsearch (fire-and-forget)
-    indexCronjobResult(
-      logRow.id,
-      job.id,
-      job.name,
-      resultText,
-      null,
-      'success',
-    );
-
-    await db
-      .update(cronjobs)
-      .set({
-        lastRunAt: new Date(),
-        lastResult: resultText,
-        updatedAt: new Date(),
-      })
-      .where(eq(cronjobs.id, job.id));
-
-    console.log(`[cron] Job "${job.name}" succeeded in ${durationMs}ms`);
-  } catch (err) {
-    const durationMs = Date.now() - startTime;
-    const errorMessage = err instanceof Error ? err.message : String(err);
-
-    const [errorLogRow] = await db
-      .insert(cronjobLogs)
-      .values({
-        cronjobId: job.id,
-        status: 'error',
-        error: errorMessage,
-        durationMs,
-      })
-      .returning();
-
-    // Index into Elasticsearch (fire-and-forget)
-    indexCronjobResult(
-      errorLogRow.id,
-      job.id,
-      job.name,
-      null,
-      errorMessage,
-      'error',
-    );
-
-    await db
-      .update(cronjobs)
-      .set({
-        lastRunAt: new Date(),
-        lastResult: `ERROR: ${errorMessage}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(cronjobs.id, job.id));
-
-    const cause = err instanceof Error ? (err as NodeJS.ErrnoException).cause : undefined;
-    console.error(
-      `[cron] Job "${job.name}" failed in ${durationMs}ms: ${errorMessage}`,
-      cause ? `\n  cause: ${cause instanceof Error ? cause.message : String(cause)}` : '',
-      cause instanceof Error && (cause as NodeJS.ErrnoException).code
-        ? `\n  code: ${(cause as NodeJS.ErrnoException).code}`
-        : '',
-    );
-  }
+function stopWorker(id: string) {
+  const entry = activeWorkers.get(id);
+  if (!entry) return;
+  entry.worker.postMessage({ type: 'stop' });
+  activeWorkers.delete(id);
 }
 
 async function syncJobs() {
@@ -131,79 +53,50 @@ async function syncJobs() {
 
   for (const job of allJobs) {
     if (!job.isActive) {
-      // Stop if it was previously scheduled
-      if (scheduledTasks.has(job.id)) {
-        scheduledTasks.get(job.id)!.task.stop();
-        scheduledTasks.delete(job.id);
+      if (activeWorkers.has(job.id)) {
+        stopWorker(job.id);
         console.log(`[cron] Stopped disabled job "${job.name}"`);
       }
       continue;
     }
 
-    activeJobIds.add(job.id);
-
     if (!validate(job.cronExpression)) {
-      console.warn(
-        `[cron] Skipping job "${job.name}" — invalid expression: ${job.cronExpression}`,
-      );
+      console.warn(`[cron] Skipping job "${job.name}" — invalid expression: ${job.cronExpression}`);
       continue;
     }
 
-    const existing = scheduledTasks.get(job.id);
+    activeJobIds.add(job.id);
 
-    // Reschedule if expression changed
+    const existing = activeWorkers.get(job.id);
+
+    // Reschedule if expression or prompt changed
     if (existing && existing.cronExpression !== job.cronExpression) {
-      existing.task.stop();
-      scheduledTasks.delete(job.id);
-      console.log(
-        `[cron] Expression changed for "${job.name}", rescheduling...`,
-      );
+      stopWorker(job.id);
+      console.log(`[cron] Expression changed for "${job.name}", restarting worker...`);
     }
 
-    if (!scheduledTasks.has(job.id)) {
-      const jobId = job.id;
-      const task = schedule(job.cronExpression, async () => {
-        const [freshJob] = await db
-          .select()
-          .from(cronjobs)
-          .where(eq(cronjobs.id, jobId));
-        if (!freshJob || !freshJob.isActive) {
-          console.log(
-            `[cron] Skipping job (id: ${jobId}) — not found or inactive`,
-          );
-          return;
-        }
-        runCronjob({
-          id: freshJob.id,
-          name: freshJob.name,
-          prompt: freshJob.prompt,
-          userId: freshJob.userId ?? null,
-        }).catch((err) => {
-          console.error(
-            `[cron] Unhandled error in job "${freshJob.name}":`,
-            err,
-          );
-        });
-      });
-      scheduledTasks.set(job.id, { task, cronExpression: job.cronExpression });
-      console.log(
-        `[cron] Scheduled "${job.name}" with expression: ${job.cronExpression}`,
-      );
+    if (!activeWorkers.has(job.id)) {
+      const data: JobWorkerData = {
+        id: job.id,
+        name: job.name,
+        prompt: job.prompt,
+        cronExpression: job.cronExpression,
+        userId: job.userId ?? null,
+      };
+      const worker = spawnWorker(data);
+      activeWorkers.set(job.id, { worker, cronExpression: job.cronExpression });
     }
   }
 
-  // Stop tasks for jobs that were deleted from DB entirely
-  for (const [id, { task }] of scheduledTasks) {
+  // Stop workers for jobs deleted from DB
+  for (const [id] of activeWorkers) {
     if (!activeJobIds.has(id)) {
-      task.stop();
-      scheduledTasks.delete(id);
+      stopWorker(id);
       console.log(`[cron] Removed deleted job (id: ${id})`);
     }
   }
 
-  console.log(
-    `[cron] Sync complete. Active scheduled jobs: ${scheduledTasks.size}`,
-  );
+  console.log(`[cron] Sync complete. Active workers: ${activeWorkers.size}`);
 }
 
 async function start() {
@@ -217,19 +110,19 @@ async function start() {
     });
   }, SYNC_INTERVAL_MS);
 
-  console.log(
-    `[cron] Polling for job changes every ${SYNC_INTERVAL_MS / 1000}s`,
-  );
+  console.log(`[cron] Polling for job changes every ${SYNC_INTERVAL_MS / 1000}s`);
 }
 
-process.on('SIGINT', () => {
-  console.log('\n[cron] SIGINT received, shutting down...');
+function shutdown() {
+  console.log('[cron] Shutting down — stopping all workers...');
+  for (const [id] of activeWorkers) {
+    stopWorker(id);
+  }
   process.exit(0);
-});
-process.on('SIGTERM', () => {
-  console.log('[cron] SIGTERM received, shutting down...');
-  process.exit(0);
-});
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 start().catch((err) => {
   console.error('[cron] Fatal error:', err);
