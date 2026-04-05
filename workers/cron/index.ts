@@ -1,11 +1,10 @@
 import 'dotenv/config';
-
-// ─── Dynamic imports AFTER env vars are set ───────────────────────────────
-const { db } = await import('@/db');
-const { CONVERSATION_SOURCES } = await import('@/lib/conversation-sources');
-const { cronjobs, cronjobLogs } = await import('@/db/schema');
-const { eq } = await import('drizzle-orm');
-const { schedule, validate } = await import('node-cron');
+import { db } from '@/db';
+import { indexCronjobResult } from '@/services/memory';
+import { CONVERSATION_SOURCES } from '@/lib/conversation-sources';
+import { cronjobs, cronjobLogs } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { schedule, validate } from 'node-cron';
 import type { ScheduledTask } from 'node-cron';
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
@@ -61,7 +60,6 @@ async function runCronjob(job: {
       .returning();
 
     // Index into Elasticsearch (fire-and-forget)
-    const { indexCronjobResult } = await import('@/services/memory');
     indexCronjobResult(
       logRow.id,
       job.id,
@@ -96,7 +94,6 @@ async function runCronjob(job: {
       .returning();
 
     // Index into Elasticsearch (fire-and-forget)
-    const { indexCronjobResult } = await import('@/services/memory');
     indexCronjobResult(
       errorLogRow.id,
       job.id,
