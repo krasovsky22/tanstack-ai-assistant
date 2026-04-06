@@ -126,7 +126,7 @@ Plans:
 **Goal:** Encrypt sensitive PAT tokens (jiraPat, githubPat) stored in the user_settings PostgreSQL table using AES-256-GCM via node:crypto. No schema changes — existing text columns store enc:-prefixed ciphertext. Protect secrets at rest so a DB compromise does not expose raw credentials.
 **Requirements**: ENC-01, ENC-02, ENC-03, ENC-04, ENC-05, ENC-06, ENC-07, ENC-08
 **Depends on:** Phase 9
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 10-01-PLAN.md — Wave 0 RED test stubs: crypto.test.ts (ENC-01–04, ENC-07) + user-settings.test.ts (ENC-05–06)

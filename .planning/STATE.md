@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Phase 10 context gathered
-last_updated: "2026-04-06T03:22:41.839Z"
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-04-06T03:37:56.387Z"
 progress:
   total_phases: 10
   completed_phases: 4
-  total_plans: 21
-  completed_plans: 20
+  total_plans: 23
+  completed_plans: 21
 ---
 
 # Project State
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-06T03:22:41.835Z
-- **Stopped At:** Phase 10 context gathered
+- **Last session:** 2026-04-06T03:37:56.383Z
+- **Stopped At:** Completed 10-01-PLAN.md
 
 ## Progress
 
@@ -115,6 +115,8 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 09]: fileName: () => 'chat-widget.js' explicit extension required — Vite IIFE format omits extension without it
 - [Phase 09-05]: vitest exclude e2e/** in vite.config.ts — Playwright specs conflict with Vitest runner
 - [Phase 09-05]: GID-07 test: mock fire-and-forget remote-chat upsert fetch; assert chat-sync not called rather than fetch count of 1
+- [Phase 10-01]: vi.hoisted() used for mockLimit/mockReturning — vi.mock factory hoisting causes ReferenceError when referencing outer let/const variables
+- [Phase 10-01]: Dynamic import with bust-cache query string for ENC-07 — tests module-load-time ENCRYPTION_KEY validation without top-level import
 
 ### Performance Metrics
 
@@ -150,4 +152,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 09 P09-02 | 3min | 2 tasks | 3 files |
 | Phase 09 P09-04 | 8min | 2 tasks | 9 files |
 | Phase 09 P09-05 | 4min | 1 tasks | 4 files |
+| Phase 10 P01 | 2min | 2 tasks | 2 files |
 
