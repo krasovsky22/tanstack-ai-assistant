@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
-import { ChevronRight, Pencil } from 'lucide-react';
+import { ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -14,6 +14,7 @@ import {
   Button,
   Flex,
   HStack,
+  IconButton,
   Input,
   Spinner,
   Text,
@@ -200,6 +201,7 @@ export function Chat({
 }: ChatProps) {
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState(initialTitle ?? '');
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -215,7 +217,7 @@ export function Chat({
     [],
   );
 
-  const { messages, sendMessage, isLoading, error, status, stop } = useChat({
+  const { messages, setMessages, sendMessage, isLoading, error, status, stop } = useChat({
     connection: fetchHttpStream('/api/chat'),
     initialMessages,
     body: { conversationId },
@@ -342,6 +344,24 @@ export function Chat({
 
   const removeFile = (index: number) => {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (deletingIds.has(messageId)) return;
+    setDeletingIds((prev) => new Set(prev).add(messageId));
+    try {
+      await fetch(`/api/conversations/${conversationId}/messages/${messageId}`, {
+        method: 'DELETE',
+      });
+      // Optimistic removal: filter out deleted message from useChat state
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(messageId);
+        return next;
+      });
+    }
   };
 
   const handleChatInputSubmit = (value: string) => {
@@ -515,7 +535,29 @@ export function Chat({
                 key={message.id}
                 mb="4"
                 justifyContent={isUser ? 'flex-end' : 'flex-start'}
+                position="relative"
+                role="group"
               >
+                {!isNew && (
+                  <IconButton
+                    aria-label="Delete message"
+                    size="xs"
+                    variant="ghost"
+                    colorPalette="red"
+                    position="absolute"
+                    top="-2"
+                    right={isUser ? 'unset' : '-2'}
+                    left={isUser ? '-2' : 'unset'}
+                    opacity={0}
+                    _groupHover={{ opacity: 1 }}
+                    transition="opacity 0.15s"
+                    onClick={() => handleDeleteMessage(message.id)}
+                    loading={deletingIds.has(message.id)}
+                    zIndex={1}
+                  >
+                    <Trash2 size={12} />
+                  </IconButton>
+                )}
                 <Box
                   bg={isUser ? 'brand.600' : 'bg.surface'}
                   color={isUser ? 'white' : 'text.primary'}
