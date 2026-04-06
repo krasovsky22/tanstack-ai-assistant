@@ -4,10 +4,10 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: "Checkpoint: 09-05 awaiting human browser verification of widget end-to-end flow"
-last_updated: "2026-04-02T08:00:50.197Z"
+stopped_at: Phase 10 context gathered
+last_updated: "2026-04-06T03:22:41.839Z"
 progress:
-  total_phases: 9
+  total_phases: 10
   completed_phases: 4
   total_plans: 21
   completed_plans: 20
@@ -20,8 +20,8 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-02T08:00:50.191Z
-- **Stopped At:** Checkpoint: 09-05 awaiting human browser verification of widget end-to-end flow
+- **Last session:** 2026-04-06T03:22:41.835Z
+- **Stopped At:** Phase 10 context gathered
 
 ## Progress
 
@@ -46,6 +46,7 @@ Phase 04: [####] 4/4 plans complete
 - Phase 6 added: Report Bug button — persistent UI entry point on every page, modal form, LLM classification, automatic Jira ticket creation
 - Phase 8 added: GitHub MCP Tool Integration — fetch open/closed PRs, search code, analyze PR changes via GitHub MCP; PAT configured per user in settings
 - Phase 9 added: Embeddable chat widget npm package with gateway integration — importable JS package that renders a chat window on any website, communicates with LLM via a dedicated gateway endpoint
+- Phase 10 added: User settings token encryption
 
 ### Decisions
 
