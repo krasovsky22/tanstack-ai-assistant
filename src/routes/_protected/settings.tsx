@@ -59,6 +59,7 @@ function JiraStatusBadge({ settings }: { settings: UserSettings | undefined }) {
 }
 
 function JiraIntegrationCard({ settings }: { settings: UserSettings | undefined }) {
+  const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
@@ -79,6 +80,7 @@ function JiraIntegrationCard({ settings }: { settings: UserSettings | undefined 
             jiraEmail: value.jiraEmail,
             jiraPat: value.jiraPat,
             jiraDefaultProject: value.jiraDefaultProject,
+            githubPat: MASKED_PAT,
           }),
         });
 
@@ -94,6 +96,9 @@ function JiraIntegrationCard({ settings }: { settings: UserSettings | undefined 
           return;
         }
 
+        const data = await res.json();
+        const { connectedAs: _connectedAs, ...updatedSettings } = data;
+        queryClient.setQueryData(['user-settings'], updatedSettings);
         toaster.create({
           type: 'success',
           title: 'Settings saved',
@@ -281,6 +286,7 @@ function GitHubStatusBadge({ settings }: { settings: UserSettings | undefined })
 }
 
 function GitHubSettingsCard({ settings }: { settings: UserSettings | undefined }) {
+  const queryClient = useQueryClient();
   const [connectedAs, setConnectedAs] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -294,7 +300,13 @@ function GitHubSettingsCard({ settings }: { settings: UserSettings | undefined }
         const res = await fetch('/api/user-settings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ githubPat: value.githubPat }),
+          body: JSON.stringify({
+            githubPat: value.githubPat,
+            jiraBaseUrl: settings?.jiraBaseUrl ?? null,
+            jiraEmail: settings?.jiraEmail ?? null,
+            jiraPat: MASKED_PAT,
+            jiraDefaultProject: settings?.jiraDefaultProject ?? null,
+          }),
         });
 
         if (!res.ok) {
@@ -310,6 +322,8 @@ function GitHubSettingsCard({ settings }: { settings: UserSettings | undefined }
         }
 
         const data = await res.json();
+        const { connectedAs: _connectedAs, ...updatedSettings } = data;
+        queryClient.setQueryData(['user-settings'], updatedSettings);
         setConnectedAs(data.connectedAs ?? null);
         toaster.create({
           type: 'success',
