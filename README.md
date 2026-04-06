@@ -33,19 +33,64 @@ cp .env.example .env
 - `OPENAI_API_KEY` — OpenAI API key for LLM calls
 - `DATABASE_URL` — PostgreSQL connection string (default: `postgresql://postgres:password@localhost:5432/tanstack_ai`)
 - `SESSION_SECRET` — Random string ≥ 32 chars for session encryption. Generate: `openssl rand -base64 32`
+- `ENCRYPTION_KEY` — 64-char hex string (AES-256-GCM key) for encrypting sensitive PAT fields. Generate: `openssl rand -hex 32`
+
+**Database (Docker):**
+
+- `POSTGRES_DB` — Database name (default: `tanstack_ai`)
+- `POSTGRES_USER` — Database user (default: `postgres`)
+- `POSTGRES_PASSWORD` — Database password (default: `password`)
+- `POSTGRES_PORT` — Host port to expose PostgreSQL on (default: `5432`)
 
 **Optional (features activate when set):**
 
 - `APP_URL` — Base URL of the web app (default: `http://localhost:3000`), used by gateway/cron workers
 - `ELASTICSEARCH_URL` — Elasticsearch URL (default: `http://localhost:9200`)
-- `NEWS_API_TOKEN` — [NewsAPI](https://newsapi.org/account) token for the news tool
-- `ZAPIER_MCP_URL` / `ZAPIER_MCP_TOKEN` — Zapier MCP integration
-- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_BOT_USERNAME` — Telegram gateway
-- `YAHOO_IMAP_USER` / `YAHOO_IMAP_PASSWORD` — Yahoo Mail IMAP ingestion
 - `OPENAI_ANALYSIS_MODEL` — Model for knowledge base document analysis (default: `gpt-4o-mini`)
-- `CHROME_EXECUTABLE_PATH` — Chrome path for PDF resume generation
+- `OPEN_WEATHER_API` — OpenWeatherMap API key for the weather tool
+- `NEWS_API_TOKEN` — [NewsAPI](https://newsapi.org/account) token for the news tool
+- `CHROME_EXECUTABLE_PATH` — Chrome path for PDF resume generation (defaults to macOS path)
 - `DISABLE_TOOLS` — Comma-separated tool groups to disable: `zapier`, `cronjob`, `news`, `ui`, `file`, `cmd`, `memory`, `knowledge_base`, `jira`, `notifications`
 - `DISABLE_SECTIONS` — Comma-separated UI sections to hide: `ai`, `jobs`, `mail`, `knowledge-base`, `cronjobs`, `notifications`
+
+**Zapier MCP:**
+
+- `ZAPIER_MCP_URL` — Zapier MCP server URL (required when `zapier` tool group is enabled)
+- `ZAPIER_MCP_TOKEN` — Zapier MCP bearer token (required when `zapier` tool group is enabled)
+
+**Telegram Gateway:**
+
+- `TELEGRAM_BOT_TOKEN` — Bot token from [@BotFather](https://t.me/BotFather)
+- `TELEGRAM_BOT_USERNAME` — Bot username without the leading `@`
+- `TELEGRAM_ADMIN_CHAT_ID` — (optional) Chat ID to receive bot startup notifications
+
+**Embeddable Chat Widget:**
+
+- `WIDGET_API_KEY` — Shared secret for the embeddable chat widget; enables `WebWidgetProvider` in the gateway when set
+- `WIDGET_GATEWAY_URL` — Internal URL of the gateway's widget HTTP server (default: `http://localhost:3001`)
+- `WIDGET_INTERNAL_PORT` — Port the gateway's widget HTTP server listens on (default: `3001`)
+
+**Jira (bug/feature reporting):**
+
+- `JIRA_BASE_URL` — Jira instance base URL (e.g. `https://yourorg.atlassian.net`)
+- `JIRA_EMAIL` — Atlassian account email for the system PAT
+- `JIRA_PAT` — Jira Personal Access Token
+- `JIRA_DEFAULT_PROJECT` — Default project key for new tickets (e.g. `KAN`)
+
+**Yahoo Mail IMAP:**
+
+- `YAHOO_IMAP_USER` — Full Yahoo email address (e.g. `you@yahoo.com`)
+- `YAHOO_IMAP_PASSWORD` — App password from myaccount.yahoo.com → Security → App passwords (not your login password)
+- `YAHOO_MAIL_FOLDERS` — Comma-separated folders to poll (default: `INBOX`)
+- `YAHOO_MAIL_MAX_EMAILS` — Maximum emails to fetch per ingestion call (default: `50`)
+
+**AWS Bedrock:**
+
+- `AWS_REGION` — AWS region where Bedrock is enabled (e.g. `us-east-1`)
+- `AWS_ACCESS_KEY_ID` — AWS access key ID with Bedrock permissions
+- `AWS_SECRET_ACCESS_KEY` — AWS secret access key
+- `AWS_SESSION_TOKEN` — (optional) Temporary session token for STS / assumed roles
+- `BEDROCK_MODEL` — (optional) Bedrock model ID (default: `amazon.nova-pro-v1:0`)
 
 ## Run the app
 
