@@ -84,6 +84,7 @@ Package manager is **pnpm**.
 - `WIDGET_API_KEY` — shared secret for the embeddable chat widget; widget passes this as `x-widget-api-key` header; when set, gateway worker starts the `WebWidgetProvider` HTTP server
 - `WIDGET_GATEWAY_URL` — internal URL of the WebWidgetProvider HTTP server (default: `http://localhost:3001`)
 - `WIDGET_INTERNAL_PORT` — port the gateway's WebWidgetProvider HTTP server listens on (default: `3001`)
+- `ENCRYPTION_KEY` — 32-byte hex string (64 hex chars) used as the AES-256-GCM key for encrypting sensitive PAT fields (`jiraPat`, `githubPat`) in the `user_settings` table. Required — app will not start without it. Generate with: `openssl rand -hex 32`
 
 ## Workflow Rules
 
