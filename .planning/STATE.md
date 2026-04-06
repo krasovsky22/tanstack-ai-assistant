@@ -21,6 +21,7 @@ progress:
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
 - **Last session:** 2026-04-06T04:26:55.159Z
+- **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
 - **Stopped At:** Completed quick-1-01
 
 ## Progress
@@ -119,6 +120,12 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 10-01]: Dynamic import with bust-cache query string for ENC-07 — tests module-load-time ENCRYPTION_KEY validation without top-level import
 - [Phase 10]: enc: prefix sentinel allows null return for legacy plaintext PATs — service boundary encryption keeps API routes unchanged
 - [Phase 10]: Module-level startup validation throws at import time if ENCRYPTION_KEY missing or not 64 hex chars — prevents silent operation
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | update conversations page, to allow deleting messages, it should help to keep conversation context clean when things go wrong way | 2026-04-06 | 99a25ab | [1-update-conversations-page-to-allow-delet](./quick/1-update-conversations-page-to-allow-delet/) |
 
 ### Performance Metrics
 
