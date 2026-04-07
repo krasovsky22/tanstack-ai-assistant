@@ -11,7 +11,8 @@ export const Route = createFileRoute('/api/chat')({
         if (!hasAwsCreds && !process.env.OPENAI_API_KEY) {
           return new Response(
             JSON.stringify({
-              error: 'No AI provider configured. Set OPENAI_API_KEY or AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION).',
+              error:
+                'No AI provider configured. Set OPENAI_API_KEY or AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION).',
             }),
             {
               status: 500,
@@ -24,7 +25,11 @@ export const Route = createFileRoute('/api/chat')({
         const session = await useAppSession();
         const userId = session.data.userId ?? null;
 
-        const { messages: rawMessages, conversationId, agentId } = await request.json();
+        const {
+          messages: rawMessages,
+          conversationId,
+          agentId,
+        } = await request.json();
         // Sanitize tool-call parts: ensure args is always an object, never a string.
         // A string args value causes Anthropic API to reject the request with
         // "toolUse.input is invalid — expected object".
@@ -72,7 +77,10 @@ export const Route = createFileRoute('/api/chat')({
             jiraSettings,
             githubSettings,
             agentConfig,
+            agentId ?? null,
           );
+
+          console.log('Chat options:', options);
           const stream = chat(options);
           return toHttpResponse(stream);
         } catch (error) {

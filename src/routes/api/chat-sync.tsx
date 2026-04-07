@@ -76,7 +76,7 @@ export const Route = createFileRoute('/api/chat-sync')({
             const agentConfig = agentId
               ? await getAgentById(agentId)
               : await getDefaultAgent();
-            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubSettings, agentConfig);
+            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubSettings, agentConfig, agentId ?? null);
             const { text } = await runChatWithToolCollection(options);
 
             // Cronjob source: do not persist — only return the response for cronjob logs
@@ -139,7 +139,7 @@ export const Route = createFileRoute('/api/chat-sync')({
           const agentConfig = agentId
             ? await getAgentById(agentId)
             : await getDefaultAgent();
-          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubSettings, agentConfig);
+          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubSettings, agentConfig, agentId ?? null);
           const { text: rawDecision, assistantParts } =
             await runChatWithToolCollection(gatewayOptions, [
               GATEWAY_SYSTEM_PROMPT,

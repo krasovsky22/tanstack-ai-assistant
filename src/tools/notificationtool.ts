@@ -1,7 +1,7 @@
 import { toolDefinition } from '@tanstack/ai';
 import { z } from 'zod';
 
-export function getNotificationTools(userId: string | null) {
+export function getNotificationTools(userId: string | null, agentId?: string | null) {
   return [
     toolDefinition({
       name: 'create_notification',
@@ -23,6 +23,7 @@ export function getNotificationTools(userId: string | null) {
           content,
           source: 'llm',
           userId: userId ?? null,
+          agentId: agentId ?? null,
         })
         .returning();
 
@@ -48,6 +49,7 @@ export function getNotificationTools(userId: string | null) {
       const conditions = [
         ...(userId ? [eq(notifications.userId, userId)] : []),
         ...(unreadOnly ? [eq(notifications.isRead, false)] : []),
+        ...(agentId ? [eq(notifications.agentId, agentId)] : []),
       ];
 
       const rows = await db

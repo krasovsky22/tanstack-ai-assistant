@@ -6,15 +6,25 @@ export const Route = createFileRoute('/api/knowledge-base/')({
       GET: async ({ request }) => {
         const { db } = await import('@/db');
         const { knowledgebaseFiles } = await import('@/db/schema');
-        const { desc, ilike } = await import('drizzle-orm');
+        const { desc, ilike, eq, and } = await import('drizzle-orm');
 
         const url = new URL(request.url);
         const search = url.searchParams.get('search');
+        const agentId = url.searchParams.get('agentId');
+
+        const conditions: ReturnType<typeof eq>[] = [];
+
+        if (search) {
+          conditions.push(ilike(knowledgebaseFiles.originalName, `%${search}%`) as ReturnType<typeof eq>);
+        }
+        if (agentId) {
+          conditions.push(eq(knowledgebaseFiles.agentId, agentId));
+        }
 
         let query = db.select().from(knowledgebaseFiles).$dynamic();
 
-        if (search) {
-          query = query.where(ilike(knowledgebaseFiles.originalName, `%${search}%`));
+        if (conditions.length > 0) {
+          query = query.where(and(...conditions));
         }
 
         const rows = await query.orderBy(desc(knowledgebaseFiles.createdAt));
@@ -41,6 +51,8 @@ export const Route = createFileRoute('/api/knowledge-base/')({
             headers: { 'Content-Type': 'application/json' },
           });
         }
+
+        const agentId = formData.get('agentId') as string | null;
 
         const { detectMimeType, saveKnowledgeBaseFile, analyzeDocumentWithLLM } =
           await import('@/services/knowledge-base');
@@ -70,6 +82,7 @@ export const Route = createFileRoute('/api/knowledge-base/')({
             mimeType,
             sizeBytes: file.size,
             filePath,
+            agentId: agentId ?? null,
           })
           .returning();
 

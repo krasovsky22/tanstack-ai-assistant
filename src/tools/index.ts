@@ -6,6 +6,7 @@ export { getFileTools } from './filetool';
 export { getCmdTools } from './cmdtool';
 export { getMemoryTools } from './memory';
 export { getKnowledgeBaseTools } from './knowledgebasetool';
+export { getNotificationTools } from './notificationtool';
 export { getJiraTools } from './jiratool';
 export { getContactMeTools } from './contactme';
 export { getGitHubMcpTools } from './github-mcp';

@@ -29,7 +29,9 @@ export function resolveAdapterForModel(model: string) {
     model.startsWith('meta.') ||
     model.includes(':');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return isBedrockModel ? bedrockText(model as Parameters<typeof bedrockText>[0]) : openaiText(model as any);
+  return isBedrockModel
+    ? bedrockText(model as Parameters<typeof bedrockText>[0])
+    : openaiText(model as any);
 }
 
 export async function buildChatOptions(
@@ -40,6 +42,7 @@ export async function buildChatOptions(
   jiraSettings?: UserJiraSettings | null,
   githubSettings?: GitHubSettings | null,
   agentConfig?: AgentConfig | null,
+  agentId?: string | null,
 ) {
   const {
     getZapierMcpToolDefinitions,
@@ -50,6 +53,7 @@ export async function buildChatOptions(
     getCmdTools,
     getMemoryTools,
     getKnowledgeBaseTools,
+    getNotificationTools,
     getJiraTools,
     getContactMeTools,
     getGitHubMcpTools,
@@ -80,7 +84,8 @@ export async function buildChatOptions(
     ...(enabled('file') ? getFileTools() : []),
     ...(enabled('cmd') ? getCmdTools() : []),
     ...(enabled('memory') ? getMemoryTools() : []),
-    ...(enabled('knowledge_base') ? getKnowledgeBaseTools() : []),
+    ...(enabled('knowledge_base') ? getKnowledgeBaseTools(agentId) : []),
+    ...getNotificationTools(userId ?? null, agentId),
     ...(enabled('jira') &&
     jiraSettings?.jiraBaseUrl &&
     jiraSettings?.jiraEmail &&
@@ -95,7 +100,8 @@ export async function buildChatOptions(
   const jiraBaseUrlPromptSnippet = jiraSettings?.jiraBaseUrl
     ? `\nThe authenticated user's Jira base URL is: ${jiraSettings.jiraBaseUrl}. Use this value when generating Jira issue links.`
     : '';
-  const defaultSystemPrompt = 'You are a helpful assistant. Always format your responses using Markdown for better readability. \
+  const defaultSystemPrompt =
+    'You are a helpful assistant. Always format your responses using Markdown for better readability. \
       When updating any existing database record (cronjob, task, or similar), always fetch the current record first to obtain its existing field values. \
       Use the existing values as the baseline and only override the fields the user explicitly asked to change — never blank out or omit fields the user did not mention. \
       Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
@@ -119,12 +125,16 @@ export async function buildChatOptions(
       Before searching Jira or answering questions about tickets, use search_memory with source_type "jira_ticket" to recall previously seen tickets from memory — this avoids redundant API calls and surfaces historical context. \
       When Jira API results are returned, they are automatically stored in memory for future recall.';
 
-  const activeSystemPrompt = agentConfig?.systemPrompt
-    ? agentConfig.systemPrompt + userPromptSnippet + jiraBaseUrlPromptSnippet
-    : defaultSystemPrompt + userPromptSnippet + jiraBaseUrlPromptSnippet;
+  const activeSystemPrompt =
+    defaultSystemPrompt +
+    (agentConfig?.systemPrompt ?? '') +
+    userPromptSnippet +
+    jiraBaseUrlPromptSnippet;
 
   return {
-    adapter: agentConfig ? resolveAdapterForModel(agentConfig.model) : resolveAdapter(),
+    adapter: agentConfig
+      ? resolveAdapterForModel(agentConfig.model)
+      : resolveAdapter(),
     messages,
     conversationId,
     userId,

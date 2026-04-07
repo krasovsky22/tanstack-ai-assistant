@@ -13,10 +13,12 @@ export const Route = createFileRoute('/api/notifications/')({
 
         const url = new URL(request.url);
         const unreadOnly = url.searchParams.get('unread') === 'true';
+        const agentId = url.searchParams.get('agentId');
 
         const conditions = [
           ...(userId ? [eq(notifications.userId, userId)] : []),
           ...(unreadOnly ? [eq(notifications.isRead, false)] : []),
+          ...(agentId ? [eq(notifications.agentId, agentId)] : []),
         ];
 
         const rows = await db
@@ -54,6 +56,7 @@ export const Route = createFileRoute('/api/notifications/')({
             source: body.source ?? null,
             sourceConversationId: body.sourceConversationId ?? null,
             userId,
+            agentId: body.agentId ?? null,
           })
           .returning();
 

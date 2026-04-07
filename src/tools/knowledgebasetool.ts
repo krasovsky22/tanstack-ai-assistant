@@ -1,7 +1,7 @@
 import { toolDefinition } from '@tanstack/ai';
 import { z } from 'zod';
 
-export function getKnowledgeBaseTools() {
+export function getKnowledgeBaseTools(agentId?: string | null) {
   return [
     toolDefinition({
       name: 'search_knowledge_base',
@@ -31,6 +31,35 @@ export function getKnowledgeBaseTools() {
       }
 
       return { results };
+    }),
+
+    toolDefinition({
+      name: 'list_knowledge_base_files',
+      description:
+        'List files in the knowledge base available to this agent. ' +
+        'Returns filenames, categories, and summaries.',
+      inputSchema: z.object({}),
+    }).server(async () => {
+      const { db } = await import('@/db');
+      const { knowledgebaseFiles } = await import('@/db/schema');
+      const { desc, eq, isNull, or } = await import('drizzle-orm');
+      const rows = await db
+        .select({
+          id: knowledgebaseFiles.id,
+          originalName: knowledgebaseFiles.originalName,
+          categories: knowledgebaseFiles.categories,
+          summary: knowledgebaseFiles.summary,
+          createdAt: knowledgebaseFiles.createdAt,
+        })
+        .from(knowledgebaseFiles)
+        .where(
+          agentId
+            ? or(eq(knowledgebaseFiles.agentId, agentId), isNull(knowledgebaseFiles.agentId))
+            : isNull(knowledgebaseFiles.agentId),
+        )
+        .orderBy(desc(knowledgebaseFiles.createdAt))
+        .limit(50);
+      return rows;
     }),
   ];
 }
