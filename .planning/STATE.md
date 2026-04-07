@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Phase 11 context gathered
-last_updated: "2026-04-07T02:41:37.497Z"
+stopped_at: Completed 11-01-PLAN.md — agents DB foundation
+last_updated: "2026-04-07T03:04:59.115Z"
 last_activity: "2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages"
 progress:
   total_phases: 11
   completed_phases: 5
-  total_plans: 23
-  completed_plans: 22
+  total_plans: 28
+  completed_plans: 23
 ---
 
 # Project State
@@ -21,9 +21,9 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-07T02:41:37.492Z
+- **Last session:** 2026-04-07T03:04:59.111Z
 - **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
-- **Stopped At:** Phase 11 context gathered
+- **Stopped At:** Completed 11-01-PLAN.md — agents DB foundation
 
 ## Progress
 
@@ -122,6 +122,9 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 10-01]: Dynamic import with bust-cache query string for ENC-07 — tests module-load-time ENCRYPTION_KEY validation without top-level import
 - [Phase 10]: enc: prefix sentinel allows null return for legacy plaintext PATs — service boundary encryption keeps API routes unchanged
 - [Phase 10]: Module-level startup validation throws at import time if ENCRYPTION_KEY missing or not 64 hex chars — prevents silent operation
+- [Phase 11]: agents table defined before conversations in schema.ts — FK forward reference prevention
+- [Phase 11]: agentId uses uuid type with onDelete: set null — nullable FK, conversation survives agent deletion
+- [Phase 11]: Wave 0 test stubs use @ts-expect-error on missing @/services/agents import (Pattern from Phase 01-01 and 03-01)
 
 ### Quick Tasks Completed
 
@@ -165,4 +168,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 09 P09-05 | 4min | 1 tasks | 4 files |
 | Phase 10 P01 | 2min | 2 tasks | 2 files |
 | Phase 10 P02 | 8min | 2 tasks | 4 files |
+| Phase 11 P01 | 5min | 2 tasks | 5 files |
 
