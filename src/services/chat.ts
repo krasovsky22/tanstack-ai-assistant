@@ -28,7 +28,8 @@ export function resolveAdapterForModel(model: string) {
     model.startsWith('anthropic.') ||
     model.startsWith('meta.') ||
     model.includes(':');
-  return isBedrockModel ? bedrockText(model as Parameters<typeof bedrockText>[0]) : openaiText(model);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return isBedrockModel ? bedrockText(model as Parameters<typeof bedrockText>[0]) : openaiText(model as any);
 }
 
 export async function buildChatOptions(
@@ -94,18 +95,7 @@ export async function buildChatOptions(
   const jiraBaseUrlPromptSnippet = jiraSettings?.jiraBaseUrl
     ? `\nThe authenticated user's Jira base URL is: ${jiraSettings.jiraBaseUrl}. Use this value when generating Jira issue links.`
     : '';
-  const agentSystemPromptPrefix = agentConfig?.systemPrompt
-    ? agentConfig.systemPrompt + '\n\n'
-    : '';
-
-  return {
-    adapter: agentConfig ? resolveAdapterForModel(agentConfig.model) : resolveAdapter(),
-    messages,
-    conversationId,
-    userId,
-    agentLoopStrategy: maxIterations(agentConfig?.maxIterations ?? 15),
-    systemPrompts: [
-      agentSystemPromptPrefix + 'You are a helpful assistant. Always format your responses using Markdown for better readability. \
+  const defaultSystemPrompt = 'You are a helpful assistant. Always format your responses using Markdown for better readability. \
       When updating any existing database record (cronjob, task, or similar), always fetch the current record first to obtain its existing field values. \
       Use the existing values as the baseline and only override the fields the user explicitly asked to change — never blank out or omit fields the user did not mention. \
       Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
@@ -127,10 +117,19 @@ export async function buildChatOptions(
       When working with Jira issues, always include a full clickable navigation link that opens new browser tab to each issue using the format: [PROJ-123](jiraBaseUrl/browse/PROJ-123) where jiraBaseUrl is the configured Jira instance URL from the user\'s settings. \
       For newly created issues, always show the link so the user can navigate directly to it. \
       Before searching Jira or answering questions about tickets, use search_memory with source_type "jira_ticket" to recall previously seen tickets from memory — this avoids redundant API calls and surfaces historical context. \
-      When Jira API results are returned, they are automatically stored in memory for future recall.' +
-        userPromptSnippet +
-        jiraBaseUrlPromptSnippet,
-    ],
+      When Jira API results are returned, they are automatically stored in memory for future recall.';
+
+  const activeSystemPrompt = agentConfig?.systemPrompt
+    ? agentConfig.systemPrompt + userPromptSnippet + jiraBaseUrlPromptSnippet
+    : defaultSystemPrompt + userPromptSnippet + jiraBaseUrlPromptSnippet;
+
+  return {
+    adapter: agentConfig ? resolveAdapterForModel(agentConfig.model) : resolveAdapter(),
+    messages,
+    conversationId,
+    userId,
+    agentLoopStrategy: maxIterations(agentConfig?.maxIterations ?? 15),
+    systemPrompts: [activeSystemPrompt],
     tools,
   };
 }

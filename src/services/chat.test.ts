@@ -133,12 +133,12 @@ describe('buildChatOptions with agentConfig', () => {
     expect(maxIterations).toHaveBeenCalledWith(15);
   });
 
-  it('prepends agentConfig.systemPrompt to base system prompt', async () => {
+  it('replaces base system prompt with agentConfig.systemPrompt when provided', async () => {
     const { buildChatOptions } = await import('@/services/chat');
     const agentConfig = { model: 'gpt-4o', maxIterations: 5, systemPrompt: 'Custom agent instructions.' };
     const result = await buildChatOptions([], undefined, null, null, null, agentConfig);
     expect(result.systemPrompts[0]).toMatch(/^Custom agent instructions\./);
-    expect(result.systemPrompts[0]).toContain('You are a helpful assistant');
+    expect(result.systemPrompts[0]).not.toContain('You are a helpful assistant');
   });
 
   it('does not prepend anything when agentConfig.systemPrompt is empty', async () => {
