@@ -92,6 +92,20 @@
       "when": 1774000002000,
       "tag": "0012_add_github_pat",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1774000003000,
+      "tag": "0013_add_agents_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1774000004000,
+      "tag": "0014_add_agent_id_to_conversations",
+      "breakpoints": true
     }
   ]
 }

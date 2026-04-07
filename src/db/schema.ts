@@ -8,6 +8,18 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
+export const agents = pgTable('agents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  model: text('model').notNull(),
+  maxIterations: integer('max_iterations').notNull().default(10),
+  systemPrompt: text('system_prompt').notNull().default(''),
+  isDefault: boolean('is_default').notNull().default(false),
+  apiKey: text('api_key').notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey(),
   title: text('title').notNull(),
@@ -15,6 +27,7 @@ export const conversations = pgTable('conversations', {
   chatId: text('chat_id'),
   userId: text('user_id'),
   isClosed: boolean('is_closed').notNull().default(false),
+  agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
