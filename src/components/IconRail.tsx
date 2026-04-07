@@ -3,6 +3,7 @@ import { Link, useRouterState } from '@tanstack/react-router';
 import { Badge, Box, Flex, Separator } from '@chakra-ui/react';
 import {
   Bell,
+  Bot,
   Briefcase,
   BookOpen,
   Clock,
@@ -108,6 +109,7 @@ export default function IconRail() {
   const isKbActive = pathname.startsWith('/knowledge-base');
   const isSettingsActive = pathname.startsWith('/settings');
   const isNotificationsActive = pathname.startsWith('/notifications');
+  const isAgentsActive = pathname.startsWith('/agents');
 
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ['notifications-unread-count'],
@@ -181,6 +183,13 @@ export default function IconRail() {
             isActive={isCronjobsActive}
           />
         )}
+
+        <RailIcon
+          icon={<Bot size={18} />}
+          label="Agents"
+          to="/agents"
+          isActive={isAgentsActive}
+        />
 
         {enabled('notifications') && (
           <Box position="relative" display="inline-flex">
