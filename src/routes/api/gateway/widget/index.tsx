@@ -6,11 +6,11 @@ export const Route = createFileRoute('/api/gateway/widget/')({
     handlers: {
       OPTIONS: async ({ request }) => {
         const { handleWidgetPost } = await import('@/services/widget');
-        return handleWidgetPost(request, process.env.WIDGET_API_KEY ?? '');
+        return handleWidgetPost(request);
       },
       POST: async ({ request }) => {
         const { handleWidgetPost } = await import('@/services/widget');
-        return handleWidgetPost(request, process.env.WIDGET_API_KEY ?? '');
+        return handleWidgetPost(request);
       },
     },
   },

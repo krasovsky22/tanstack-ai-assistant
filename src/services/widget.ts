@@ -21,13 +21,15 @@ async function resolveUserId(username: string): Promise<string | null> {
   return rows[0]?.id ?? null;
 }
 
-export async function handleWidgetPost(request: Request, configuredKey: string): Promise<Response> {
+export async function handleWidgetPost(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   const apiKey = request.headers.get('x-widget-api-key');
-  if (!configuredKey || apiKey !== configuredKey) {
+  const { getAgentByApiKey } = await import('@/services/agents');
+  const agent = apiKey ? await getAgentByApiKey(apiKey) : null;
+  if (!agent) {
     return corsJson({ error: 'Unauthorized' }, 401);
   }
 
