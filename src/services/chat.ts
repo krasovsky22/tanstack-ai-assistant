@@ -16,6 +16,21 @@ function resolveAdapter() {
   return openaiText('gpt-5.2');
 }
 
+export interface AgentConfig {
+  model: string;
+  maxIterations: number;
+  systemPrompt: string;
+}
+
+export function resolveAdapterForModel(model: string) {
+  const isBedrockModel =
+    model.startsWith('amazon.') ||
+    model.startsWith('anthropic.') ||
+    model.startsWith('meta.') ||
+    model.includes(':');
+  return isBedrockModel ? bedrockText(model as Parameters<typeof bedrockText>[0]) : openaiText(model);
+}
+
 export async function buildChatOptions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: any[],
@@ -23,6 +38,7 @@ export async function buildChatOptions(
   userId?: string | null,
   jiraSettings?: UserJiraSettings | null,
   githubSettings?: GitHubSettings | null,
+  agentConfig?: AgentConfig | null,
 ) {
   const {
     getZapierMcpToolDefinitions,
@@ -78,15 +94,18 @@ export async function buildChatOptions(
   const jiraBaseUrlPromptSnippet = jiraSettings?.jiraBaseUrl
     ? `\nThe authenticated user's Jira base URL is: ${jiraSettings.jiraBaseUrl}. Use this value when generating Jira issue links.`
     : '';
+  const agentSystemPromptPrefix = agentConfig?.systemPrompt
+    ? agentConfig.systemPrompt + '\n\n'
+    : '';
 
   return {
-    adapter: resolveAdapter(),
+    adapter: agentConfig ? resolveAdapterForModel(agentConfig.model) : resolveAdapter(),
     messages,
     conversationId,
     userId,
-    agentLoopStrategy: maxIterations(15),
+    agentLoopStrategy: maxIterations(agentConfig?.maxIterations ?? 15),
     systemPrompts: [
-      'You are a helpful assistant. Always format your responses using Markdown for better readability. \
+      agentSystemPromptPrefix + 'You are a helpful assistant. Always format your responses using Markdown for better readability. \
       When updating any existing database record (cronjob, task, or similar), always fetch the current record first to obtain its existing field values. \
       Use the existing values as the baseline and only override the fields the user explicitly asked to change — never blank out or omit fields the user did not mention. \
       Use headers, lists, code blocks, bold, italics, and other Markdown formatting as appropriate. \
@@ -129,6 +148,7 @@ export async function saveConversationToDb(
   source: string | null = null,
   chatId: string | null = null,
   userId: string | null = null,
+  agentId: string | null = null,
 ): Promise<void> {
   const { db } = await import('@/db');
   const { conversations, messages: messagesTable } =
@@ -141,6 +161,7 @@ export async function saveConversationToDb(
     source,
     chatId,
     userId,
+    agentId: agentId ?? null,
     updatedAt: new Date(),
   });
 
