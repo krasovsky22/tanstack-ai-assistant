@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { fetchHttpStream, useChat, type UIMessage } from '@tanstack/ai-react';
 import { ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -16,6 +17,7 @@ import {
   HStack,
   IconButton,
   Input,
+  NativeSelect,
   Spinner,
   Text,
   VStack,
@@ -206,6 +208,7 @@ export function Chat({
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [suggestedPrompt, setSuggestedPrompt] = useState(initialSuggestedPrompt ?? '');
+  const [agentId, setAgentId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -217,10 +220,22 @@ export function Chat({
     [],
   );
 
+  const { data: agents } = useQuery<Array<{ id: string; name: string; isDefault: boolean }>>({
+    queryKey: ['agents'],
+    queryFn: () => fetch('/api/agents').then((r) => r.json()),
+  });
+
+  useEffect(() => {
+    if (agents && agentId === undefined) {
+      const defaultAgent = agents.find((a) => a.isDefault);
+      setAgentId(defaultAgent?.id);
+    }
+  }, [agents, agentId]);
+
   const { messages, setMessages, sendMessage, isLoading, error, status, stop } = useChat({
     connection: fetchHttpStream('/api/chat'),
     initialMessages,
-    body: { conversationId },
+    body: { conversationId, agentId },
   });
 
   useEffect(() => {
@@ -738,8 +753,34 @@ export function Chat({
         </Box>
       )}
 
-      {/* Input area */}
+      {/* Agent selector + Input area */}
       <Box px="6" pb="6" pt="2" flexShrink={0}>
+        {agents && agents.length > 0 && (
+          <HStack mb="2" gap="2" align="center">
+            <Text fontSize="xs" color="text.muted" flexShrink={0}>Agent:</Text>
+            <NativeSelect.Root
+              size="sm"
+              width="200px"
+              disabled={messages.length > 0 || isLoading}
+            >
+              <NativeSelect.Field
+                value={agentId ?? ''}
+                onChange={(e) => setAgentId(e.target.value || undefined)}
+              >
+                {!agentId && <option value="">Select agent…</option>}
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.id}>{agent.name}</option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+          </HStack>
+        )}
+        {agents && agents.length === 0 && (
+          <HStack mb="2" gap="2" align="center">
+            <Text fontSize="xs" color="text.muted">No agents configured</Text>
+          </HStack>
+        )}
         <ChatInput
           onSubmit={handleChatInputSubmit}
           onFileChange={handleFileChange}

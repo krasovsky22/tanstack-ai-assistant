@@ -59,7 +59,7 @@ export const Route = createFileRoute('/api/chat-sync')({
         } = await import('@/services/chat');
         const { getUserSettings, toJiraSettings, toGitHubSettings } = await import('@/services/user-settings');
 
-        const { messages, title, source, chatId, userId } =
+        const { messages, title, source, chatId, userId, agentId } =
           await request.json();
 
         console.log('Received Request', messages, title, chatId);
@@ -72,7 +72,11 @@ export const Route = createFileRoute('/api/chat-sync')({
             const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
             const jiraSettings = toJiraSettings(userSettingsRecord);
             const githubSettings = toGitHubSettings(userSettingsRecord);
-            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubSettings);
+            const { getAgentById, getDefaultAgent } = await import('@/services/agents');
+            const agentConfig = agentId
+              ? await getAgentById(agentId)
+              : await getDefaultAgent();
+            const options = await buildChatOptions(messages, conversationId, resolvedUserId, jiraSettings, githubSettings, agentConfig);
             const { text } = await runChatWithToolCollection(options);
 
             // Cronjob source: do not persist — only return the response for cronjob logs
@@ -131,7 +135,11 @@ export const Route = createFileRoute('/api/chat-sync')({
           const userSettingsRecord = resolvedUserId ? await getUserSettings(resolvedUserId) : null;
           const jiraSettings = toJiraSettings(userSettingsRecord);
           const githubSettings = toGitHubSettings(userSettingsRecord);
-          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubSettings);
+          const { getAgentById, getDefaultAgent } = await import('@/services/agents');
+          const agentConfig = agentId
+            ? await getAgentById(agentId)
+            : await getDefaultAgent();
+          const gatewayOptions = await buildChatOptions(allMessages, undefined, resolvedUserId, jiraSettings, githubSettings, agentConfig);
           const { text: rawDecision, assistantParts } =
             await runChatWithToolCollection(gatewayOptions, [
               GATEWAY_SYSTEM_PROMPT,

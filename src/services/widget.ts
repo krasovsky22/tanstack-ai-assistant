@@ -74,12 +74,16 @@ export async function handleWidgetPost(request: Request): Promise<Response> {
 
     // Run LLM
     const userSettingsRecord = userId ? await getUserSettings(userId) : null;
+    const agentConfig = agent
+      ? { model: agent.model, maxIterations: agent.maxIterations, systemPrompt: agent.systemPrompt }
+      : null;
     const options = await buildChatOptions(
       allMessages,
       openConversation?.id,
       userId,
       toJiraSettings(userSettingsRecord),
       toGitHubSettings(userSettingsRecord),
+      agentConfig,
     );
     const { text, assistantParts } = await runChatWithToolCollection(options);
 

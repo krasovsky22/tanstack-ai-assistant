@@ -24,7 +24,7 @@ export const Route = createFileRoute('/api/chat')({
         const session = await useAppSession();
         const userId = session.data.userId ?? null;
 
-        const { messages: rawMessages, conversationId } = await request.json();
+        const { messages: rawMessages, conversationId, agentId } = await request.json();
         // Sanitize tool-call parts: ensure args is always an object, never a string.
         // A string args value causes Anthropic API to reject the request with
         // "toolUse.input is invalid — expected object".
@@ -60,12 +60,18 @@ export const Route = createFileRoute('/api/chat')({
         try {
           const { chat, toHttpResponse } = await import('@tanstack/ai');
           const { buildChatOptions } = await import('@/services/chat');
+          let agentConfig = null;
+          if (agentId) {
+            const { getAgentById } = await import('@/services/agents');
+            agentConfig = await getAgentById(agentId);
+          }
           const options = await buildChatOptions(
             messages,
             conversationId,
             userId,
             jiraSettings,
             githubSettings,
+            agentConfig,
           );
           const stream = chat(options);
           return toHttpResponse(stream);
