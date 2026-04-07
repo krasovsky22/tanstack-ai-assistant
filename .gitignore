@@ -17,3 +17,4 @@ files/generated/*
 docker-compose.override.yml
 files/knowledge-base
 files/generated
+src/routeTree.gen.ts
