@@ -42,6 +42,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-tanstack_ai}?sslmode=disable
       ELASTICSEARCH_URL: http://elasticsearch:9200
+      CONSOLA_LEVEL: 5
     restart: unless-stopped
 
   gateway:
