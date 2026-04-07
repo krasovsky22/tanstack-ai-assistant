@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 11-02-PLAN.md — agents service, CRUD API routes, widget auth migration
-last_updated: "2026-04-07T03:09:52.405Z"
+stopped_at: Completed 11-03-PLAN.md — agents admin UI
+last_updated: "2026-04-07T03:10:36.175Z"
 last_activity: "2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages"
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 28
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -21,9 +21,9 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-07T03:09:52.401Z
+- **Last session:** 2026-04-07T03:10:36.171Z
 - **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
-- **Stopped At:** Completed 11-02-PLAN.md — agents service, CRUD API routes, widget auth migration
+- **Stopped At:** Completed 11-03-PLAN.md — agents admin UI
 
 ## Progress
 
@@ -128,6 +128,7 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 11]: Widget auth validates x-widget-api-key against agents table via getAgentByApiKey; WIDGET_API_KEY env deprecated
 - [Phase 11]: Agent apiKey stored as plaintext UUID (bearer token pattern; encrypting API keys is anti-pattern per research)
 - [Phase 11]: PUT /api/agents/:id only clears other defaults when isDefault===true; not when isDefault=false
+- [Phase 11]: Bot icon placed after Automation (cronjobs) before Notifications in IconRail — logical grouping; no DISABLE_SECTIONS guard since agents is always-on admin feature
 
 ### Quick Tasks Completed
 
@@ -173,4 +174,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 10 P02 | 8min | 2 tasks | 4 files |
 | Phase 11 P01 | 5min | 2 tasks | 5 files |
 | Phase 11 P02 | 6min | 2 tasks | 8 files |
+| Phase 11 P03 | 3min | 2 tasks | 2 files |
 
