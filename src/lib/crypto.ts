@@ -1,7 +1,6 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
 const KEY_HEX = process.env.ENCRYPTION_KEY;
-console.log('ENCRYPTION_KEY is set:', KEY_HEX);
 if (!KEY_HEX || KEY_HEX.length !== 64) {
   throw new Error(
     'ENCRYPTION_KEY must be set and be exactly 64 hex chars (32 bytes). ' +

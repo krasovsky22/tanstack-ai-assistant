@@ -13,6 +13,10 @@ export function getNotificationTools(userId: string | null, agentId?: string | n
         content: z.string().describe('Full notification content or message body'),
       }),
     }).server(async ({ title, content }) => {
+      if (!userId) {
+        return { success: false, error: 'No user context available for notifications' };
+      }
+
       const { db } = await import('@/db');
       const { notifications } = await import('@/db/schema');
 
@@ -22,8 +26,8 @@ export function getNotificationTools(userId: string | null, agentId?: string | n
           title,
           content,
           source: 'llm',
-          userId: userId ?? null,
-          agentId: agentId ?? null,
+          userId,
+          agentId: agentId ?? undefined,
         })
         .returning();
 
