@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 11-01-PLAN.md — agents DB foundation
-last_updated: "2026-04-07T03:04:59.115Z"
+stopped_at: Completed 11-02-PLAN.md — agents service, CRUD API routes, widget auth migration
+last_updated: "2026-04-07T03:09:52.405Z"
 last_activity: "2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages"
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 28
-  completed_plans: 23
+  completed_plans: 24
 ---
 
 # Project State
@@ -21,9 +21,9 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-07T03:04:59.111Z
+- **Last session:** 2026-04-07T03:09:52.401Z
 - **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
-- **Stopped At:** Completed 11-01-PLAN.md — agents DB foundation
+- **Stopped At:** Completed 11-02-PLAN.md — agents service, CRUD API routes, widget auth migration
 
 ## Progress
 
@@ -125,6 +125,9 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 11]: agents table defined before conversations in schema.ts — FK forward reference prevention
 - [Phase 11]: agentId uses uuid type with onDelete: set null — nullable FK, conversation survives agent deletion
 - [Phase 11]: Wave 0 test stubs use @ts-expect-error on missing @/services/agents import (Pattern from Phase 01-01 and 03-01)
+- [Phase 11]: Widget auth validates x-widget-api-key against agents table via getAgentByApiKey; WIDGET_API_KEY env deprecated
+- [Phase 11]: Agent apiKey stored as plaintext UUID (bearer token pattern; encrypting API keys is anti-pattern per research)
+- [Phase 11]: PUT /api/agents/:id only clears other defaults when isDefault===true; not when isDefault=false
 
 ### Quick Tasks Completed
 
@@ -169,4 +172,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 10 P01 | 2min | 2 tasks | 2 files |
 | Phase 10 P02 | 8min | 2 tasks | 4 files |
 | Phase 11 P01 | 5min | 2 tasks | 5 files |
+| Phase 11 P02 | 6min | 2 tasks | 8 files |
 
