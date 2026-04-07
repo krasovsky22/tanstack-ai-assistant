@@ -19,7 +19,6 @@ vi.mock('@/db/schema', () => ({
   agents: {},
 }));
 
-// @ts-expect-error — src/services/agents.ts does not exist yet (Wave 0 RED stub)
 import { getDefaultAgent, getAgentById, getAgentByApiKey } from '@/services/agents';
 
 const mockAgentDefault = {
