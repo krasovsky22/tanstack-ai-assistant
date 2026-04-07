@@ -110,6 +110,7 @@ export const knowledgebaseFiles = pgTable('knowledgebase_files', {
   filePath: text('file_path').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'set null' }),
 });
 
 export const userSettings = pgTable('user_settings', {
@@ -133,6 +134,7 @@ export const notifications = pgTable('notifications', {
     .references(() => conversations.id, { onDelete: 'set null' }),
   isRead: boolean('is_read').notNull().default(false),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

@@ -106,6 +106,13 @@
       "when": 1774000004000,
       "tag": "0014_add_agent_id_to_conversations",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1774000005000,
+      "tag": "0015_add_agent_id_to_kb_and_notifications",
+      "breakpoints": true
     }
   ]
 }
