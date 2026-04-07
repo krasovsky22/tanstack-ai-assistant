@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed 11-03-PLAN.md — agents admin UI
-last_updated: "2026-04-07T03:10:36.175Z"
+stopped_at: Completed 11-04-PLAN.md — wire agent config into chat engine
+last_updated: "2026-04-07T03:17:37.255Z"
 last_activity: "2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages"
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 28
-  completed_plans: 25
+  completed_plans: 26
 ---
 
 # Project State
@@ -21,9 +21,9 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-07T03:10:36.171Z
+- **Last session:** 2026-04-07T03:17:37.250Z
 - **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
-- **Stopped At:** Completed 11-03-PLAN.md — agents admin UI
+- **Stopped At:** Completed 11-04-PLAN.md — wire agent config into chat engine
 
 ## Progress
 
@@ -129,6 +129,9 @@ Phase 04: [####] 4/4 plans complete
 - [Phase 11]: Agent apiKey stored as plaintext UUID (bearer token pattern; encrypting API keys is anti-pattern per research)
 - [Phase 11]: PUT /api/agents/:id only clears other defaults when isDefault===true; not when isDefault=false
 - [Phase 11]: Bot icon placed after Automation (cronjobs) before Notifications in IconRail — logical grouping; no DISABLE_SECTIONS guard since agents is always-on admin feature
+- [Phase 11]: resolveAdapterForModel: openaiText(model as any) cast used since openaiText has strict union type — allows custom model names without code changes
+- [Phase 11]: Chat.tsx agent selector disabled (not hidden) after first message — user can see which agent was selected for reference but cannot change mid-conversation
+- [Phase 11]: chat-sync loads getDefaultAgent in both non-gateway and gateway flows — cron/gateway workers always get agent config even when agentId absent from request body
 
 ### Quick Tasks Completed
 
@@ -175,4 +178,5 @@ Phase 04: [####] 4/4 plans complete
 | Phase 11 P01 | 5min | 2 tasks | 5 files |
 | Phase 11 P02 | 6min | 2 tasks | 8 files |
 | Phase 11 P03 | 3min | 2 tasks | 2 files |
+| Phase 11 P04 | 6min | 2 tasks | 6 files |
 

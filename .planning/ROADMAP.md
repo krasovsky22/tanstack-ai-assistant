@@ -137,7 +137,7 @@ Plans:
 **Goal:** Replace the hardcoded LLM model env variable with a database-driven agent configuration system. Add an Agents admin page where users can create/edit agents with model name, max iterations, and a system prompt textarea. New conversations include a dropdown to select the configured agent. Each saved agent auto-generates an API key used by the widget and gateway to route conversations to the correct agent.
 **Requirements**: TBD
 **Depends on:** Phase 10
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 - [ ] 11-01-PLAN.md — DB foundation: agents table migration (0013), agentId FK on conversations (0014), schema update, Wave 0 RED test stubs
