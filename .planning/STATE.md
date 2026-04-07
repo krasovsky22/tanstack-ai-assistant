@@ -4,10 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_plan: Not started
 status: unknown
-stopped_at: Completed quick-1-01
-last_updated: "2026-04-06T04:26:55.164Z"
+stopped_at: Phase 11 context gathered
+last_updated: "2026-04-07T02:41:37.497Z"
+last_activity: "2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages"
 progress:
-  total_phases: 10
+  total_phases: 11
   completed_phases: 5
   total_plans: 23
   completed_plans: 22
@@ -20,9 +21,9 @@ progress:
 - **Active Phase:** 5 — gateway-identity-linking
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
-- **Last session:** 2026-04-06T04:26:55.159Z
+- **Last session:** 2026-04-07T02:41:37.492Z
 - **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
-- **Stopped At:** Completed quick-1-01
+- **Stopped At:** Phase 11 context gathered
 
 ## Progress
 
@@ -48,6 +49,7 @@ Phase 04: [####] 4/4 plans complete
 - Phase 8 added: GitHub MCP Tool Integration — fetch open/closed PRs, search code, analyze PR changes via GitHub MCP; PAT configured per user in settings
 - Phase 9 added: Embeddable chat widget npm package with gateway integration — importable JS package that renders a chat window on any website, communicates with LLM via a dedicated gateway endpoint
 - Phase 10 added: User settings token encryption
+- Phase 11 added: Configurable Agents — DB-driven agent config (model, max iterations, system prompt), Agents admin page, agent selector on new conversations, per-agent API key for widget/gateway routing
 
 ### Decisions
 
