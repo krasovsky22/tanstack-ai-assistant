@@ -132,4 +132,18 @@ Plans:
 - [ ] 10-01-PLAN.md — Wave 0 RED test stubs: crypto.test.ts (ENC-01–04, ENC-07) + user-settings.test.ts (ENC-05–06)
 - [ ] 10-02-PLAN.md — Implementation: src/lib/crypto.ts (AES-256-GCM helpers) + wire encrypt/decrypt into user-settings.ts + ENCRYPTION_KEY env var docs (ENC-08)
 
+### Phase 11: Configurable Agents
+
+**Goal:** Replace the hardcoded LLM model env variable with a database-driven agent configuration system. Add an Agents admin page where users can create/edit agents with model name, max iterations, and a system prompt textarea. New conversations include a dropdown to select the configured agent. Each saved agent auto-generates an API key used by the widget and gateway to route conversations to the correct agent.
+**Requirements**: TBD
+**Depends on:** Phase 10
+**Plans:** 5 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — DB foundation: agents table migration (0013), agentId FK on conversations (0014), schema update, Wave 0 RED test stubs
+- [ ] 11-02-PLAN.md — Agent service (getDefaultAgent/getAgentById/getAgentByApiKey) + CRUD API routes + widget API key swap
+- [ ] 11-03-PLAN.md — Agents admin page (/agents): table + create/edit modal + Set Default action + Bot nav icon in IconRail
+- [ ] 11-04-PLAN.md — Chat wiring: buildChatOptions agentConfig param + resolveAdapterForModel + both chat routes + Chat.tsx selector
+- [ ] 11-05-PLAN.md — Human verification: full test suite green + browser end-to-end agents flow confirmed
+
 ---
