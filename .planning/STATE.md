@@ -6,7 +6,7 @@ current_plan: Not started
 status: unknown
 stopped_at: Completed 11-04-PLAN.md — wire agent config into chat engine
 last_updated: "2026-04-07T03:17:37.255Z"
-last_activity: "2026-04-07 - Completed quick task 2: scope knowledge base and notifications to individual agents"
+last_activity: "2026-04-08 - Completed quick task 3: Jira ticket descriptions now use markdownToAdf for structured ADF rendering"
 progress:
   total_phases: 11
   completed_phases: 5
@@ -139,6 +139,7 @@ Phase 04: [####] 4/4 plans complete
 |---|-------------|------|--------|-----------|
 | 1 | update conversations page, to allow deleting messages, it should help to keep conversation context clean when things go wrong way | 2026-04-06 | 99a25ab | [1-update-conversations-page-to-allow-delet](./quick/1-update-conversations-page-to-allow-delet/) |
 | 2 | knowledge base data should be created for specific agent, not global | 2026-04-07 | 0092870 | [2-knowledge-base-data-should-be-created-fo](./quick/2-knowledge-base-data-should-be-created-fo/) |
+| 3 | when jira ticket is created description should be formatted properly, right now markdown shows as text | 2026-04-08 | 851a99c | [3-when-jira-ticket-is-created-description-](./quick/3-when-jira-ticket-is-created-description-/) |
 
 ### Performance Metrics
 
