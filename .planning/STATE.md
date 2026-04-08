@@ -22,7 +22,7 @@ progress:
 - **Milestone:** 1 — Core Feature Expansion
 - **Current Plan:** Not started
 - **Last session:** 2026-04-07T03:17:37.250Z
-- **Last activity:** 2026-04-06 - Completed quick task 1: update conversations page, to allow deleting messages
+- **Last activity:** 2026-04-08 - Completed quick task 3: when jira ticket is created, description does not look pretty in jira portal. Jira ticket description should be a markdown format.
 - **Stopped At:** Completed 11-04-PLAN.md — wire agent config into chat engine
 
 ## Progress
