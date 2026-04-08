@@ -122,12 +122,12 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
 
     toolDefinition({
       name: 'jira_update_description',
-      description: 'Update the description of a Jira issue with plain text.',
+      description: 'Update the description of a Jira issue. The description is rendered as markdown in Jira.',
       inputSchema: z.object({
         issueKey: z.string().describe('Jira issue key, e.g. PROJ-123'),
         description: z
           .string()
-          .describe('New plain-text description for the issue'),
+          .describe('Markdown-formatted description for the issue. Use ## headings, - bullet lists, **bold**, etc.'),
       }),
     }).server(async ({ issueKey, description }) => {
       const { config, error } = cfg();
@@ -224,7 +224,7 @@ export function getJiraTools(settings?: UserJiraSettings | null) {
           .string()
           .optional()
           .default('Placeholder')
-          .describe('Optional plain-text description for the issue'),
+          .describe('Markdown-formatted description for the issue. Use ## headings, - bullet lists, **bold**, etc. Do NOT use Jira wiki markup (h2., {code}, etc.).'),
         assignee: z
           .string()
           .optional()
