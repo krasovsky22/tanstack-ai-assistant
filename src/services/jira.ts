@@ -69,6 +69,186 @@ function toAdf(text: string) {
   };
 }
 
+// ── Markdown → ADF converter ───────────────────────────────────────────────
+
+type AdfTextNode = {
+  type: 'text';
+  text: string;
+  marks?: Array<{ type: string }>;
+};
+
+type AdfNode =
+  | { type: 'paragraph'; content: AdfTextNode[] }
+  | { type: 'heading'; attrs: { level: number }; content: AdfTextNode[] }
+  | { type: 'bulletList'; content: AdfListItemNode[] }
+  | { type: 'orderedList'; content: AdfListItemNode[] }
+  | { type: 'codeBlock'; attrs: { language: string | null }; content: [{ type: 'text'; text: string }] };
+
+type AdfListItemNode = {
+  type: 'listItem';
+  content: [{ type: 'paragraph'; content: AdfTextNode[] }];
+};
+
+function parseInline(text: string): AdfTextNode[] {
+  const nodes: AdfTextNode[] = [];
+  // Tokenize: bold (**text** or __text__), italic (*text* or _text_), inline code (`code`)
+  const pattern = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|`([^`]+)`/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    // Plain text before this match
+    if (match.index > lastIndex) {
+      nodes.push({ type: 'text', text: text.slice(lastIndex, match.index) });
+    }
+
+    if (match[1] !== undefined) {
+      // Bold: **text** or __text__
+      nodes.push({ type: 'text', text: match[2], marks: [{ type: 'strong' }] });
+    } else if (match[3] !== undefined) {
+      // Italic: *text* or _text_
+      nodes.push({ type: 'text', text: match[4], marks: [{ type: 'em' }] });
+    } else if (match[5] !== undefined) {
+      // Inline code: `code`
+      nodes.push({ type: 'text', text: match[5], marks: [{ type: 'code' }] });
+    }
+
+    lastIndex = pattern.lastIndex;
+  }
+
+  // Trailing plain text
+  if (lastIndex < text.length) {
+    nodes.push({ type: 'text', text: text.slice(lastIndex) });
+  }
+
+  return nodes.length > 0 ? nodes : [{ type: 'text', text }];
+}
+
+export function markdownToAdf(markdown: string): { type: 'doc'; version: 1; content: AdfNode[] } {
+  const lines = markdown.split('\n');
+  const content: AdfNode[] = [];
+
+  let bulletItems: AdfListItemNode[] = [];
+  let orderedItems: AdfListItemNode[] = [];
+  let inCodeBlock = false;
+  let codeLanguage: string | null = null;
+  let codeLines: string[] = [];
+
+  function flushBullet() {
+    if (bulletItems.length > 0) {
+      content.push({ type: 'bulletList', content: bulletItems });
+      bulletItems = [];
+    }
+  }
+
+  function flushOrdered() {
+    if (orderedItems.length > 0) {
+      content.push({ type: 'orderedList', content: orderedItems });
+      orderedItems = [];
+    }
+  }
+
+  function flushLists() {
+    flushBullet();
+    flushOrdered();
+  }
+
+  for (const line of lines) {
+    // Code block fence
+    if (line.startsWith('```')) {
+      if (!inCodeBlock) {
+        flushLists();
+        inCodeBlock = true;
+        codeLanguage = line.slice(3).trim() || null;
+        codeLines = [];
+      } else {
+        inCodeBlock = false;
+        content.push({
+          type: 'codeBlock',
+          attrs: { language: codeLanguage },
+          content: [{ type: 'text', text: codeLines.join('\n') }],
+        });
+        codeLanguage = null;
+        codeLines = [];
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeLines.push(line);
+      continue;
+    }
+
+    // Heading
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+    if (headingMatch) {
+      flushLists();
+      content.push({
+        type: 'heading',
+        attrs: { level: headingMatch[1].length },
+        content: [{ type: 'text', text: headingMatch[2] }],
+      });
+      continue;
+    }
+
+    // Bullet list item
+    const bulletMatch = line.match(/^[-*]\s+(.*)/);
+    if (bulletMatch) {
+      flushOrdered();
+      bulletItems.push({
+        type: 'listItem',
+        content: [{ type: 'paragraph', content: parseInline(bulletMatch[1]) }],
+      });
+      continue;
+    }
+
+    // Ordered list item
+    const orderedMatch = line.match(/^\d+\.\s+(.*)/);
+    if (orderedMatch) {
+      flushBullet();
+      orderedItems.push({
+        type: 'listItem',
+        content: [{ type: 'paragraph', content: parseInline(orderedMatch[1]) }],
+      });
+      continue;
+    }
+
+    // Blank line
+    if (line.trim() === '') {
+      flushLists();
+      const last = content[content.length - 1];
+      const alreadyEmpty =
+        last &&
+        last.type === 'paragraph' &&
+        (last as { type: 'paragraph'; content: AdfTextNode[] }).content.length === 0;
+      if (!alreadyEmpty) {
+        content.push({ type: 'paragraph', content: [] });
+      }
+      continue;
+    }
+
+    // Regular paragraph
+    flushLists();
+    content.push({ type: 'paragraph', content: parseInline(line) });
+  }
+
+  // Flush any remaining list items or open code block
+  flushLists();
+  if (inCodeBlock && codeLines.length > 0) {
+    content.push({
+      type: 'codeBlock',
+      attrs: { language: codeLanguage },
+      content: [{ type: 'text', text: codeLines.join('\n') }],
+    });
+  }
+
+  return {
+    type: 'doc',
+    version: 1,
+    content: content.length > 0 ? content : [{ type: 'paragraph', content: [] }],
+  };
+}
+
 export async function jiraFetch(
   { baseUrl, email, token }: JiraConfig,
   path: string,
@@ -205,7 +385,7 @@ export async function updateIssueDescription(
 ) {
   const res = await jiraFetch(config, `/issue/${issueKey}`, {
     method: 'PUT',
-    body: JSON.stringify({ fields: { description: toAdf(description) } }),
+    body: JSON.stringify({ fields: { description: markdownToAdf(description) } }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -395,7 +575,7 @@ export async function createIssue(
     assignee: { accountId: null },
   };
 
-  if (description !== undefined) fields.description = toAdf(description);
+  if (description !== undefined) fields.description = markdownToAdf(description);
   if (assignee && assignee.toLowerCase() !== 'unassigned') {
     const accountId = await findUserByEmail(config, assignee);
     if (accountId) fields.assignee = { accountId };
